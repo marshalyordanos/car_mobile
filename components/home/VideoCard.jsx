@@ -1,7 +1,6 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React from "react";
-import { baseurl } from "../../constants/global";
 import { useNavigation } from "expo-router";
+import React from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const VideoCard = ({ data, lan }) => {
   const naviget = useNavigation();
@@ -11,15 +10,12 @@ const VideoCard = ({ data, lan }) => {
         onPress={() =>
           naviget.navigate("shop", {
             mainId: data.id,
-            mainName:
-              lan == "am"
-                ? data.name.split("*+*")[1]
-                : data.name.split("*+*")[0],
+            mainName: lan == "am" ? data.name : data.name,
           })
         }
         style={{
           width: "100%",
-          height: 300,
+          height: 250,
           marginTop: 0,
 
           position: "relative",
@@ -28,11 +24,7 @@ const VideoCard = ({ data, lan }) => {
         }}
       >
         {/* <View style={styles.img_con}> */}
-        <Image
-          resizeMode="cover"
-          style={styles.img}
-          source={{ uri: baseurl + data.image }}
-        />
+        <Image resizeMode="cover" style={styles.img} source={data.image} />
         {/* </View> */}
         <View style={styles.image_text}>
           <Text
@@ -44,9 +36,7 @@ const VideoCard = ({ data, lan }) => {
               marginTop: 10,
             }}
           >
-            {lan == "am"
-              ? data.name.split("*+*")[1]
-              : data.name.split("*+*")[0]}
+            {lan == "am" ? data.name : data.name}
           </Text>
         </View>
       </TouchableOpacity>
@@ -65,18 +55,12 @@ export default VideoCard;
 const styles = StyleSheet.create({
   con: {
     flexDirection: "col",
-    // alignItems: "center",
-    // padding: 10,
     marginBottom: 15,
     borderWidth: 1,
     borderColor: "#dbdbdb",
-    // shadowColor: "",
-    // shadowOffset: { width: 0, height: 1 },
-    // shadowOpacity: 0.8,
-    // shadowRadius: 1,
 
     width: "100%",
-    height: 360,
+    height: 310,
     borderRadius: 20,
 
     // justifyContent: "space-between",
@@ -109,7 +93,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     // marginTop: 10,
-    resizeMode: "cover",
+    resizeMode: "contain",
   },
   image_text: {
     // justifyContent: "center",

@@ -1,34 +1,38 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   Image,
   RefreshControl,
-  // SafeAreaView,
-  ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import images from "../../constants/images";
-import SearchInput from "../../components/home/SearchInput";
-import CategoryCard from "../../components/home/CategoryCard";
-import EmptyState from "../../components/home/EmptyState";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
-import axios from "axios";
-import { getMainCategories } from "../../redux/categoryReducer";
+import CategoryCard from "../../components/home/CategoryCard";
+import SearchInput from "../../components/home/SearchInput";
 import VideoCard from "../../components/home/VideoCard";
-import { baseurl } from "../../constants/global";
+import icons from "../../constants/icons";
+import images from "../../constants/images";
 import { changeLanguageHandler, login } from "../../redux/authReducer";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useTranslation } from "react-i18next";
 import { cartLocalstorage } from "../../redux/cartReducer";
-import { useNavigation } from "expo-router";
 
+const cars = [
+  { id: 1, name: "Model S", price: 79999, brand: "Tesla", image: images.car1 },
+  { id: 2, name: "Civic", price: 22000, brand: "Honda", image: images.car2 },
+  { id: 3, name: "Mustang", price: 35000, brand: "Ford", image: images.car3 },
+  { id: 4, name: "Corolla", price: 19000, brand: "Toyota", image: images.van1 },
+  { id: 5, name: "A4", price: 40000, brand: "Audi", image: images.car1 },
+  { id: 6, name: "Camry", price: 24000, brand: "Toyota", image: images.car2 },
+];
 // import { RefreshControl } from "react-native-gesture-handler";
 const Home = () => {
+  const insets = useSafeAreaInsets();
+
   const [data, setData] = useState([]);
   const [isLodding, setLodding] = useState(false);
   const [isLoddingProduct, setLoddingProduct] = useState(false);
@@ -45,21 +49,21 @@ const Home = () => {
     setLodding(true);
     setLoddingProduct(true);
     try {
-      const res = await axios.get(
-        "https://api.kelatibeauty.com/api/v1/products/?page=1&is_featured=true"
-      );
+      // const res = await axios.get(
+      //   "https://localhost:8000/api/v1/products/?page=1&is_featured=true"
+      // );
 
-      setFeatured(res.data.results);
+      setFeatured(cars);
       setLoddingProduct(false);
 
-      const response = await axios.get(
-        "https://api.kelatibeauty.com/api/v1/main-categories/?page=1&pageSize=10&sort[column]=name&sort[order]=ascend&all=true"
-      );
-      setData(response.data);
+      // const response = await axios.get(
+      //   "https://localhost:8000/api/v1/main-categories/?page=1&pageSize=10&sort[column]=name&sort[order]=ascend&all=true"
+      // );
+      setData(cars);
 
       setLodding(false);
 
-      dispatch(getMainCategories(response.data));
+      // dispatch(getMainCategories(response.data));
 
       // console.log("response22", res.data);
     } catch (error) {
@@ -133,74 +137,91 @@ const Home = () => {
     }
   };
   return (
-    <SafeAreaView style={{ backgroundColor: "#469E70", height: "100%" }}>
-      {/* <ScrollView> */}
+    <View
+      style={{
+        backgroundColor: "#469E70",
+        height: "100%",
+      }}
+    >
+      <View
+        style={{
+          paddingTop: insets.top,
+          flex: 1,
+        }}
+      >
+        {/* <ScrollView> */}
 
-      {/* <View > */}
-      <View style={{ backgroundColor: "white", flex: 1 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginRight: 15,
-            paddingBottom: 20,
-            marginTop: 10,
-          }}
-        >
-          <Image
+        {/* <View > */}
+        <View style={{ backgroundColor: "white", flex: 1 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginRight: 15,
+              paddingBottom: 20,
+              marginTop: 10,
+            }}
+          >
+            {/* <Image
             style={styles.top_image}
             source={images.KelatiLogo}
             resizeMode="contain"
-          />
-          <SearchInput />
-          <View>
-            <TouchableOpacity onPress={() => toggleLanguage(language)}>
-              <View style={styles.lang_con}>
-                <Text
-                  style={{
-                    fontSize: 17,
-                    fontWeight: "bold",
-                    color: "white",
-                  }}
-                >
-                  {language}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.id}
-          showsHorizontalScrollIndicator={false}
-          // horizontal
-          style={{ height: "100%" }}
-          renderItem={({ item }) => <></>}
-          ListHeaderComponent={() => (
-            <View
-              style={{
-                marginVertical: 0,
-                marginHorizontal: 15,
-                // borderWidth: 1,
-                height: "100%",
-              }}
-            >
-              <View style={styles.top}>
-                <View style={{}}>
-                  {/* <Text style={{ fontSize: 13, color: "white" }}>
-                    {t("welcome_back")}
-                  </Text> */}
+          /> */}
+            <Image
+              source={icons.carLogo}
+              resizeMode="contain"
+              tintColor={"#7f1d1d"}
+              style={styles.icon}
+            />
+            <SearchInput />
+            <View>
+              <TouchableOpacity onPress={() => toggleLanguage(language)}>
+                <View style={styles.lang_con}>
                   <Text
                     style={{
-                      fontSize: language == "am" ? 18 : 25,
-                      color: "#5A8581",
-                      fontFamily: "Play",
-                      fontWeight: 700,
+                      fontSize: 17,
+                      fontWeight: "bold",
+                      color: "white",
                     }}
                   >
-                    {t("hero_title1")}
+                    {language}
                   </Text>
-                  {/* <Text
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <FlatList
+            data={data}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            // horizontal
+            style={{ height: "100%" }}
+            renderItem={({ item }) => <></>}
+            ListHeaderComponent={() => (
+              <View
+                style={{
+                  marginVertical: 0,
+                  marginHorizontal: 15,
+                  // borderWidth: 1,
+                  height: "100%",
+                }}
+              >
+                <View style={styles.top}>
+                  <View style={{}}>
+                    {/* <Text style={{ fontSize: 13, color: "white" }}>
+                    {t("welcome_back")}
+                  </Text> */}
+                    <Text
+                      style={{
+                        fontSize: language == "am" ? 18 : 25,
+                        color: "#5A8581",
+                        fontFamily: "Play",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {t("hero_title1")}
+                    </Text>
+                    {/* <Text
                     style={{
                       fontSize: language == "am" ? 18 : 22,
                       // color: "white",
@@ -209,131 +230,129 @@ const Home = () => {
                     {t("hero_title2")}
                   </Text> */}
 
-                  <View style={{ marginTop: 10 }}>
-                    <Text
-                      style={{
-                        fontSize: language == "am" ? 12 : 15,
-                        // color: "white",
-                      }}
-                    >
-                      {t("hero_desc1")}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: language == "am" ? 12 : 15,
-                        // color: "white",
-                      }}
-                    >
-                      {t("hero_desc2")}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.continueShopping}
-                      onPress={() => navigation.navigate("shop")}
-                    >
-                      <Text style={styles.continueShoppingText}>
-                        {t("shop_now")}
+                    <View style={{ marginTop: 10 }}>
+                      <Text
+                        style={{
+                          fontSize: language == "am" ? 12 : 15,
+                          // color: "white",
+                        }}
+                      >
+                        {t("hero_desc1")}
                       </Text>
-                    </TouchableOpacity>
+                      <Text
+                        style={{
+                          fontSize: language == "am" ? 12 : 15,
+                          // color: "white",
+                        }}
+                      >
+                        {t("hero_desc2")}
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.continueShopping}
+                        onPress={() => navigation.navigate("shop")}
+                      >
+                        <Text style={styles.continueShoppingText}>
+                          {t("shop_now")}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
-              </View>
 
-              {/* ************** category ******** */}
+                {/* ************** category ******** */}
 
-              <View style={styles.category}>
-                <Text style={styles.category_text}>
-                  {" "}
-                  {t("featured_froducts")}
-                </Text>
+                <View style={styles.category}>
+                  <Text style={styles.category_text}>
+                    {" "}
+                    {t("featured_froducts")}
+                  </Text>
 
-                {isLoddingProduct ? (
-                  <FlatList
-                    //   style={{ , flex: 1 }}
-                    data={[{ id: 1 }, { id: 2 }, { id: 4 }, { id: 3 }]}
-                    keyExtractor={(item) => item.id}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    renderItem={({ item }) => (
-                      <View
-                        style={{
-                          height: 400,
-                          width: 270,
-                          // borderWidth: 1,
-                          backgroundColor: "#e8e8e8",
-                          borderRadius: 20,
-                          margin: 15,
-                          // boxShadow: {
-                          shadowColor: "#000",
-                          shadowOffset: {
-                            width: 1,
-                            height: 10,
-                          },
-                          shadowOpacity: 0.1,
-                          shadowRadius: 20,
-                          elevation: 10,
-                          // },
-                        }}
-                      ></View>
-                    )}
-                    viewabilityConfig={{
-                      itemVisiblePercentThreshold: 70,
-                    }}
-                    contentOffset={{ x: 270 }}
-                  />
-                ) : (
-                  <CategoryCard
-                    lan={language}
-                    isLoadding={isLoddingProduct}
-                    posts={featured ?? []}
-                  />
-                )}
-              </View>
-
-              <View>
-                <Text style={styles.category_text}>
-                  {" "}
-                  {t("shop_by_category")}
-                </Text>
-
-                {isLodding ? (
-                  <View style={styles.video_card_con}>
-                    {Array(8)
-                      .fill(2)
-                      .map((d, i) => (
+                  {isLoddingProduct ? (
+                    <FlatList
+                      //   style={{ , flex: 1 }}
+                      data={[{ id: 1 }, { id: 2 }, { id: 4 }, { id: 3 }]}
+                      keyExtractor={(item) => item.id}
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      renderItem={({ item }) => (
                         <View
                           style={{
+                            height: 400,
+                            width: 270,
+                            // borderWidth: 1,
                             backgroundColor: "#e8e8e8",
-                            flexDirection: "col",
-                            marginBottom: 15,
-                            borderWidth: 1,
-                            borderColor: "#dbdbdb",
-                            width: "100%",
-                            height: 260,
                             borderRadius: 20,
+                            margin: 15,
+                            // boxShadow: {
+                            shadowColor: "#000",
+                            shadowOffset: {
+                              width: 1,
+                              height: 10,
+                            },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 20,
+                            elevation: 10,
+                            // },
                           }}
-                          key={i}
                         ></View>
+                      )}
+                      viewabilityConfig={{
+                        itemVisiblePercentThreshold: 70,
+                      }}
+                      contentOffset={{ x: 270 }}
+                    />
+                  ) : (
+                    <CategoryCard
+                      lan={language}
+                      isLoadding={isLoddingProduct}
+                      posts={featured ?? []}
+                    />
+                  )}
+                </View>
+
+                <View>
+                  <Text style={styles.category_text}>
+                    {" "}
+                    {t("shop_by_category")}
+                  </Text>
+
+                  {isLodding ? (
+                    <View style={styles.video_card_con}>
+                      {Array(8)
+                        .fill(2)
+                        .map((d, i) => (
+                          <View
+                            style={{
+                              backgroundColor: "#e8e8e8",
+                              flexDirection: "col",
+                              marginBottom: 15,
+                              borderWidth: 1,
+                              borderColor: "#dbdbdb",
+                              width: "100%",
+                              height: 260,
+                              borderRadius: 20,
+                            }}
+                            key={i}
+                          ></View>
+                        ))}
+                    </View>
+                  ) : (
+                    <View style={styles.video_card_con}>
+                      {data.map((d) => (
+                        <VideoCard lan={language} key={d.id} data={d} />
                       ))}
-                  </View>
-                ) : (
-                  <View style={styles.video_card_con}>
-                    {data.map((d) => (
-                      <VideoCard lan={language} key={d.id} data={d} />
-                    ))}
-                  </View>
-                )}
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
-          )}
-          // ListEmptyComponent={() => (
-          //   <EmptyState subtitle={"Comming soon!"} title="No Category" />
-          // )}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onReferesh} />
-          }
-        />
+            )}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onReferesh} />
+            }
+          />
+        </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -408,5 +427,10 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+  icon: {
+    width: 45,
+    height: 45,
+    marginHorizontal: 10,
   },
 });

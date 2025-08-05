@@ -1,33 +1,25 @@
+import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
   FlatList,
   Image,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  RefreshControl,
 } from "react-native";
-import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import CategoryCard from "../../components/home/CategoryCard";
-import VideoCard from "../../components/home/VideoCard";
-// import { RefreshControl } from "react-native-gesture-handler";
-// import { SafeAreaView } from "react-native-safe-area-context";
-import EmptyState from "../../components/home/EmptyState";
+
 import axios from "axios";
-import { baseImage, baseurl } from "../../constants/global";
-import { AlphabetList } from "react-native-section-alphabet-list";
-import { Link, useLocalSearchParams } from "expo-router";
-import AppLoader from "../../components/AppLoader";
+import { Link } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { AlphabetList } from "react-native-section-alphabet-list";
+import AppLoader from "../../components/AppLoader";
+import { baseImage, baseurl } from "../../constants/global";
 
 const Brand = () => {
-  // const { type, id } = useLocalSearchParams();
-  // console.log("||||||||||||||||", type, id);
   return <BrandMain />;
 };
 

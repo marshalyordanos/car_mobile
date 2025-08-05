@@ -1,14 +1,13 @@
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   StatusBar,
-  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { LinearGradient } from "expo-linear-gradient";
 import { useSelector } from "react-redux";
 
 const Header = ({ navigation, title, isShopScreen, leftIcon }) => {
@@ -44,8 +43,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 16,
-    paddingTop: Platform.OS === "ios" ? 50 : 30, // Adjust for iOS status bar
+    paddingHorizontal: 16,
+    // paddingTop: Platform.OS === "ios" ? 50 : 30, // Adjust for iOS status bar
   },
   menuButton: {
     padding: 8,

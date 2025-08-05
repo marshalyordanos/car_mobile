@@ -1,16 +1,9 @@
-import {
-  Button,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import React from "react";
-import { Stack, useRouter } from "expo-router";
-import images from "../../constants/images";
 import { Ionicons } from "@expo/vector-icons";
+import { Stack, useRouter } from "expo-router";
+import React from "react";
+import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Colors from "../../constants/Colors";
+import images from "../../constants/images";
 
 function LogoTitle() {
   return <Image style={styles.image} source={{ uri: images.back }} />;

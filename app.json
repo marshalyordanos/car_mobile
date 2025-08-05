@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "car_rental_front",
-    "slug": "car_rental_front",
+    "name": "AfriCar",
+    "slug": "AfriCar",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/kelati-logo.jpg",
     "scheme": "carrentalfront",
+    "icon": "./assets/images/logo1.png",
+
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
 
@@ -14,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo-small.png",
+        "foregroundImage": "./assets/images/logo1.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
@@ -22,20 +23,9 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo-small.png"
+      "favicon": "./assets/images/logo1.png"
     },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/kelati-logo.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
-    ],
+    "plugins": ["expo-router"],
     "experiments": {
       "typedRoutes": true
     }

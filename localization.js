@@ -1,11 +1,11 @@
-import i18n from "i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
 const am = {
   welcome: "ሰላም",
   welcome_back: "እንኳን ደህና መጡ",
-  hero_title1: "ቀላቲ የፀጉር እና",
+  hero_title1: "AfriCar",
   hero_title2: "የመዋቢያ ዕቃዎች አቅርቦት",
   hero_desc1: "ከሱቃችን ወደ በርዎ፡",
   hero_desc2: "ዛሬ የቀላቲ ጸጉር እና መዋቢያዎችን ይግዙ!",
@@ -121,11 +121,11 @@ const am = {
 const en = {
   welcome: "Welcome",
   welcome_back: "Welcome Back",
-  hero_title1: "kelati Beauty",
+  hero_title1: "Rent Smarter. Drive Freely",
   hero_title2: "Cosmetics Supply",
-  hero_desc1: "From our store to Your Door:",
-  hero_desc2: "Shop Kelati Hair & Cosmetics Today!",
-  featured_froducts: "Featured Products",
+  hero_desc1: "Find the perfect car for any trip ",
+  hero_desc2: "quick, safe, and hassle-free.!",
+  featured_froducts: "Featured Cars",
   shop_by_category: "Shop by Category",
   shop: "Shop",
   categories: "Categories",
@@ -181,7 +181,7 @@ const en = {
   add_to_art: "Add to Cart",
   result: "Result",
   results: "Results",
-  shop_now: "Shop Now",
+  shop_now: "Rent Now",
   about_us: "About Us",
   about_kelati: "About Kelati",
   about_kelati_desc:

@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+import React, { useState } from "react";
 import {
   FlatList,
   Image,
@@ -6,11 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
-import EmptyState from "./EmptyState";
 import * as Animatable from "react-native-animatable";
-import { baseurl } from "../../constants/global";
-import { useNavigation } from "@react-navigation/native";
 
 const zoomIn = {
   0: {
@@ -43,7 +41,7 @@ const CardItem = ({ active, item, lan }) => {
         <TouchableOpacity
           onPress={() => navigation.navigate("detail", { productId: item.id })}
           style={{
-            height: 400,
+            height: 350,
             width: 270,
             // borderWidth: 1,
             backgroundColor: "#ffffff",
@@ -63,7 +61,7 @@ const CardItem = ({ active, item, lan }) => {
           <View>
             <View
               style={{
-                height: 300,
+                height: 250,
                 width: 270,
                 borderRadius: 20,
 
@@ -73,7 +71,7 @@ const CardItem = ({ active, item, lan }) => {
               <Image
                 resizeMode="cover"
                 style={styles.img}
-                source={{ uri: baseurl + item.image }}
+                source={item.image}
               />
             </View>
             <View
@@ -82,10 +80,8 @@ const CardItem = ({ active, item, lan }) => {
                 paddingHorizontal: 10,
               }}
             >
-              <Text style={{ fontSize: 18, fontWeight: 400 }}>
-                {lan == "am"
-                  ? item.name.split("*+*")[1]
-                  : item.name.split("*+*")[0]}
+              <Text style={{ fontSize: 22, fontWeight: 400 }}>
+                {lan == "am" ? item.name : item.name}
               </Text>
               <View
                 style={{
@@ -94,14 +90,11 @@ const CardItem = ({ active, item, lan }) => {
                   marginTop: 10,
                 }}
               >
-                <Text style={{ fontSize: 16 }}>
-                  {lan == "am"
-                    ? item.brand.name.split("*+*")[1]
-                    : item.brand.name.split("*+*")[0]}
+                <Text style={{ fontSize: 18 }}>
+                  {lan == "am" ? item.brand : item.brand}
                 </Text>
-                <Text style={{ fontSize: 16, color: "#5A8581" }}>
-                  {item.product_combinations[0].price}{" "}
-                  {lan == "am" ? "ብር" : "ETB"}
+                <Text style={{ fontSize: 18, color: "#5A8581" }}>
+                  {item.price} {lan == "am" ? "ብር" : "ETB"}
                 </Text>
               </View>
             </View>
@@ -162,6 +155,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     // marginTop: 10,
-    resizeMode: "cover",
+    resizeMode: "contain",
   },
 });

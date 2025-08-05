@@ -1,0 +1,182 @@
+class CarController {
+  // ---------- Admin Functions ----------
+
+  // List all cars, optionally filter by status, flagged, etc. (Admin only)
+  async listAllCars(req, res) {
+    // Admin: view all cars with filters & pagination
+  }
+
+  // Approve a car listing (Admin only)
+  async approveCar(req, res) {
+    // Admin: approve car by ID
+  }
+
+  // Reject a car listing with reason (Admin only)
+  async rejectCar(req, res) {
+    // Admin: reject car by ID with reason
+  }
+
+  // Activate or deactivate car (Admin only)
+  async toggleCarActivation(req, res) {
+    // Admin: enable or disable car listing
+  }
+
+  // Edit or delete car listing (Admin only)
+  async editCar(req, res) {
+    // Admin: update car details by ID
+  }
+  async deleteCar(req, res) {
+    // Admin: remove car listing
+  }
+
+  // View flagged content or reported cars (Admin only)
+  async viewFlaggedCars(req, res) {
+    // Admin: list flagged or problematic listings
+  }
+
+  // Manage car categories (Admin only)
+  async addCategory(req, res) {
+    /* add category */
+  }
+  async editCategory(req, res) {
+    /* update category */
+  }
+  async deleteCategory(req, res) {
+    /* delete category */
+  }
+
+  // Manage car brands (Admin only)
+  async addBrand(req, res) {
+    /* add brand */
+  }
+  async editBrand(req, res) {
+    /* update brand */
+  }
+  async deleteBrand(req, res) {
+    /* delete brand */
+  }
+
+  // View audit logs for car-related actions (Admin only)
+  async getCarAuditLogs(req, res) {
+    // Admin: view audit trail for a car
+  }
+
+  // ---------- Car Owner Functions ----------
+
+  // Create new car listing (Owner only)
+  async createCarListing(req, res) {
+    // Owner: create car listing
+  }
+
+  // Update own car listing (Owner only)
+  async updateCarListing(req, res) {
+    // Owner: update car listing, verify ownership
+  }
+
+  // Delete own car listing (Owner only)
+  async deleteOwnCarListing(req, res) {
+    // Owner: delete car listing, verify ownership
+  }
+
+  // Upload images/videos for a car (Owner only)
+  async uploadCarMedia(req, res) {
+    // Owner: upload media files linked to car
+  }
+
+  // Activate/deactivate own car listing (Owner only)
+  async toggleOwnCarActivation(req, res) {
+    // Owner: toggle activation status
+  }
+
+  // List cars owned by the current owner
+  async listMyCars(req, res) {
+    // Owner: list all their cars
+  }
+
+  // View bookings for a car (Owner only)
+  async viewCarBookings(req, res) {
+    // Owner: list bookings by status
+  }
+
+  // Accept or decline booking requests (Owner only)
+  async respondToBooking(req, res) {
+    // Owner: accept or decline booking
+  }
+
+  // Block a renter from booking a car (Owner only)
+  async blockRenter(req, res) {
+    // Owner: block renter for their car
+  }
+
+  // Contact renter via message (Owner only)
+  async contactRenter(req, res) {
+    // Owner: send message to renter
+  }
+
+  // View earnings and payout info (Owner only)
+  async viewEarnings(req, res) {
+    // Owner: see earnings summary
+  }
+
+  // Manage payout methods (Owner only)
+  async managePayoutMethod(req, res) {
+    // Owner: add or update payout details
+  }
+
+  // Download monthly earnings report (Owner only)
+  async downloadEarningsReport(req, res) {
+    // Owner: download report file
+  }
+
+  // ---------- Renter Functions ----------
+
+  // Search cars with filters and pagination (Renter and Guests)
+  async searchCars(req, res) {
+    // Renter/Guest: search/filter available cars
+  }
+
+  // View detailed car info including reviews (Renter and Guests)
+  async getCarDetails(req, res) {
+    // Renter/Guest: view car page with full details
+  }
+
+  // Add a car to favorites (Renter only)
+  async addToFavorites(req, res) {
+    // Renter: save car to favorites list
+  }
+
+  // Remove a car from favorites (Renter only)
+  async removeFromFavorites(req, res) {
+    // Renter: remove car from favorites
+  }
+
+  // List renter’s favorite cars (Renter only)
+  async listFavorites(req, res) {
+    // Renter: list saved cars
+  }
+
+  // Book a car (instant or request) (Renter only)
+  async createBooking(req, res) {
+    // Renter: submit booking request
+  }
+
+  // Modify a booking (Renter only)
+  async modifyBooking(req, res) {
+    // Renter: change booking if allowed
+  }
+
+  // Cancel a booking (Renter only)
+  async cancelBooking(req, res) {
+    // Renter: cancel upcoming booking
+  }
+
+  // List bookings by renter (Renter only)
+  async listBookings(req, res) {
+    // Renter: view past and upcoming bookings
+  }
+
+  // Contact car owner via message (Renter only)
+  async contactOwner(req, res) {
+    // Renter: send message to car owner
+  }
+}

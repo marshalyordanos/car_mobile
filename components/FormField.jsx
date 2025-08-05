@@ -1,13 +1,12 @@
+import React, { useState } from "react";
 import {
+  Image,
   StyleSheet,
   Text,
-  View,
   TextInput,
-  Image,
   TouchableOpacity,
+  View,
 } from "react-native";
-import React from "react";
-import { useState } from "react";
 // import { TouchableOpacity } from "react-native-gesture-handler";
 import icons from "../constants/icons";
 const FormField = ({
@@ -74,11 +73,14 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     backgroundColor: "white",
+    borderRadius: 10,
+    borderColor: "gray",
 
     alignItems: "center",
   },
   textInput: {
     flex: 1,
     backgroundColor: "white",
+    borderRadius: 10,
   },
 });

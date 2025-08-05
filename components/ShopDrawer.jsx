@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  Platform,
-  ActivityIndicator, // Import ActivityIndicator
-} from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-  FadeInDown,
-} from "react-native-reanimated";
-import Icon from "react-native-vector-icons/Ionicons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { t } from "i18next";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Animated, {
+  Easing,
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import Icon from "react-native-vector-icons/Ionicons";
 
-const BASE_URL = "https://api.kelatibeauty.com/api/v1/";
+const BASE_URL = "https://localhost:8000/api/v1/";
 // const BASE_URL = 'http://10.10.4.116:8000/api/v1/';
 
 const fetchCategories = async () => {
@@ -172,7 +172,7 @@ const ShopSideDrawer = ({
           }
         >
           <Image
-            source={{ uri: `https://api.kelatibeauty.com${category.image}` }}
+            source={{ uri: `https://localhost:8000${category.image}` }}
             style={styles.categoryImage}
           />
           <Text style={styles.mainCategoryText}>

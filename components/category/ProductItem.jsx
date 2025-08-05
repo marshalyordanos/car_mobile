@@ -1,8 +1,17 @@
-import React, { memo, useState, useEffect } from "react";
-import { TouchableOpacity, Image, Text, View, StyleSheet, Modal, ScrollView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useDispatch, useSelector } from "react-redux";
+import React, { memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../redux/cartReducer";
 
 import { Ionicons } from "react-native-vector-icons";
@@ -14,7 +23,7 @@ const ProductItem = memo(({ item }) => {
   const dispatch = useDispatch();
   const language = useSelector((state) => state.auth.lan);
   const { t } = useTranslation();
-console.log("==========item======", item)
+  console.log("==========item======", item);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedVariants, setSelectedVariants] = useState({});
   const [quantity, setQuantity] = useState(1);
@@ -25,14 +34,18 @@ console.log("==========item======", item)
     if (item.product_variation_options) {
       const initialVariants = {};
       item.product_variation_options.forEach((variation) => {
-        const inStockOption = variation.product_variation_options_values.find(option => 
-          item.product_combinations.some(combination => 
-            combination.combination_string.includes(`${variation.variation_name}=${option.variation_name}`) 
-            && combination.available_stock > 0
-          )
+        const inStockOption = variation.product_variation_options_values.find(
+          (option) =>
+            item.product_combinations.some(
+              (combination) =>
+                combination.combination_string.includes(
+                  `${variation.variation_name}=${option.variation_name}`
+                ) && combination.available_stock > 0
+            )
         );
         if (inStockOption) {
-          initialVariants[variation.variation_name] = inStockOption.variation_name;
+          initialVariants[variation.variation_name] =
+            inStockOption.variation_name;
         }
       });
       setSelectedVariants(initialVariants);
@@ -83,7 +96,7 @@ console.log("==========item======", item)
       );
       return;
     }
-    console.log("======combination id=====", selectedCombination.id)
+    console.log("======combination id=====", selectedCombination.id);
     const cartItem = {
       id: item.id,
       name: item.name,
@@ -106,33 +119,43 @@ console.log("==========item======", item)
         <Text style={styles.variantTitle}>{variation.variation_name}:</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {variation.product_variation_options_values.map((option) => {
-            const [colorName, colorValue] = option.variation_name.split(':');
-            const isColor = variation.variation_name.toLowerCase() === 'color';
-            
+            const [colorName, colorValue] = option.variation_name.split(":");
+            const isColor = variation.variation_name.toLowerCase() === "color";
+
             // Check if this option has stock
-            const hasStock = item.product_combinations.some(combination => 
-              combination.combination_string.includes(`${variation.variation_name}=${option.variation_name}`) 
-              && combination.available_stock > 0
+            const hasStock = item.product_combinations.some(
+              (combination) =>
+                combination.combination_string.includes(
+                  `${variation.variation_name}=${option.variation_name}`
+                ) && combination.available_stock > 0
             );
-  
+
             return (
               <TouchableOpacity
                 key={option.id}
                 style={[
                   styles.variantButton,
-                  selectedVariants[variation.variation_name] === option.variation_name && styles.selectedVariantButton,
+                  selectedVariants[variation.variation_name] ===
+                    option.variation_name && styles.selectedVariantButton,
                   isColor && colorValue && { backgroundColor: colorValue },
-                  !hasStock && styles.outOfStockButton
+                  !hasStock && styles.outOfStockButton,
                 ]}
-                onPress={() => hasStock && handleVariantChange(variation.variation_name, option.variation_name)}
+                onPress={() =>
+                  hasStock &&
+                  handleVariantChange(
+                    variation.variation_name,
+                    option.variation_name
+                  )
+                }
                 disabled={!hasStock}
               >
                 <Text
                   style={[
                     styles.variantButtonText,
-                    selectedVariants[variation.variation_name] === option.variation_name && styles.selectedVariantButtonText,
-                    isColor && { color: colorValue ? '#fff' : '#000' },
-                    !hasStock && styles.outOfStockButtonText
+                    selectedVariants[variation.variation_name] ===
+                      option.variation_name && styles.selectedVariantButtonText,
+                    isColor && { color: colorValue ? "#fff" : "#000" },
+                    !hasStock && styles.outOfStockButtonText,
                   ]}
                 >
                   {isColor ? colorName : option.variation_name}
@@ -145,7 +168,7 @@ console.log("==========item======", item)
     );
   };
 
-  const imageUrl = `https://api.kelatibeauty.com${currentImage}`;
+  const imageUrl = `https://localhost:8000${currentImage}`;
 
   return (
     <View style={styles.productItem}>
@@ -207,7 +230,7 @@ console.log("==========item======", item)
                   ? item.name.split("*+*")[1]
                   : item.name.split("*+*")[0]}
               </Text>
-              { item.product_variation_options.map(renderVariantButtons)}
+              {item.product_variation_options.map(renderVariantButtons)}
               <View style={styles.quantityContainer}>
                 <Text style={styles.quantityLabel}>Quantity:</Text>
                 <View style={styles.quantityControls}>
@@ -232,27 +255,32 @@ console.log("==========item======", item)
                 </Text>
               )}
               <TouchableOpacity
-              style={[
-                styles.modalAddToCartButton,
-                (!selectedCombination || selectedCombination.available_stock === 0) &&
-                  styles.disabledButton,
-              ]}
-              onPress={handleAddToCart}
-              disabled={!selectedCombination || selectedCombination.available_stock === 0}
-            >
-              <Ionicons
-               name="cart-outline"
-               size={24} 
-               color="#fff" 
-               style={styles.cartIcon}
+                style={[
+                  styles.modalAddToCartButton,
+                  (!selectedCombination ||
+                    selectedCombination.available_stock === 0) &&
+                    styles.disabledButton,
+                ]}
+                onPress={handleAddToCart}
+                disabled={
+                  !selectedCombination ||
+                  selectedCombination.available_stock === 0
+                }
+              >
+                <Ionicons
+                  name="cart-outline"
+                  size={24}
+                  color="#fff"
+                  style={styles.cartIcon}
                 />
-                
-              <Text style={styles.modalAddToCartButtonText}>
-                {!selectedCombination || selectedCombination.available_stock === 0
-                  ? "Select Available Option"
-                  : t("add_to_art")}
-              </Text>
-            </TouchableOpacity>
+
+                <Text style={styles.modalAddToCartButtonText}>
+                  {!selectedCombination ||
+                  selectedCombination.available_stock === 0
+                    ? "Select Available Option"
+                    : t("add_to_art")}
+                </Text>
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
@@ -431,10 +459,10 @@ const styles = StyleSheet.create({
   },
   outOfStockButton: {
     opacity: 0.5,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
   },
   outOfStockButtonText: {
-    color: '#999',
+    color: "#999",
   },
 });
 

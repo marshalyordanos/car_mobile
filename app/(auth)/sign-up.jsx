@@ -1,28 +1,26 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Link, router } from "expo-router";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   Image,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  KeyboardAvoidingView,
-  Platform,
-  Linking,
 } from "react-native";
-import React, { useRef, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import images from "../../constants/images";
-import FormField from "../../components/FormField";
-import { Link, router } from "expo-router";
-import PhoneInput from "react-native-phone-number-input";
-import axios from "axios";
-import { Ionicons } from "@expo/vector-icons";
-import { useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
-import api from "../../redux/api";
 import CheckBox from "react-native-check-box";
+import PhoneInput from "react-native-phone-number-input";
+import { useSelector } from "react-redux";
 import AppLoader from "../../components/AppLoader";
+import FormField from "../../components/FormField";
+import images from "../../constants/images";
+import api from "../../redux/api";
 const { height } = Dimensions.get("window");
 const minHeight = height * 0.85;
 
@@ -194,38 +192,44 @@ const SignUp = () => {
     }
   };
   return (
-    <SafeAreaView style={{ height: "100%", backgroundColor: "white" }}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
-      >
-        <ScrollView>
-          <View style={styles.login_con}>
-            <Text style={styles.login_main_text}> {t("sign_up")} </Text>
-            <Text style={{ marginTop: 10, color: "grey", fontSize: 14 }}>
-              {t("sign_up_desc")}
-            </Text>
-            <FormField
-              title={t("fullname")}
-              value={form.fullname}
-              handleChangeText={(e) => {
-                validate(
-                  e,
-                  form.phone,
-                  form.email,
-                  form.password,
-                  form.confirmPassword,
-                  "fullname"
-                );
-                setForm({ ...form, fullname: e });
-              }}
-              otherStyles={{ marginTop: 28 }}
-              keyboardType="email-address"
-              placeholder={"fullname"}
-            />
-            <Text style={{ color: "red" }}>{fullnameEror}</Text>
+    <ScrollView style={{ backgroundColor: "white" }}>
+      <View style={styles.login_con}>
+        <View style={{ justifyContent: "center", alignItems: "center" }}>
+          <Image
+            style={styles.top_image}
+            source={images.logo}
+            resizeMode="contain"
+          />
+        </View>
+        <Text style={styles.login_main_text}> {t("sign_up")} </Text>
+        <Text style={{ marginTop: 10, color: "grey", fontSize: 14 }}>
+          {t("sign_up_desc")}
+        </Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.container}
+        >
+          <FormField
+            title={t("fullname")}
+            value={form.fullname}
+            handleChangeText={(e) => {
+              validate(
+                e,
+                form.phone,
+                form.email,
+                form.password,
+                form.confirmPassword,
+                "fullname"
+              );
+              setForm({ ...form, fullname: e });
+            }}
+            otherStyles={{ marginTop: 28 }}
+            keyboardType="email-address"
+            placeholder={"fullname"}
+          />
+          <Text style={{ color: "red" }}>{fullnameEror}</Text>
 
-            {/* <FormField
+          {/* <FormField
             title="Phone"
             value={form.email}
             handleChangeText={(e) => setForm({ ...form, email: e })}
@@ -234,169 +238,169 @@ const SignUp = () => {
             placeholder={"phone"}
           /> */}
 
-            <View style={{ marginTop: 40 }}>
-              <Text>{t("phone")}</Text>
-              <PhoneInput
-                containerStyle={{ borderWidth: 1, width: "100%" }}
-                value={form.phone}
-                defaultCode="ET"
-                layout="first"
-                onChangeText={(text) => {
-                  console.log(text);
-                }}
-                onChangeFormattedText={(text) => {
-                  console.log("phone: ", text);
-                  validate(
-                    form.fullname,
-                    text,
-                    form.email,
-                    form.password,
-                    form.confirmPassword,
-                    "phone"
-                  );
-
-                  setForm({ ...form, phone: text });
-
-                  // setFormattedValue(text);
-                }}
-                // withDarkTheme
-                // withShadow
-                // autoFocus
-              />
-            </View>
-            <Text style={{ color: "red" }}>{phoneError}</Text>
-
-            <FormField
-              title={t("email")}
-              value={form.email}
-              handleChangeText={(e) => {
-                validate(
-                  form.fullname,
-                  form.phone,
-                  e,
-                  form.password,
-                  form.confirmPassword,
-                  "email"
-                );
-
-                setForm({ ...form, email: e });
+          <View style={{ marginTop: 20 }}>
+            <Text>{t("phone")}</Text>
+            <PhoneInput
+              containerStyle={{
+                borderWidth: 1,
+                margin: 0,
+                padding: 0,
+                width: "100%",
+                borderRadius: 6,
               }}
-              otherStyles={{ marginTop: 28 }}
-              keyboardType="email-address"
-              placeholder={"email"}
-            />
-            <Text style={{ color: "red" }}>{emailError}</Text>
-
-            <FormField
-              title={t("password")}
-              value={form.password}
-              handleChangeText={(e) => {
-                validate(
-                  form.fullname,
-                  form.phone,
-                  form.email,
-                  e,
-                  form.confirmPassword,
-                  "password"
-                );
-
-                setForm({ ...form, password: e });
+              value={form.phone}
+              defaultCode="ET"
+              layout="first"
+              onChangeText={(text) => {
+                console.log(text);
               }}
-              otherStyles={{ marginTop: 28 }}
-              keyboardType="email-address"
-              placeholder={"password"}
-            />
-            <Text style={{ color: "red" }}>{passwordError}</Text>
-
-            <FormField
-              title={t("confirm_password")}
-              value={form.confirmPassword}
-              handleChangeText={(e) => {
+              onChangeFormattedText={(text) => {
+                console.log("phone: ", text);
                 validate(
                   form.fullname,
-                  form.phone,
+                  text,
                   form.email,
                   form.password,
-                  e,
-                  "confirmPassword"
+                  form.confirmPassword,
+                  "phone"
                 );
 
-                setForm({ ...form, confirmPassword: e });
+                setForm({ ...form, phone: text });
+
+                // setFormattedValue(text);
               }}
-              otherStyles={{ marginTop: 28 }}
-              keyboardType="email-address"
-              placeholder={"Confirm Password"}
+              // withDarkTheme
+              // withShadow
+              // autoFocus
             />
-            <Text style={{ color: "red" }}>{confirmPasswordError}</Text>
+          </View>
+          <Text style={{ color: "red" }}>{phoneError}</Text>
 
-            <View style={styles.checkboxContainer}>
-              <CheckBox
-                style={styles.checkbox}
-                onClick={() => {
-                  setSelection(!isSelected);
-                }}
-                isChecked={isSelected}
-              />
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                <Text style={styles.checkboxLabel}>
-                  I accept the Terms and Conditions
-                </Text>
-                <Link
-                  style={{
-                    fontSize: 18,
-                    color: "#393381",
-                    textDecorationLine: "underline",
-                  }}
-                  href={"/terms"}
-                >
-                  Read
-                </Link>
-              </View>
-            </View>
-            <Text style={{ color: "red" }}>{termError}</Text>
+          <FormField
+            title={t("email")}
+            value={form.email}
+            handleChangeText={(e) => {
+              validate(
+                form.fullname,
+                form.phone,
+                e,
+                form.password,
+                form.confirmPassword,
+                "email"
+              );
 
-            <View style={{ marginTop: 20 }}></View>
-            {error && (
-              <View
+              setForm({ ...form, email: e });
+            }}
+            otherStyles={{ marginTop: 28 }}
+            keyboardType="email-address"
+            placeholder={"email"}
+          />
+          <Text style={{ color: "red" }}>{emailError}</Text>
+
+          <FormField
+            title={t("password")}
+            value={form.password}
+            handleChangeText={(e) => {
+              validate(
+                form.fullname,
+                form.phone,
+                form.email,
+                e,
+                form.confirmPassword,
+                "password"
+              );
+
+              setForm({ ...form, password: e });
+            }}
+            otherStyles={{ marginTop: 28 }}
+            keyboardType="email-address"
+            placeholder={"password"}
+          />
+          <Text style={{ color: "red" }}>{passwordError}</Text>
+
+          <FormField
+            title={t("confirm_password")}
+            value={form.confirmPassword}
+            handleChangeText={(e) => {
+              validate(
+                form.fullname,
+                form.phone,
+                form.email,
+                form.password,
+                e,
+                "confirmPassword"
+              );
+
+              setForm({ ...form, confirmPassword: e });
+            }}
+            otherStyles={{ marginTop: 28 }}
+            keyboardType="email-address"
+            placeholder={"Confirm Password"}
+          />
+          <Text style={{ color: "red" }}>{confirmPasswordError}</Text>
+
+          <View style={styles.checkboxContainer}>
+            <CheckBox
+              style={styles.checkbox}
+              onClick={() => {
+                setSelection(!isSelected);
+              }}
+              isChecked={isSelected}
+            />
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Text style={styles.checkboxLabel}>
+                I accept the Terms and Conditions
+              </Text>
+              <Link
                 style={{
-                  backgroundColor: "#d98989",
-                  borderRadius: 8,
-                  marginBottom: 10,
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  fontSize: 18,
+                  color: "#393381",
+                  textDecorationLine: "underline",
+                }}
+                href={"/terms"}
+              >
+                Read
+              </Link>
+            </View>
+          </View>
+          <Text style={{ color: "red" }}>{termError}</Text>
+
+          <View style={{ marginTop: 20 }}></View>
+          {error && (
+            <View
+              style={{
+                backgroundColor: "#d98989",
+                borderRadius: 8,
+                marginBottom: 10,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                height: 50,
+                paddingHorizontal: 10,
+              }}
+            >
+              <Text style={{ color: "white" }}>{error}</Text>
+              <TouchableOpacity
+                style={{
                   height: 50,
+                  justifyContent: "center",
                   paddingHorizontal: 10,
                 }}
+                onPress={() => setError(null)}
               >
-                <Text style={{ color: "white" }}>{error}</Text>
-                <TouchableOpacity
-                  style={{
-                    height: 50,
-                    justifyContent: "center",
-                    paddingHorizontal: 10,
-                  }}
-                  onPress={() => setError(null)}
-                >
-                  <Ionicons name="close" size={20} />
-                </TouchableOpacity>
-              </View>
-            )}
-            <TouchableOpacity
-              onPress={handleSignUp}
-              style={styles.login_button}
-            >
-              <Text
-                style={{ color: "white", fontSize: 24, textAlign: "center" }}
-              >
-                {t("sign_up")}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          {isLoadding && <AppLoader />}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+                <Ionicons name="close" size={20} />
+              </TouchableOpacity>
+            </View>
+          )}
+          <TouchableOpacity onPress={handleSignUp} style={styles.login_button}>
+            <Text style={{ color: "white", fontSize: 24, textAlign: "center" }}>
+              {t("sign_up")}
+            </Text>
+          </TouchableOpacity>
+        </KeyboardAvoidingView>
+      </View>
+      {isLoadding && <AppLoader />}
+    </ScrollView>
   );
 };
 
@@ -421,11 +425,12 @@ const styles = StyleSheet.create({
     minHeight: "100%",
     // backgroundColor: "red",
     paddingHorizontal: "16px",
-    marginVertical: 24,
+    // marginVertical: 24,
   },
   top_image: {
     width: 200,
     height: 100,
+    marginTop: 10,
   },
   login_main_text: {
     fontSize: 22,

@@ -1,33 +1,32 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
+  Alert,
+  Animated,
   FlatList,
   Image,
-  TouchableOpacity,
-  StyleSheet,
-  StatusBar,
   SafeAreaView,
-  Animated,
-  Alert,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import Header from "../../components/Header";
 import {
   removeFromCart,
   updateCartItemQuantity,
 } from "../../redux/cartReducer";
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import Header from "../../components/Header";
-import { useTranslation } from "react-i18next";
-
 
 const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
   const language = useSelector((state) => state.auth.lan);
   const { t } = useTranslation();
 
-  const BASE_URL = "https://api.kelatibeauty.com";
+  const BASE_URL = "https://localhost:8000";
 
   const fadeOut = () => {
     Animated.timing(fadeAnim, {
@@ -38,13 +37,18 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
   };
 
   const renderVariant = (key, value) => {
-    if (key.toLowerCase() === 'color') {
-      const [colorName, colorValue] = value.split(':');
+    if (key.toLowerCase() === "color") {
+      const [colorName, colorValue] = value.split(":");
       return (
         <View key={key} style={styles.colorVariantContainer}>
           <Text style={styles.variantKey}>{key}:</Text>
           <View style={[styles.colorSwatch, { backgroundColor: colorValue }]}>
-            <Text style={[styles.colorName, { color: isLightColor(colorValue) ? '#000' : '#fff' }]}>
+            <Text
+              style={[
+                styles.colorName,
+                { color: isLightColor(colorValue) ? "#000" : "#fff" },
+              ]}
+            >
               {colorName}
             </Text>
           </View>
@@ -60,11 +64,11 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
   };
 
   const isLightColor = (color) => {
-    const hex = color.replace('#', '');
+    const hex = color.replace("#", "");
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
-    const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
     return brightness > 155;
   };
 
@@ -81,7 +85,9 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
           {item.price} {t("birr")}
         </Text>
         {item.selectedVariants &&
-          Object.entries(item.selectedVariants).map(([key, value]) => renderVariant(key, value))}
+          Object.entries(item.selectedVariants).map(([key, value]) =>
+            renderVariant(key, value)
+          )}
         <View style={styles.quantityControl}>
           <TouchableOpacity
             onPress={() =>
@@ -187,7 +193,6 @@ const Cart = () => {
                   onRemove={handleRemoveItem}
                   onUpdateQuantity={handleUpdateQuantity}
                 />
-                
               )}
               keyExtractor={(item, index) => `${item.id}-${index}`}
               contentContainerStyle={styles.listContainer}
@@ -351,26 +356,26 @@ const styles = StyleSheet.create({
     padding: 1,
   },
   colorVariantContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 4,
   },
   variantKey: {
     fontSize: 12,
-    color: '#718096',
+    color: "#718096",
     marginRight: 4,
   },
   colorSwatch: {
     width: 40,
     height: 15,
     borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     // color: "#fff"
   },
   colorName: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

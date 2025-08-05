@@ -1,5 +1,5 @@
 const ip = "192.168.0.110";
-const baseurl = "https://api.kelatibeauty.com/";
-const baseImage = "https://api.kelatibeauty.com";
+const baseurl = "https://localhost:8000/";
+const baseImage = "https://localhost:8000";
 
-export { ip, baseurl, baseImage };
+export { baseImage, baseurl, ip };

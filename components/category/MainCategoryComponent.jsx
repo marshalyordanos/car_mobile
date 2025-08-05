@@ -1,21 +1,21 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   FlatList,
   Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
 } from "react-native-reanimated";
 import { useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
 
-const BASE_URL = "https://api.kelatibeauty.com/api/v1/";
+const BASE_URL = "https://localhost:8000/api/v1/";
 // const BASE_URL = 'http://10.10.4.116:8000/api/v1/';
 
 const CategoryItem = React.memo(
@@ -42,11 +42,13 @@ const CategoryItem = React.memo(
     return (
       <TouchableOpacity onPress={handlePress}>
         <Animated.View style={[animatedStyles, styles.categoryItemContainer]}>
-          <View style={[styles.categoryItem, { marginLeft: index === 0 ? 20 : 0 }]}>
+          <View
+            style={[styles.categoryItem, { marginLeft: index === 0 ? 20 : 0 }]}
+          >
             <View style={styles.imageContainer}>
               {item.image ? (
                 <Image
-                  source={{ uri: "https://api.kelatibeauty.com" + item.image }}
+                  source={{ uri: "https://localhost:8000" + item.image }}
                   style={styles.categoryImage}
                 />
               ) : (

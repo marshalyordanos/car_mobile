@@ -1,6 +1,14 @@
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  Alert,
-  Dimensions,
+  Link,
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
   Image,
   // SafeAreaView,
   ScrollView,
@@ -9,35 +17,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import images from "../../constants/images";
-import FormField from "../../components/FormField";
-import {
-  Link,
-  router,
-  useFocusEffect,
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
-import AppLoader from "../../components/AppLoader";
-import axios from "axios";
-import {
-  AntDesign,
-  FontAwesome5,
-  FontAwesome6,
-  Ionicons,
-  MaterialCommunityIcons,
-  MaterialIcons,
-  SimpleLineIcons,
-} from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
-import { login, logout, selectCurrentUser } from "../../redux/authReducer";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AppLoader from "../../components/AppLoader";
+import FormField from "../../components/FormField";
+import images from "../../constants/images";
 import api from "../../redux/api";
-import { useTranslation } from "react-i18next";
-import { t } from "i18next";
-import Colors from "../../constants/Colors";
+import { login, selectCurrentUser } from "../../redux/authReducer";
 
 // const { height } = Dimensions.get("window");
 // const minHeight = height * 0.85;
@@ -71,312 +57,19 @@ const Profile = () => {
 
   return (
     <>
-      {!login || user ? (
-        <SafeAreaView style={styles.container}>
-          <View style={{ backgroundColor: "#f1f1f1", flex: 1 }}>
-            <ScrollView style={{ height: "100%" }}>
-              <ProfileHome
-                t={t}
-                setLoding={setLoding}
-                lan={language}
-                user={user}
-                setLogin={setLogin}
-              />
-            </ScrollView>
-            {isLoadding && <AppLoader />}
-          </View>
-        </SafeAreaView>
-      ) : (
-        <SafeAreaView style={{ height: "100%", backgroundColor: "white" }}>
-          <ScrollView style={{ height: "100%" }}>
-            <Login
-              t={t}
-              lan={language}
-              setLoding={setLoding}
-              status={query?.success}
-              setLogin={setLogin}
-            />
-          </ScrollView>
-          {isLoadding && <AppLoader />}
-        </SafeAreaView>
-      )}
+      <SafeAreaView style={{ height: "100%", backgroundColor: "white" }}>
+        <ScrollView style={{ height: "100%" }}>
+          <Login
+            t={t}
+            lan={language}
+            setLoding={setLoding}
+            status={query?.success}
+            setLogin={setLogin}
+          />
+        </ScrollView>
+        {isLoadding && <AppLoader />}
+      </SafeAreaView>
     </>
-  );
-};
-
-const ProfileHome = ({ user, t, setLogin, setLoding, lan }) => {
-  const dispatch = useDispatch();
-
-  console.log("user", JSON.stringify(user, null, 2));
-  return (
-    <View style={{ marginHorizontal: 20 }}>
-      <Text
-        style={{
-          fontSize: 25,
-          fontWeight: "bold",
-          marginTop: 50,
-          marginBottom: 10,
-        }}
-      >
-        {t("profile")}
-      </Text>
-      {user && (
-        <View
-          style={{
-            backgroundColor: "white",
-            padding: 10,
-            borderRadius: 10,
-          }}
-        >
-          <View style={{ flexDirection: "row", gap: 15, alignItems: "center" }}>
-            <View
-              style={{
-                backgroundColor: "gray",
-                width: 60,
-                height: 60,
-                // borderRadius: "100%",
-                borderRadius: 100,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <FontAwesome6 name="user-tie" size={40} color="white" />
-            </View>
-            <View>
-              <Text style={{ fontSize: 18, marginBottom: 3 }}>
-                {user?.user?.full_name}
-              </Text>
-              <Text>
-                Last Login:{" "}
-                {new Date(user?.user?.last_login).toLocaleDateString("en-US", {
-                  month: "numeric",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </Text>
-            </View>
-          </View>
-
-          <View
-            style={{
-              borderBottomWidth: 1,
-              borderColor: "lightgray",
-              marginVertical: 10,
-            }}
-          ></View>
-
-          <CustomButton
-            Icon={MaterialCommunityIcons}
-            iconName={"account-details-outline"}
-            name={t("detail")}
-            link={"/profile-detail"}
-          />
-          <View
-            style={{
-              borderBottomWidth: 1,
-              borderColor: "lightgray",
-              marginVertical: 10,
-            }}
-          ></View>
-
-          <CustomButton
-            Icon={MaterialCommunityIcons}
-            iconName={"account-details-outline"}
-            name={t("purchase_history")}
-            link={"/purchase-history"}
-          />
-        </View>
-      )}
-
-      <View
-        style={{
-          backgroundColor: "white",
-          padding: 10,
-          borderRadius: 10,
-          marginTop: 30,
-        }}
-      >
-        <CustomButton
-          Icon={MaterialCommunityIcons}
-          iconName={"car-traction-control"}
-          name={t("track_order")}
-          link={"/track-order"}
-        />
-        <View
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "lightgray",
-            marginVertical: 10,
-          }}
-        ></View>
-        <CustomButton
-          Icon={SimpleLineIcons}
-          iconName={"question"}
-          name={t("check_item")}
-          link={"/check-item"}
-        />
-        <View
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "lightgray",
-            marginVertical: 10,
-          }}
-        ></View>
-
-        <CustomButton
-          Icon={FontAwesome5}
-          iconName={"check-circle"}
-          name={t("order_confirmation")}
-          link={"/order-confirmation"}
-        />
-      </View>
-
-      <View
-        style={{
-          backgroundColor: "white",
-          padding: 10,
-          borderRadius: 10,
-          marginTop: 30,
-        }}
-      >
-        <CustomButton
-          Icon={AntDesign}
-          iconName={"message1"}
-          name={t("about_us")}
-          link={"/about"}
-        />
-        <View
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "lightgray",
-            marginVertical: 10,
-          }}
-        ></View>
-        <CustomButton
-          Icon={AntDesign}
-          iconName={"phone"}
-          name={t("contact_us")}
-          link="/contact"
-        />
-      </View>
-      {user && (
-        <View
-          style={{
-            backgroundColor: "white",
-            padding: 10,
-            borderRadius: 10,
-            marginTop: 30,
-          }}
-        >
-          <TouchableOpacity
-            onPress={async () => {
-              await AsyncStorage.removeItem("data");
-              dispatch(logout());
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 20 }}
-              >
-                <Text
-                  style={{ fontSize: 20, marginBottom: 3, color: "#d03333" }}
-                >
-                  {t("logout")}
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <View
-            style={{
-              borderBottomWidth: 1,
-              borderColor: "lightgray",
-              marginVertical: 10,
-            }}
-          ></View>
-          <TouchableOpacity
-            onPress={async () => {
-              Alert.alert(
-                "Delete Account",
-                "Are you sure you want to delete you account",
-
-                [
-                  {
-                    text: "Cancel",
-                    onPress: () => console.log("Cancel Pressed"),
-                    style: "cancel",
-                  },
-                  {
-                    text: "OK",
-                    onPress: async () => {
-                      console.log("OK Pressed");
-                      try {
-                        setLoding(true);
-
-                        const res = await api.post("api/v1/auth/users/delete/");
-                        await AsyncStorage.removeItem("data");
-                        dispatch(logout());
-                        setLoding(false);
-                      } catch (error) {
-                        setLoding(false);
-
-                        console.log(err);
-                      }
-                    },
-                  },
-                ]
-              );
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 20 }}
-              >
-                <Text
-                  style={{ fontSize: 20, marginBottom: 3, color: "#d03333" }}
-                >
-                  {t("delete_account")}
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {!user && (
-        <TouchableOpacity
-          onPress={() => setLogin(true)}
-          style={{
-            width: "100%",
-            backgroundColor: "#393381",
-            paddingVertical: 15,
-            paddingHorizontal: 15,
-            marginTop: 50,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 20,
-              color: "white",
-              textAlign: "center",
-            }}
-          >
-            Login
-          </Text>
-        </TouchableOpacity>
-      )}
-    </View>
   );
 };
 
@@ -465,7 +158,7 @@ const Login = ({ status, setLoding, setLogin, lan, t }) => {
 
     return isvalid;
   };
-  const BASE_URL = "https://api.kelatibeauty.com";
+  const BASE_URL = "https://localhost:8000";
 
   const handleSignIn = async () => {
     const isValid = validate(form.email, form.password, "all");
@@ -501,25 +194,18 @@ const Login = ({ status, setLoding, setLogin, lan, t }) => {
 
   return (
     <View style={styles.login_con}>
-      <TouchableOpacity
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 5,
-        }}
-        onPress={() => setLogin(false)}
-      >
-        <Ionicons name="arrow-back" size={35} color={Colors.dark} />
-        <Text>Profile</Text>
-      </TouchableOpacity>
-      <Image
-        style={styles.top_image}
-        source={images.KelatiLogo}
-        resizeMode="contain"
-      />
-      <Text style={styles.login_main_text}>{t("sign_in")} </Text>
-      <Text style={{ marginTop: 10, color: "grey", fontSize: 14 }}>
+      <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <Image
+          style={styles.top_image}
+          source={images.logo}
+          resizeMode="contain"
+        />
+      </View>
+      <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <Text style={styles.login_main_text}>{t("sign_in")} </Text>
+      </View>
+
+      <Text style={{ marginTop: 10, color: "grey", fontSize: 1 }}>
         {t("sign_desc")}
       </Text>
       <Text style={{ color: "gray" }}>
@@ -566,7 +252,7 @@ const Login = ({ status, setLoding, setLogin, lan, t }) => {
           validate(form.email, e, "password");
           setForm({ ...form, password: e });
         }}
-        otherStyles={{ marginTop: 28 }}
+        otherStyles={{ marginTop: 15 }}
         keyboardType="email-address"
         placeholder={"password"}
       />
@@ -657,7 +343,7 @@ const styles = StyleSheet.create({
     height: 100,
   },
   login_main_text: {
-    fontSize: 22,
+    fontSize: 26,
     marginTop: 10,
     fontWeight: "semibold",
   },

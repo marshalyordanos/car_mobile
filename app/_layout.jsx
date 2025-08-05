@@ -1,22 +1,15 @@
-import {
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import React, { useEffect } from "react";
-import { Stack, SplashScreen, useRouter } from "expo-router";
 import { useFonts } from "expo-font";
-import { Provider, useDispatch } from "react-redux";
+import { SplashScreen, Stack, useRouter } from "expo-router";
+import React, { useEffect } from "react";
+import { StatusBar, StyleSheet } from "react-native";
+import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "../redux/store";
 import { initializeCart } from "../redux/cartReducer"; // Ensure you have this action
+import { persistor, store } from "../redux/store";
 
 import "../localization";
-import { Ionicons } from "@expo/vector-icons";
+
 import { useTranslation } from "react-i18next";
-import { confLocale } from "../localization";
 SplashScreen.preventAutoHideAsync();
 
 const RootScreen = () => {
@@ -51,42 +44,7 @@ const RootScreen = () => {
       <PersistGate loading={null} persistor={persistor}>
         <Stack>
           <Stack.Screen name="(tab)" options={{ headerShown: false }} />
-          <Stack.Screen name="(setting)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(other)" options={{ headerShown: false }} />
-          <Stack.Screen name="search" options={{ headerShown: false }} />
-
-          <Stack.Screen name="detail" options={{ headerShown: false }} />
-          <Stack.Screen name="cart" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="Checkout"
-            options={{
-              title: t("checkout_items"),
-
-              headerBackTitle: "",
-              headerShadowVisible: false,
-              headerStyle: {
-                backgroundColor: "#469E70",
-              },
-              headerTitleStyle: {
-                color: "white",
-              },
-              headerLeft: () => (
-                <TouchableOpacity
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-
-                    alignItems: "center",
-                    gap: 5,
-                  }}
-                  onPress={router.back}
-                >
-                  <Ionicons name="arrow-back" size={35} color={"white"} />
-                </TouchableOpacity>
-              ),
-            }}
-          />
         </Stack>
         <StatusBar barStyle="dark-content" />
       </PersistGate>

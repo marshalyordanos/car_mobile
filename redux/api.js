@@ -1,14 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { store } from "./store";
 import { logout } from "./authReducer";
-const BASE_URL = "https://api.kelatibeauty.com/";
+import { store } from "./store";
+const BASE_URL = "https://localhost:8000/";
 
 const api = axios.create({
-  baseURL: "https://api.kelatibeauty.com/",
+  baseURL: "https://localhost:8000/",
   // baseURL: "http://192.168.0.113:8080",
   // baseURL: "http://10.10.4.135:8080",
-  
+
   headers: {
     "Content-Type": "application/json",
   },
@@ -27,8 +27,9 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     console.log(
-      "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-    , api);
+      "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||",
+      api
+    );
     console.log(error.response.data);
     if (error.response && error.response.status === 401) {
       if (error.response.data.code == "token_not_valid") {
