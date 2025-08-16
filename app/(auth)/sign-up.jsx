@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
-  Image,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -19,7 +18,6 @@ import PhoneInput from "react-native-phone-number-input";
 import { useSelector } from "react-redux";
 import AppLoader from "../../components/AppLoader";
 import FormField from "../../components/FormField";
-import images from "../../constants/images";
 import api from "../../redux/api";
 const { height } = Dimensions.get("window");
 const minHeight = height * 0.85;
@@ -194,13 +192,13 @@ const SignUp = () => {
   return (
     <ScrollView style={{ backgroundColor: "white" }}>
       <View style={styles.login_con}>
-        <View style={{ justifyContent: "center", alignItems: "center" }}>
+        {/* <View style={{ justifyContent: "center", alignItems: "center" }}>
           <Image
             style={styles.top_image}
             source={images.logo}
             resizeMode="contain"
           />
-        </View>
+        </View> */}
         <Text style={styles.login_main_text}> {t("sign_up")} </Text>
         <Text style={{ marginTop: 10, color: "grey", fontSize: 14 }}>
           {t("sign_up_desc")}
@@ -238,15 +236,45 @@ const SignUp = () => {
             placeholder={"phone"}
           /> */}
 
-          <View style={{ marginTop: 20 }}>
-            <Text>{t("phone")}</Text>
+          <View style={{ marginTop: 0 }}>
+            <Text style={{ fontSize: 16, paddingBottom: 5 }}>{t("phone")}</Text>
             <PhoneInput
+              containerStyle={{
+                // borderWidth: 1,
+                backgroundColor: "#e7ebf0",
+                borderRadius: 8,
+                width: "100%",
+                height: 60, // reduced height
+              }}
+              textContainerStyle={{
+                backgroundColor: "#e7ebf0",
+                borderRadius: 8,
+
+                paddingVertical: 0,
+                paddingHorizontal: 0,
+                height: 58, // match container height
+              }}
+              flagButtonStyle={{
+                width: 60,
+                height: 60, // match height so it’s aligned
+              }}
+              defaultValue={value}
+              defaultCode="ET"
+              layout="first"
+              onChangeText={setValue}
+              onChangeFormattedText={setFormattedValue}
+              withDarkTheme
+              withShadow
+            />
+
+            {/* <PhoneInput
               containerStyle={{
                 borderWidth: 1,
                 margin: 0,
                 padding: 0,
                 width: "100%",
-                borderRadius: 6,
+                height: 50,
+                // borderRadius: 6,
               }}
               value={form.phone}
               defaultCode="ET"
@@ -272,7 +300,7 @@ const SignUp = () => {
               // withDarkTheme
               // withShadow
               // autoFocus
-            />
+            /> */}
           </View>
           <Text style={{ color: "red" }}>{phoneError}</Text>
 
@@ -291,7 +319,7 @@ const SignUp = () => {
 
               setForm({ ...form, email: e });
             }}
-            otherStyles={{ marginTop: 28 }}
+            otherStyles={{ marginTop: 3 }}
             keyboardType="email-address"
             placeholder={"email"}
           />
@@ -312,7 +340,7 @@ const SignUp = () => {
 
               setForm({ ...form, password: e });
             }}
-            otherStyles={{ marginTop: 28 }}
+            otherStyles={{ marginTop: 3 }}
             keyboardType="email-address"
             placeholder={"password"}
           />
@@ -333,7 +361,7 @@ const SignUp = () => {
 
               setForm({ ...form, confirmPassword: e });
             }}
-            otherStyles={{ marginTop: 28 }}
+            otherStyles={{ marginTop: 3 }}
             keyboardType="email-address"
             placeholder={"Confirm Password"}
           />
@@ -365,7 +393,7 @@ const SignUp = () => {
           </View>
           <Text style={{ color: "red" }}>{termError}</Text>
 
-          <View style={{ marginTop: 20 }}></View>
+          <View style={{ marginTop: 10 }}></View>
           {error && (
             <View
               style={{
@@ -439,7 +467,7 @@ const styles = StyleSheet.create({
   },
   login_button: {
     backgroundColor: "#393381",
-    // marginVertical: 20,
+    marginBottom: 40,
     padding: 15,
     borderRadius: 10,
 

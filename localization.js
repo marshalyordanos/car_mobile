@@ -153,7 +153,7 @@ const en = {
   phone: "Phone",
   email: "Email",
   confirm_password: "Confirm Password",
-  cart: "Cart",
+  cart: "Order",
   continue_shopping: "Continue Shopping",
   Your_cart_is_empty: "Your cart is empty",
   track_order_desc:

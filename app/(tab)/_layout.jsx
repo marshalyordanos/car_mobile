@@ -1,9 +1,9 @@
-import { Image, StyleSheet, Text, View } from "react-native";
-import React from "react";
 import { Tabs } from "expo-router";
-import Icons from "../../constants/icons";
-import { useSelector } from "react-redux";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { Image, StyleSheet, Text, View } from "react-native";
+import { useSelector } from "react-redux";
+import Icons from "../../constants/icons";
 
 const TabIcon = ({ icon, color, name, focused, badgeCount }) => {
   return (
@@ -103,7 +103,7 @@ const TabLayout = () => {
       <Tabs.Screen
         name="order"
         options={{
-          title: "Cart",
+          title: "Order",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon

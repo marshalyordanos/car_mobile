@@ -61,18 +61,18 @@ const styles = StyleSheet.create({
   txt: {
     fontSize: 16,
     lineHeight: 24,
-    // marginTop: 8,
+    marginBottom: 5,
   },
   field_con: {
     // width: "100%",
     height: 60,
     paddingHorizontal: 16,
-    backgroundColor: "whitesmoke",
-    borderWidth: 1,
+    // backgroundColor: "whitesmoke",
+    // borderWidth: 1,
     marginRight: 0,
     display: "flex",
     flexDirection: "row",
-    backgroundColor: "white",
+    backgroundColor: "#e7ebf0",
     borderRadius: 10,
     borderColor: "gray",
 
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    backgroundColor: "white",
-    borderRadius: 10,
+    backgroundColor: "#e7ebf0",
+    borderRadius: 8,
   },
 });
