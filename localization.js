@@ -5,6 +5,8 @@ import { initReactI18next } from "react-i18next";
 const am = {
   welcome: "ሰላም",
   welcome_back: "እንኳን ደህና መጡ",
+  home_mainTitle: "ወደ መኪና ኪራይ እንኳን በደህና መጡ",
+  home_subTitle: "ትክክለኛውን መኪና ያግኙ",
   hero_title1: "AfriCar",
   hero_title2: "የመዋቢያ ዕቃዎች አቅርቦት",
   hero_desc1: "ከሱቃችን ወደ በርዎ፡",
@@ -116,11 +118,22 @@ const am = {
   social_media: " ማህበራዊ ሚዲያ",
   purchase_history: "Purchase History",
   delete_account: "Delete account",
+  home_occasionsTitle: "ለማንኛውም ዝግጅት መኪና ይከራዩ",
+  home_occasionsSubtitle: "ከዕለት ተዕለት እስከ ያልተለመዱ ድረስ አስደናቂ የመኪና ምርጫዎችን ያስሱ።",
+  home_exploreButton: "መኪናዎችን ያስሱ",
+  home_airportTitle: "የአውሮፕላን ማረፊያ መውሰድ ቀላል ተደርጓል",
+  home_airportSubtitle:
+    "በአገር ውስጥ በመቶዎች በሚቆጠሩ አውሮፕላን ማረፊያዎች በአስተናጋጆች የሚቀርብ ቀላል መውሰድ።",
+  home_airportButton: "በአውሮፕላን ማረፊያዎች ውስጥ መኪናዎችን ይፈልጉ",
+  home_browseByDestination: "በመድረሻ ያስሱ",
+  home_loading: "Loading...",
 };
 
 const en = {
   welcome: "Welcome",
   welcome_back: "Welcome Back",
+  home_mainTitle: "Welcome to Car Rental",
+  home_subTitle: "Find the perfect car",
   hero_title1: "Rent Smarter. Drive Freely",
   hero_title2: "Cosmetics Supply",
   hero_desc1: "Find the perfect car for any trip ",
@@ -233,6 +246,16 @@ const en = {
   social_media: "Social medial link",
   purchase_history: "Purchase History",
   delete_account: "Delete account",
+  home_occasionsTitle: "Rent cars for any occasion",
+  home_occasionsSubtitle:
+    "Browse an incredible selection of cars, from the everyday to the extraordinary.",
+  home_exploreButton: "Explore cars",
+  home_airportTitle: "Airport pickup made easy",
+  home_airportSubtitle:
+    "Easy pickup offered by hosts at hundreds of airports across the country.",
+  home_airportButton: "Search for cars at airports",
+  home_browseByDestination: "Browse by destination",
+  home_loading: "Loading...",
 };
 
 i18n.use(initReactI18next).init({
