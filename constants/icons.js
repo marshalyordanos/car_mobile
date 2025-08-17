@@ -15,7 +15,15 @@ import upload from "../assets/icons/upload.png";
 // import cart from "../assets/icons/cart.png";
 import carLogo from "../assets/icons/car-logo.png";
 import shop from "../assets/icons/store.png";
-
+import adama from "../assets/icons/Adama.jpg";
+import addisababa from "../assets/icons/Addis-Ababa.jpg";
+import bahirdar from "../assets/icons/Bahir-Dar.jpg";
+import aksum from "../assets/icons/Aksum.jpg";
+import bishoftu from "../assets/icons/Bishoftu.jpg";
+import diredawa from "../assets/icons/Dire-Dawa.jpg";
+import gondar from "../assets/icons/Gondar.jpg";
+import harar from "../assets/icons/Harar.jpg";
+import hawassa from "../assets/icons/Hawassa.jpg";
 export default {
   play,
   bookmark,
@@ -33,4 +41,13 @@ export default {
   cart,
   shop,
   carLogo,
+  adama,
+  addisababa,
+  bahirdar,
+  aksum,
+  bishoftu,
+  diredawa,
+  gondar,
+  harar,
+  hawassa,
 };

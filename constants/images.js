@@ -19,7 +19,7 @@ import {
 import van1 from "../assets/images/van1.jpeg";
 import van2 from "../assets/images/van2.jpeg";
 import van3 from "../assets/images/van3.jpeg";
-
+import airportPickup from "../assets/images/airport-pickup.jpg";
 export default {
   profile,
   thumbnail,
@@ -40,4 +40,5 @@ export default {
   van1,
   van2,
   van3,
+  airportPickup,
 };

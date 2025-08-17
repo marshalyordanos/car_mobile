@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
@@ -13,11 +13,11 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
-import CategoryCard from "../../components/home/CategoryCard";
+import AirportSection from "../../components/home/AirportSection";
+import DestinationCard from "../../components/home/DestinationCard";
 import SearchInput from "../../components/home/SearchInput";
-import VideoCard from "../../components/home/VideoCard";
-import icons from "../../constants/icons";
 import images from "../../constants/images";
+import icons from '../../constants/icons'; 
 import { changeLanguageHandler, login } from "../../redux/authReducer";
 import { cartLocalstorage } from "../../redux/cartReducer";
 
@@ -29,49 +29,37 @@ const cars = [
   { id: 5, name: "A4", price: 40000, brand: "Audi", image: images.car1 },
   { id: 6, name: "Camry", price: 24000, brand: "Toyota", image: images.car2 },
 ];
-// import { RefreshControl } from "react-native-gesture-handler";
+
+const destinations = [
+  { id: 1, name: "Adama", icon: icons.adama },
+  { id: 2, name: "Addis Ababa", icon: icons.addisababa },
+  { id: 3, name: "Bahirdar", icon: icons.bahirdar },
+  { id: 4, name: "Aksum", icon: icons.aksum },
+  { id: 5, name: "Bishoftu", icon: icons.bishoftu },
+  { id: 6, name: "Diredawa", icon: icons.diredawa },
+  { id: 7, name: "Gondar", icon: icons.gondar },
+  { id: 8, name: "Harar", icon: icons.harar },
+  { id: 9, name: "Hawassa", icon: icons.hawassa },
+];
+
 const Home = () => {
   const insets = useSafeAreaInsets();
-
-  const [data, setData] = useState([]);
-  const [isLodding, setLodding] = useState(false);
-  const [isLoddingProduct, setLoddingProduct] = useState(false);
   const [language, setLanguage] = useState("en");
   const dispatch = useDispatch();
-  const [featured, setFeatured] = useState([]);
   const { t, i18n } = useTranslation();
+
+  
   const checkTheUser = async () => {
     const data = await AsyncStorage.getItem("data");
     dispatch(login(JSON.parse(data)));
   };
   const navigation = useNavigation();
+
+  const handleSearchPress = () => {
+    console.log("Search button pressed! Navigating to search screen...");
+  };
   const fetchData = async () => {
-    setLodding(true);
-    setLoddingProduct(true);
-    try {
-      // const res = await axios.get(
-      //   "https://localhost:8000/api/v1/products/?page=1&is_featured=true"
-      // );
-
-      setFeatured(cars);
-      setLoddingProduct(false);
-
-      // const response = await axios.get(
-      //   "https://localhost:8000/api/v1/main-categories/?page=1&pageSize=10&sort[column]=name&sort[order]=ascend&all=true"
-      // );
-      setData(cars);
-
-      setLodding(false);
-
-      // dispatch(getMainCategories(response.data));
-
-      // console.log("response22", res.data);
-    } catch (error) {
-      console.log(error); //
-      console.log(error?.message);
-      setLodding(false);
-      setLoddingProduct(false);
-    }
+   console.log("Fetching data...");
   };
   useEffect(() => {
     fetchData();
@@ -137,212 +125,79 @@ const Home = () => {
     }
   };
   return (
-    <View
-      style={{
-        backgroundColor: "#469E70",
-        height: "100%",
-      }}
-    >
       <View
         style={{
           paddingTop: insets.top,
           flex: 1,
+          backgroundColor: 'white'
         }}
       >
-        {/* <ScrollView> */}
-
-        {/* <View > */}
         <View style={{ backgroundColor: "white", flex: 1 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginRight: 15,
-              paddingBottom: 20,
-              marginTop: 10,
-            }}
-          >
-            {/* <Image
-            style={styles.top_image}
-            source={images.KelatiLogo}
-            resizeMode="contain"
-          /> */}
-            <Image
-              source={icons.carLogo}
-              resizeMode="contain"
-              tintColor={"#7f1d1d"}
-              style={styles.icon}
-            />
-            <SearchInput />
-            <View>
+          <View style={styles.staticHeaderContainer}>
+            <View style={styles.topBar}>
+              <View>
+                <Text style={styles.mainTitle}>{t('home_mainTitle')}</Text>
+                <Text style={styles.subTitle}>{t('home_subTitle')}</Text>
+              </View>
               <TouchableOpacity onPress={() => toggleLanguage(language)}>
                 <View style={styles.lang_con}>
-                  <Text
-                    style={{
-                      fontSize: 17,
-                      fontWeight: "bold",
-                      color: "white",
-                    }}
-                  >
-                    {language}
-                  </Text>
+                  <Text style={styles.lang_text}>{language}</Text>
                 </View>
               </TouchableOpacity>
             </View>
+
+            <SearchInput onPress={handleSearchPress} />
           </View>
           <FlatList
-            data={data}
             keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            // horizontal
-            style={{ height: "100%" }}
-            renderItem={({ item }) => <></>}
+            style={{ backgroundColor: "white" }}
             ListHeaderComponent={() => (
               <View
                 style={{
-                  marginVertical: 0,
-                  marginHorizontal: 15,
-                  // borderWidth: 1,
-                  height: "100%",
+                  paddingBottom: 50,
                 }}
               >
-                <View style={styles.top}>
-                  <View style={{}}>
-                    {/* <Text style={{ fontSize: 13, color: "white" }}>
-                    {t("welcome_back")}
-                  </Text> */}
-                    <Text
-                      style={{
-                        fontSize: language == "am" ? 18 : 25,
-                        color: "#5A8581",
-                        fontFamily: "Play",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {t("hero_title1")}
-                    </Text>
-                    {/* <Text
-                    style={{
-                      fontSize: language == "am" ? 18 : 22,
-                      // color: "white",
-                    }}
-                  >
-                    {t("hero_title2")}
-                  </Text> */}
-
-                    <View style={{ marginTop: 10 }}>
-                      <Text
-                        style={{
-                          fontSize: language == "am" ? 12 : 15,
-                          // color: "white",
-                        }}
-                      >
-                        {t("hero_desc1")}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: language == "am" ? 12 : 15,
-                          // color: "white",
-                        }}
-                      >
-                        {t("hero_desc2")}
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.continueShopping}
-                        onPress={() => navigation.navigate("shop")}
-                      >
-                        <Text style={styles.continueShoppingText}>
-                          {t("shop_now")}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
+                <View style={styles.occasionsContainer}>
+                  {/* Image Grid */}
+                  <View style={styles.imageGrid}>
+                    {cars.slice(0, 9).map((car) => (
+                      <Image
+                        key={car.id}
+                        source={car.image}
+                        style={styles.gridImage}
+                      />
+                    ))}
                   </View>
+                  <Text style={styles.occasionsTitle}>
+                   {t('home_occasionsTitle')}
+                  </Text>
+                  <Text style={styles.occasionsSubtitle}>
+                   {t('home_occasionsSubtitle')}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.exploreButton}
+                    onPress={() => navigation.navigate("shop")}
+                  >
+                    <Text style={styles.exploreButtonText}>{t('home_exploreButton')}</Text>
+                  </TouchableOpacity>
                 </View>
 
-                {/* ************** category ******** */}
-
-                <View style={styles.category}>
-                  <Text style={styles.category_text}>
-                    {" "}
-                    {t("featured_froducts")}
-                  </Text>
-
-                  {isLoddingProduct ? (
-                    <FlatList
-                      //   style={{ , flex: 1 }}
-                      data={[{ id: 1 }, { id: 2 }, { id: 4 }, { id: 3 }]}
-                      keyExtractor={(item) => item.id}
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      renderItem={({ item }) => (
-                        <View
-                          style={{
-                            height: 400,
-                            width: 270,
-                            // borderWidth: 1,
-                            backgroundColor: "#e8e8e8",
-                            borderRadius: 20,
-                            margin: 15,
-                            // boxShadow: {
-                            shadowColor: "#000",
-                            shadowOffset: {
-                              width: 1,
-                              height: 10,
-                            },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 20,
-                            elevation: 10,
-                            // },
-                          }}
-                        ></View>
-                      )}
-                      viewabilityConfig={{
-                        itemVisiblePercentThreshold: 70,
-                      }}
-                      contentOffset={{ x: 270 }}
-                    />
-                  ) : (
-                    <CategoryCard
-                      lan={language}
-                      isLoadding={isLoddingProduct}
-                      posts={featured ?? []}
-                    />
-                  )}
+                <View style={styles.carouselContainer}>
+                  <AirportSection  t={t}/>
                 </View>
 
-                <View>
-                  <Text style={styles.category_text}>
-                    {" "}
-                    {t("shop_by_category")}
-                  </Text>
-
-                  {isLodding ? (
-                    <View style={styles.video_card_con}>
-                      {Array(8)
-                        .fill(2)
-                        .map((d, i) => (
-                          <View
-                            style={{
-                              backgroundColor: "#e8e8e8",
-                              flexDirection: "col",
-                              marginBottom: 15,
-                              borderWidth: 1,
-                              borderColor: "#dbdbdb",
-                              width: "100%",
-                              height: 260,
-                              borderRadius: 20,
-                            }}
-                            key={i}
-                          ></View>
-                        ))}
-                    </View>
-                  ) : (
-                    <View style={styles.video_card_con}>
-                      {data.map((d) => (
-                        <VideoCard lan={language} key={d.id} data={d} />
-                      ))}
-                    </View>
-                  )}
+                <View style={styles.carouselContainer}>
+                  <Text style={styles.sectionTitle}>{t('home_browseByDestination')}</Text>
+                  <FlatList
+                    data={destinations}
+                    keyExtractor={(item) => item.id.toString()}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => (
+                      <DestinationCard destination={item} />
+                    )}
+                    contentContainerStyle={{ paddingHorizontal: 20 }}
+                  />
                 </View>
               </View>
             )}
@@ -352,85 +207,103 @@ const Home = () => {
           />
         </View>
       </View>
-    </View>
   );
 };
 
 export default Home;
 
 const styles = StyleSheet.create({
-  card: {
-    width: 160,
-    height: 120,
-    borderRadius: 15,
-    backgroundColor: "lightgray",
-    margin: 10,
-  },
-  top: {
-    // marginTop: 20,
-    // backgroundColor: "#469E70",
+  staticHeaderContainer: {
+    paddingTop: 10,
     paddingHorizontal: 20,
-    borderRadius: 15,
-    color: "white",
-    display: "flex",
+    paddingBottom: 15,
+    backgroundColor: "white",
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6", 
+  },
+  topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
-  },
-  top_image: {
-    width: 90,
-    height: 90,
-  },
-  category: {
-    width: "100%",
-    flex: 1,
-    paddingTop: 20,
-    paddingBottom: 32,
-  },
-  category_text: {
-    color: "#2c2c2c",
-    fontSize: 19,
-    marginBottom: 10,
-    fontWeight: "700",
-  },
-  video_card_con: {
-    marginTop: 0,
-    // flexDirection: "row",
-    // width: 120,
-    flexWrap: "wrap",
-    // borderWidth: 1,
-    gap: 15,
-    flex: 1,
     alignItems: "center",
-    justifyContent: "center",
+    marginBottom: 10,
+  },
+  mainTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "black",
+  },
+  subTitle: {
+    fontSize: 18,
+    color: "#4b5563",
+    marginTop: 4,
   },
   lang_con: {
-    borderWidth: 2,
-    borderColor: "#5A8581",
-    backgroundColor: "#5A8581",
-    borderRadius: 4,
-    height: 43,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    marginLeft: 10,
-  },
-  continueShopping: {
-    marginTop: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    backgroundColor: "#393381",
+    backgroundColor: "#1f2937", 
     borderRadius: 8,
+    height: 40,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 14,
   },
-  continueShoppingText: {
-    color: "#FFFFFF",
+  lang_text: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "bold",
+    color: "white",
+    textTransform: "uppercase",
   },
-  icon: {
-    width: 45,
-    height: 45,
-    marginHorizontal: 10,
+
+  occasionsContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 24, 
+    alignItems: "center",
+  },
+  imageGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 24,
+  },
+  gridImage: {
+    width: 100,
+    height: 75,
+    borderRadius: 12,
+  },
+  occasionsTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "black",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  occasionsSubtitle: {
+    fontSize: 16,
+    color: "#6b7280",
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  exploreButton: {
+    backgroundColor: "#111827",
+    paddingVertical: 16,
+    borderRadius: 30,
+    width: "100%",
+    alignItems: "center",
+  },
+  exploreButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+
+  carouselContainer: {
+    marginTop: 32, 
+  },
+  sectionTitle: {
+    color: "#111827",
+    fontSize: 22,
+    fontWeight: "bold",
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
 });
