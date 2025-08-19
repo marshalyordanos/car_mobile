@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "expo-router";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -47,13 +47,12 @@ const Home = () => {
   const [language, setLanguage] = useState("en");
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
-
+  const router = useRouter();
   
   const checkTheUser = async () => {
     const data = await AsyncStorage.getItem("data");
     dispatch(login(JSON.parse(data)));
   };
-  const navigation = useNavigation();
 
   const handleSearchPress = () => {
     console.log("Search button pressed! Navigating to search screen...");
@@ -176,7 +175,7 @@ const Home = () => {
                   </Text>
                   <TouchableOpacity
                     style={styles.exploreButton}
-                    onPress={() => navigation.navigate("shop")}
+                    onPress={() =>router.push('/shop')}
                   >
                     <Text style={styles.exploreButtonText}>{t('home_exploreButton')}</Text>
                   </TouchableOpacity>
