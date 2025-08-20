@@ -5,6 +5,7 @@ import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet
 import { useTranslation } from 'react-i18next';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PriceRangeSheet from '../../components/shop/PriceRangeSheet';
+import VehicleTypeSheet from '../../components/shop/VehicleTypeSheet';
 import CarCard from "../../components/car/CarCard";
 import FilterPills from "../../components/shop/FilterPills";
 import SearchHeader from "../../components/shop/SearchHeader";
@@ -24,11 +25,15 @@ const Shop = () => {
 
   // const { t, i18n } = useTranslation();
   const priceSheetRef = useRef(null);
-  
+  const vehicleTypeSheetRef = useRef(null); 
+
   const handlePillPress = (item) => {
     if (item === 'Price') {
       priceSheetRef.current?.present(); 
     } 
+    else if (item === 'Vehicle type') {
+          vehicleTypeSheetRef.current?.present();
+        } 
     else {
       console.log(item, "pressed");
     }
@@ -60,6 +65,7 @@ const Shop = () => {
           />
         </View>
         <PriceRangeSheet ref={priceSheetRef} />
+         <VehicleTypeSheet ref={vehicleTypeSheetRef} />
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
