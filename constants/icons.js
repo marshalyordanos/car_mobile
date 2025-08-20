@@ -24,6 +24,13 @@ import diredawa from "../assets/icons/Dire-Dawa.jpg";
 import gondar from "../assets/icons/Gondar.jpg";
 import harar from "../assets/icons/Harar.jpg";
 import hawassa from "../assets/icons/Hawassa.jpg";
+import boxtruck from "../assets/icons/boxtruck.png";
+import van from "../assets/icons/van.png";
+import car from "../assets/icons/car.png";
+import cargovan from "../assets/icons/cargovan.png";
+import minivan from "../assets/icons/minivan.png";
+import suv from "../assets/icons/suv.png";
+import truck from "../assets/icons/truck.png";
 export default {
   play,
   bookmark,
@@ -50,4 +57,11 @@ export default {
   gondar,
   harar,
   hawassa,
+  boxtruck,
+  van,
+  car,
+  cargovan,
+  minivan,
+  suv,
+  truck,
 };

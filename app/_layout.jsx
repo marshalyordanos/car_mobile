@@ -1,5 +1,6 @@
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack, useRouter } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from "react";
 import { StatusBar, StyleSheet } from "react-native";
 import { Provider } from "react-redux";
@@ -16,6 +17,7 @@ const RootScreen = () => {
   const [fontsLoaded, error] = useFonts({
     OpenSans: require("../assets/fonts/OpenSans.ttf"),
     Play: require("../assets/fonts/Playwrite.ttf"),
+    ...Ionicons.font, 
   });
   const router = useRouter();
   const { t, i18n } = useTranslation();
