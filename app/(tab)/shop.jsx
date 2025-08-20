@@ -1,8 +1,10 @@
-import { useNavigation } from "@react-navigation/native";
-import { useTranslation } from "react-i18next";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import React, { useRef } from 'react';
+import { FlatList, StyleSheet, Text, View,TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
+import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { useTranslation } from 'react-i18next';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import PriceRangeSheet from '../../components/shop/PriceRangeSheet';
 import CarCard from "../../components/car/CarCard";
 import FilterPills from "../../components/shop/FilterPills";
 import SearchHeader from "../../components/shop/SearchHeader";
@@ -17,45 +19,57 @@ const cars = [
   { id: 6, name: "Camry", price: 24000, brand: "Toyota", image: images.car2 },
 ];
 const Shop = () => {
-  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const language = useSelector((state) => state.auth.lan);
+  // const language = useSelector((state) => state.auth.lan);
 
-  const { t, i18n } = useTranslation();
+  // const { t, i18n } = useTranslation();
+  const priceSheetRef = useRef(null);
+  
+  const handlePillPress = (item) => {
+    if (item === 'Price') {
+      priceSheetRef.current?.present(); 
+    } 
+    else {
+      console.log(item, "pressed");
+    }
+  };
 
   return (
-    <View
-      style={{
-        paddingTop: insets.top,
-        flex: 1,
-        backgroundColor: "white",
-      }}
-    >
-      <SearchHeader />
-      <FilterPills />
-      <FlatList
-        data={cars}
-        keyExtractor={(item) => item.id.toString()}
-        ListHeaderComponent={() => (
-          <View style={styles.resultsContainer}>
-            <Text style={styles.resultsTitle}>200+ cars available</Text>
-            <Text style={styles.resultsSubtitle}>
-              These cars are located in and around Addis Ababa
-            </Text>
-          </View>
-        )}
-        renderItem={({ item }) => (
-          <View style={styles.cardWrapper}>
-            <CarCard car={item} onRent={() => console.log(item.name)} />
-          </View>
-        )}
-        showsVerticalScrollIndicator={false}
-      />
-    </View>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "white" }}>
+      <BottomSheetModalProvider>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
+          <SearchHeader />
+          <FilterPills onPillPress={handlePillPress}/>
+          <FlatList
+            data={cars}
+            keyExtractor={(item) => item.id.toString()}
+            ListHeaderComponent={() => (
+              <View style={styles.resultsContainer}>
+                <Text style={styles.resultsTitle}>200+ cars available</Text>
+                <Text style={styles.resultsSubtitle}>
+                  These cars are located in and around Addis Ababa
+                </Text>
+              </View>
+            )}
+            renderItem={({ item }) => (
+              <View style={styles.cardWrapper}>
+                <CarCard car={item} onRent={() => console.log(item.name)} />
+              </View>
+            )}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+        <PriceRangeSheet ref={priceSheetRef} />
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 };
 
+export default Shop;
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   resultsContainer: {
     paddingHorizontal: 20,
     marginTop: 20,
@@ -76,4 +90,3 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 });
-export default Shop;
