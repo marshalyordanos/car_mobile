@@ -1,30 +1,19 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import icons from "../../constants/icons";
-import TypeButton from "./TypeButton";
 
-const vehicleTypes = [
-  { label: "Cars", icon: icons.car },
-  { label: "SUVs", icon: icons.suv },
-  { label: "Minivans", icon: icons.minivan },
-  { label: "Trucks", icon: icons.truck },
-  { label: "Vans", icon: icons.van },
-  { label: "Cargo vans", icon: icons.cargovan },
-  { label: "Box trucks", icon: icons.boxtruck },
+const seatOptions = [
+  "All seats",
+  "4 or more",
+  "5 or more",
+  "6 or more",
+  "7 or more",
+  "8 or more",
 ];
 
-const VehicleTypeSheet = React.forwardRef((props, ref) => {
-  const snapPoints = ["55%"];
-  const [selectedTypes, setSelectedTypes] = useState([]);
-
-  const handleSelectType = (typeLabel) => {
-    if (selectedTypes.includes(typeLabel)) {
-      setSelectedTypes(selectedTypes.filter((t) => t !== typeLabel));
-    } else {
-      setSelectedTypes([...selectedTypes, typeLabel]);
-    }
-  };
+const SeatsSheet = React.forwardRef((props, ref) => {
+  const snapPoints = ["53%"];
+  const [selectedOption, setSelectedOption] = useState("All seats");
 
   return (
     <BottomSheetModal
@@ -39,22 +28,26 @@ const VehicleTypeSheet = React.forwardRef((props, ref) => {
           <TouchableOpacity onPress={() => ref.current?.close()}>
             <Text style={styles.headerButton}>X</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Vehicle type</Text>
-          <TouchableOpacity onPress={() => setSelectedTypes([])}>
+          <Text style={styles.headerTitle}>Number of seats</Text>
+          <TouchableOpacity onPress={() => setSelectedOption("All seats")}>
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.gridContainer}>
-          {vehicleTypes.map((type) => (
-            <View key={type.label} style={styles.buttonWrapper}>
-              <TypeButton
-                label={type.label}
-                icon={type.icon}
-                isSelected={selectedTypes.includes(type.label)}
-                onPress={() => handleSelectType(type.label)}
-              />
-            </View>
+        <View>
+          {seatOptions.map((option) => (
+            <TouchableOpacity
+              key={option}
+              style={styles.optionRow}
+              onPress={() => setSelectedOption(option)}
+            >
+              <View style={styles.radioCircle}>
+                {selectedOption === option && (
+                  <View style={styles.selectedRb} />
+                )}
+              </View>
+              <Text style={styles.optionText}>{option}</Text>
+            </TouchableOpacity>
           ))}
         </View>
 
@@ -69,8 +62,8 @@ const VehicleTypeSheet = React.forwardRef((props, ref) => {
   );
 });
 
-VehicleTypeSheet.displayName = "VehicleTypeSheet";
-export default VehicleTypeSheet;
+SeatsSheet.displayName = "SeatsSheet";
+export default SeatsSheet;
 
 const styles = StyleSheet.create({
   modalBackground: { backgroundColor: "white", borderRadius: 24 },
@@ -79,7 +72,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 22,
   },
   headerTitle: { fontSize: 20, fontWeight: "bold", color: "#111827" },
   headerButton: { fontSize: 16, fontWeight: "500", color: "#111827" },
@@ -88,17 +81,31 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: 16,
   },
   resultsButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
 
-  gridContainer: {
+  optionRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    marginHorizontal: -8,
+    paddingVertical: 10,
   },
-  buttonWrapper: {
-    width: "33.33%",
-    padding: 8,
+  radioCircle: {
+    height: 24,
+    width: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#d1d5db",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectedRb: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#171718ff",
+  },
+  optionText: {
+    fontSize: 15,
+    marginLeft: 16,
+    color: "#111827",
   },
 });

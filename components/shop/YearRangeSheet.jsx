@@ -3,12 +3,22 @@ import MultiSlider from "@ptomasroos/react-native-multi-slider";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const PriceRangeSheet = React.forwardRef((props, ref) => {
+const MIN_YEAR = 1952;
+const MAX_YEAR = new Date().getFullYear();
+
+const YearRangeSheet = React.forwardRef((props, ref) => {
   const snapPoints = ["35%"];
-  const [priceRange, setPriceRange] = useState([10, 500]);
+  const [yearRange, setYearRange] = useState([MIN_YEAR, MAX_YEAR]);
+
   const handleValuesChange = (values) => {
-    setPriceRange(values);
+    setYearRange(values);
   };
+
+  const rangeText =
+    yearRange[0] === MIN_YEAR && yearRange[1] === MAX_YEAR
+      ? "All years"
+      : `${yearRange[0]} - ${yearRange[1]}`;
+
   return (
     <BottomSheetModal
       ref={ref}
@@ -22,26 +32,22 @@ const PriceRangeSheet = React.forwardRef((props, ref) => {
           <TouchableOpacity onPress={() => ref.current?.close()}>
             <Text style={styles.headerButton}>X</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Price range</Text>
-          <TouchableOpacity onPress={() => setPriceRange([10, 500])}>
+          <Text style={styles.headerTitle}>Years</Text>
+          <TouchableOpacity onPress={() => setYearRange([MIN_YEAR, MAX_YEAR])}>
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.rangeText}>
-          {" "}
-          ${priceRange[0]} - ${priceRange[1]}
-          {priceRange[1] >= 500 ? "+" : ""}/day{" "}
-        </Text>
+        <Text style={styles.rangeText}>{rangeText}</Text>
 
         <View style={styles.sliderContainer}>
           <MultiSlider
-            values={[priceRange[0], priceRange[1]]}
+            values={[yearRange[0], yearRange[1]]}
             sliderLength={280}
             onValuesChange={handleValuesChange}
-            min={10}
-            max={500}
-            step={5}
+            min={MIN_YEAR}
+            max={MAX_YEAR}
+            step={1}
             allowOverlap={false}
             snapped
             minMarkerOverlapDistance={40}
@@ -59,27 +65,24 @@ const PriceRangeSheet = React.forwardRef((props, ref) => {
               backgroundColor: "#393381",
               borderWidth: 2,
               borderColor: "white",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
               elevation: 2,
             }}
           />
         </View>
+
         <TouchableOpacity
           style={styles.resultsButton}
           onPress={() => ref.current?.close()}
         >
-          <Text style={styles.resultsButtonText}>View 200+ results</Text>
+          <Text style={styles.resultsButtonText}>View results</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>
   );
 });
 
-PriceRangeSheet.displayName = "PriceRangeSheet";
-export default PriceRangeSheet;
+YearRangeSheet.displayName = "YearRangeSheet";
+export default YearRangeSheet;
 
 const styles = StyleSheet.create({
   modalBackground: {

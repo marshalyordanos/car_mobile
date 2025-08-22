@@ -1,6 +1,5 @@
-import React from "react";
+import { FontAwesome as Icon } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { FontAwesome as Icon } from '@expo/vector-icons';
 
 const CarCard = ({ car, onRent }) => {
   return (
