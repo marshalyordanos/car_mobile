@@ -1,5 +1,6 @@
+import { Ionicons as Icon } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { useRouter } from 'expo-router';
 import {
   Modal,
   StyleSheet,
@@ -8,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Ionicons as Icon } from '@expo/vector-icons';
 
 const SearchHeader = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -43,7 +43,10 @@ const SearchHeader = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Where</Text>
-            <TextInput style={styles.input} placeholder="Addis Ababa, Ethiopia" />
+            <TextInput
+              style={styles.input}
+              placeholder="Addis Ababa, Ethiopia"
+            />
 
             <Text style={styles.modalTitle}>When</Text>
             <TextInput style={styles.input} placeholder="Add dates or months" />
@@ -115,13 +118,13 @@ const styles = StyleSheet.create({
   searchModalButtonText: {
     color: "white",
     fontWeight: "bold",
-    fontSize: 16
+    fontSize: 16,
   },
-  closeButton: { 
+  closeButton: {
     marginTop: 15,
-    alignItems: "center"
+    alignItems: "center",
   },
   closeButtonText: {
-    color: "gray"
+    color: "gray",
   },
 });

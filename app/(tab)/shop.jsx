@@ -1,14 +1,17 @@
-import React, { useRef } from 'react';
-import { FlatList, StyleSheet, Text, View,TouchableOpacity } from "react-native";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { useRef, useState } from "react";
+import { FlatList, StyleSheet, Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { useTranslation } from 'react-i18next';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import PriceRangeSheet from '../../components/shop/PriceRangeSheet';
-import VehicleTypeSheet from '../../components/shop/VehicleTypeSheet';
 import CarCard from "../../components/car/CarCard";
+import DeliverySheet from "../../components/shop/DeliverySheet";
 import FilterPills from "../../components/shop/FilterPills";
+import MakeModelModal from "../../components/shop/MakeModelModal";
+import PriceRangeSheet from "../../components/shop/PriceRangeSheet";
 import SearchHeader from "../../components/shop/SearchHeader";
+import SeatsSheet from "../../components/shop/SeatsSheet";
+import VehicleTypeSheet from "../../components/shop/VehicleTypeSheet";
+import YearRangeSheet from "../../components/shop/YearRangeSheet";
 import images from "../../constants/images";
 
 const cars = [
@@ -24,17 +27,27 @@ const Shop = () => {
   // const language = useSelector((state) => state.auth.lan);
 
   // const { t, i18n } = useTranslation();
+  const [isMakeModalVisible, setMakeModalVisible] = useState(false);
   const priceSheetRef = useRef(null);
-  const vehicleTypeSheetRef = useRef(null); 
+  const vehicleTypeSheetRef = useRef(null);
+  const yearSheetRef = useRef(null);
+  const seatsSheetRef = useRef(null);
+  const deliverySheetRef = useRef(null);
 
   const handlePillPress = (item) => {
-    if (item === 'Price') {
-      priceSheetRef.current?.present(); 
-    } 
-    else if (item === 'Vehicle type') {
-          vehicleTypeSheetRef.current?.present();
-        } 
-    else {
+    if (item === "Price") {
+      priceSheetRef.current?.present();
+    } else if (item === "Vehicle type") {
+      vehicleTypeSheetRef.current?.present();
+    } else if (item === "Years") {
+      yearSheetRef.current?.present();
+    } else if (item === "Seats") {
+      seatsSheetRef.current?.present();
+    } else if (item === "Deliver to me") {
+      deliverySheetRef.current?.present();
+    } else if (item === "Make & model") {
+      setMakeModalVisible(true);
+    } else {
       console.log(item, "pressed");
     }
   };
@@ -44,7 +57,7 @@ const Shop = () => {
       <BottomSheetModalProvider>
         <View style={[styles.container, { paddingTop: insets.top }]}>
           <SearchHeader />
-          <FilterPills onPillPress={handlePillPress}/>
+          <FilterPills onPillPress={handlePillPress} />
           <FlatList
             data={cars}
             keyExtractor={(item) => item.id.toString()}
@@ -65,8 +78,15 @@ const Shop = () => {
           />
         </View>
         <PriceRangeSheet ref={priceSheetRef} />
-         <VehicleTypeSheet ref={vehicleTypeSheetRef} />
+        <VehicleTypeSheet ref={vehicleTypeSheetRef} />
+        <YearRangeSheet ref={yearSheetRef} />
+        <SeatsSheet ref={seatsSheetRef} />
+        <DeliverySheet ref={deliverySheetRef} />
       </BottomSheetModalProvider>
+      <MakeModelModal
+        isVisible={isMakeModalVisible}
+        onClose={() => setMakeModalVisible(false)}
+      />
     </GestureHandlerRootView>
   );
 };
