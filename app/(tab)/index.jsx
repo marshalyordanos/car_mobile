@@ -16,8 +16,8 @@ import { useDispatch } from "react-redux";
 import AirportSection from "../../components/home/AirportSection";
 import DestinationCard from "../../components/home/DestinationCard";
 import SearchInput from "../../components/home/SearchInput";
+import icons from "../../constants/icons";
 import images from "../../constants/images";
-import icons from '../../constants/icons'; 
 import { changeLanguageHandler, login } from "../../redux/authReducer";
 import { cartLocalstorage } from "../../redux/cartReducer";
 
@@ -48,17 +48,17 @@ const Home = () => {
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  
+
   const checkTheUser = async () => {
     const data = await AsyncStorage.getItem("data");
     dispatch(login(JSON.parse(data)));
   };
 
   const handleSearchPress = () => {
-    console.log("Search button pressed! Navigating to search screen...");
+    router.push("/LocationSearchScreen");
   };
   const fetchData = async () => {
-   console.log("Fetching data...");
+    console.log("Fetching data...");
   };
   useEffect(() => {
     fetchData();
@@ -124,88 +124,92 @@ const Home = () => {
     }
   };
   return (
-      <View
-        style={{
-          paddingTop: insets.top,
-          flex: 1,
-          backgroundColor: 'white'
-        }}
-      >
-        <View style={{ backgroundColor: "white", flex: 1 }}>
-          <View style={styles.staticHeaderContainer}>
-            <View style={styles.topBar}>
-              <View>
-                <Text style={styles.mainTitle}>{t('home_mainTitle')}</Text>
-                <Text style={styles.subTitle}>{t('home_subTitle')}</Text>
-              </View>
-              <TouchableOpacity onPress={() => toggleLanguage(language)}>
-                <View style={styles.lang_con}>
-                  <Text style={styles.lang_text}>{language}</Text>
-                </View>
-              </TouchableOpacity>
+    <View
+      style={{
+        paddingTop: insets.top,
+        flex: 1,
+        backgroundColor: "white",
+      }}
+    >
+      <View style={{ backgroundColor: "white", flex: 1 }}>
+        <View style={styles.staticHeaderContainer}>
+          <View style={styles.topBar}>
+            <View>
+              <Text style={styles.mainTitle}>{t("home_mainTitle")}</Text>
+              <Text style={styles.subTitle}>{t("home_subTitle")}</Text>
             </View>
-
-            <SearchInput onPress={handleSearchPress} />
-          </View>
-          <FlatList
-            keyExtractor={(item) => item.id}
-            style={{ backgroundColor: "white" }}
-            ListHeaderComponent={() => (
-              <View
-                style={{
-                  paddingBottom: 50,
-                }}
-              >
-                <View style={styles.occasionsContainer}>
-                  {/* Image Grid */}
-                  <View style={styles.imageGrid}>
-                    {cars.slice(0, 9).map((car) => (
-                      <Image
-                        key={car.id}
-                        source={car.image}
-                        style={styles.gridImage}
-                      />
-                    ))}
-                  </View>
-                  <Text style={styles.occasionsTitle}>
-                   {t('home_occasionsTitle')}
-                  </Text>
-                  <Text style={styles.occasionsSubtitle}>
-                   {t('home_occasionsSubtitle')}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.exploreButton}
-                    onPress={() =>router.push('/shop')}
-                  >
-                    <Text style={styles.exploreButtonText}>{t('home_exploreButton')}</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.carouselContainer}>
-                  <AirportSection  t={t}/>
-                </View>
-
-                <View style={styles.carouselContainer}>
-                  <Text style={styles.sectionTitle}>{t('home_browseByDestination')}</Text>
-                  <FlatList
-                    data={destinations}
-                    keyExtractor={(item) => item.id.toString()}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    renderItem={({ item }) => (
-                      <DestinationCard destination={item} />
-                    )}
-                    contentContainerStyle={{ paddingHorizontal: 20 }}
-                  />
-                </View>
+            <TouchableOpacity onPress={() => toggleLanguage(language)}>
+              <View style={styles.lang_con}>
+                <Text style={styles.lang_text}>{language}</Text>
               </View>
-            )}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onReferesh} />
-            }
-          />
+            </TouchableOpacity>
+          </View>
+
+          <SearchInput onPress={handleSearchPress} />
         </View>
+        <FlatList
+          keyExtractor={(item) => item.id}
+          style={{ backgroundColor: "white" }}
+          ListHeaderComponent={() => (
+            <View
+              style={{
+                paddingBottom: 50,
+              }}
+            >
+              <View style={styles.occasionsContainer}>
+                {/* Image Grid */}
+                <View style={styles.imageGrid}>
+                  {cars.slice(0, 9).map((car) => (
+                    <Image
+                      key={car.id}
+                      source={car.image}
+                      style={styles.gridImage}
+                    />
+                  ))}
+                </View>
+                <Text style={styles.occasionsTitle}>
+                  {t("home_occasionsTitle")}
+                </Text>
+                <Text style={styles.occasionsSubtitle}>
+                  {t("home_occasionsSubtitle")}
+                </Text>
+                <TouchableOpacity
+                  style={styles.exploreButton}
+                  onPress={() => router.push("/shop")}
+                >
+                  <Text style={styles.exploreButtonText}>
+                    {t("home_exploreButton")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.carouselContainer}>
+                <AirportSection t={t} onPress={() => router.push("/shop")} />
+              </View>
+
+              <View style={styles.carouselContainer}>
+                <Text style={styles.sectionTitle}>
+                  {t("home_browseByDestination")}
+                </Text>
+                <FlatList
+                  data={destinations}
+                  keyExtractor={(item) => item.id.toString()}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  renderItem={({ item }) => (
+                    <DestinationCard destination={item} />
+                  )}
+                  contentContainerStyle={{ paddingHorizontal: 20 }}
+                />
+              </View>
+            </View>
+          )}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onReferesh} />
+          }
+        />
       </View>
+    </View>
   );
 };
 
@@ -218,7 +222,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     backgroundColor: "white",
     borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6", 
+    borderBottomColor: "#f3f4f6",
   },
   topBar: {
     flexDirection: "row",
@@ -237,7 +241,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   lang_con: {
-    backgroundColor: "#1f2937", 
+    backgroundColor: "#1f2937",
     borderRadius: 8,
     height: 40,
     justifyContent: "center",
@@ -253,7 +257,7 @@ const styles = StyleSheet.create({
 
   occasionsContainer: {
     paddingHorizontal: 20,
-    paddingTop: 24, 
+    paddingTop: 24,
     alignItems: "center",
   },
   imageGrid: {
@@ -296,7 +300,7 @@ const styles = StyleSheet.create({
   },
 
   carouselContainer: {
-    marginTop: 32, 
+    marginTop: 32,
   },
   sectionTitle: {
     color: "#111827",
