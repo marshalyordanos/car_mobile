@@ -1,6 +1,6 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -12,7 +12,15 @@ import {
 
 const SearchHeader = () => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [location, setLocation] = useState("Addis Ababa, Ethiopia");
   const router = useRouter();
+  const params = useLocalSearchParams();
+
+  useEffect(() => {
+    if (params.selectedLocation) {
+      setLocation(params.selectedLocation);
+    }
+  }, [params.selectedLocation]);
   const handleGoBack = () => {
     if (router.canGoBack()) {
       router.back();
@@ -29,7 +37,7 @@ const SearchHeader = () => {
           style={styles.searchButton}
           onPress={() => setModalVisible(true)}
         >
-          <Text style={styles.searchText}>Addis Ababa, Ethiopia</Text>
+          <Text style={styles.searchText}>{location}</Text>
           <Text style={styles.subText}>Add dates • Age: 25</Text>
         </TouchableOpacity>
       </View>
@@ -43,10 +51,13 @@ const SearchHeader = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Where</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Addis Ababa, Ethiopia"
-            />
+            <TouchableOpacity
+              onPress={() => {
+                router.push(`/LocationSearchScreen`);
+              }}
+            >
+              <Text style={styles.input}>{location}</Text>
+            </TouchableOpacity>
 
             <Text style={styles.modalTitle}>When</Text>
             <TextInput style={styles.input} placeholder="Add dates or months" />
@@ -96,7 +107,7 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "white",
     padding: 20,
-    paddingTop: 60,
+    paddingTop: 30,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
