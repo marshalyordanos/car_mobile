@@ -4,6 +4,7 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CarCard from "../../components/car/CarCard";
+import AllFiltersModal from "../../components/shop/AllFiltersModal";
 import DeliverySheet from "../../components/shop/DeliverySheet";
 import FilterPills from "../../components/shop/FilterPills";
 import MakeModelModal from "../../components/shop/MakeModelModal";
@@ -28,6 +29,7 @@ const Shop = () => {
 
   // const { t, i18n } = useTranslation();
   const [isMakeModalVisible, setMakeModalVisible] = useState(false);
+  const [isAllFiltersVisible, setAllFiltersVisible] = useState(false);
   const priceSheetRef = useRef(null);
   const vehicleTypeSheetRef = useRef(null);
   const yearSheetRef = useRef(null);
@@ -47,6 +49,8 @@ const Shop = () => {
       deliverySheetRef.current?.present();
     } else if (item === "Make & model") {
       setMakeModalVisible(true);
+    } else if (item === "All filters") {
+      setAllFiltersVisible(true);
     } else {
       console.log(item, "pressed");
     }
@@ -86,6 +90,10 @@ const Shop = () => {
       <MakeModelModal
         isVisible={isMakeModalVisible}
         onClose={() => setMakeModalVisible(false)}
+      />
+      <AllFiltersModal
+        isVisible={isAllFiltersVisible}
+        onClose={() => setAllFiltersVisible(false)}
       />
     </GestureHandlerRootView>
   );

@@ -15,7 +15,7 @@ const vehicleTypes = [
 ];
 
 const VehicleTypeSheet = React.forwardRef((props, ref) => {
-  const snapPoints = ["55%"];
+  const snapPoints = ["67%"];
   const [selectedTypes, setSelectedTypes] = useState([]);
 
   const handleSelectType = (typeLabel) => {
@@ -53,6 +53,7 @@ const VehicleTypeSheet = React.forwardRef((props, ref) => {
                 icon={type.icon}
                 isSelected={selectedTypes.includes(type.label)}
                 onPress={() => handleSelectType(type.label)}
+                iconSize={40}
               />
             </View>
           ))}

@@ -108,7 +108,7 @@ export default LocationSearchScreen;
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "white" },
-  container: { flex: 1, marginTop: 10 },
+  container: { flex: 1, marginTop: 20 },
   header: {
     flexDirection: "row",
     alignItems: "center",

@@ -1,16 +1,47 @@
 import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 
-const TypeButton = ({ icon, label, isSelected, onPress }) => {
+import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
+
+const iconComponents = {
+  Ionicons,
+  FontAwesome,
+  MaterialIcons,
+};
+
+const TypeButton = ({
+  icon,
+  iconName,
+  iconSet,
+  iconSize = 32,
+  label,
+  isSelected,
+  onPress,
+}) => {
+  const IconComponent = iconComponents[iconSet] || Ionicons;
   return (
     <TouchableOpacity
       style={[styles.container, isSelected && styles.selectedContainer]}
       onPress={onPress}
     >
-      <Image
-        source={icon}
-        style={[styles.icon, isSelected && styles.selectedIcon]}
-        resizeMode="contain"
-      />
+      {icon && (
+        <Image
+          source={icon}
+          style={[
+            styles.iconImage,
+            { width: iconSize, height: iconSize },
+            isSelected && styles.selectedIconImage,
+          ]}
+          resizeMode="contain"
+        />
+      )}
+      {iconName && (
+        <IconComponent
+          name={iconName}
+          size={iconSize}
+          color={isSelected ? "#111827" : "#6b7280"}
+        />
+      )}
+
       <Text style={[styles.label, isSelected && styles.selectedLabel]}>
         {label}
       </Text>
@@ -22,7 +53,7 @@ export default TypeButton;
 
 const styles = StyleSheet.create({
   container: {
-    height: 60,
+    height: 90,
     backgroundColor: "white",
     borderRadius: 12,
     borderWidth: 1,
@@ -35,10 +66,7 @@ const styles = StyleSheet.create({
     borderColor: "#111827",
     borderWidth: 2,
   },
-  icon: {
-    width: 25,
-    height: 25,
-  },
+  selectedIconImage: {},
   label: {
     marginTop: 6,
     fontSize: 12,
