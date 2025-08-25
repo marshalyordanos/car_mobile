@@ -12,7 +12,7 @@ const seatOptions = [
 ];
 
 const SeatsSheet = React.forwardRef((props, ref) => {
-  const snapPoints = ["53%"];
+  const snapPoints = ["59%"];
   const [selectedOption, setSelectedOption] = useState("All seats");
 
   return (

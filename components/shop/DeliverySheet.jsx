@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 const DeliverySheet = React.forwardRef((props, ref) => {
-  const snapPoints = ["37%"];
+  const snapPoints = ["43%"];
   const [address, setAddress] = useState("");
 
   const handleReset = () => {
@@ -38,7 +38,8 @@ const DeliverySheet = React.forwardRef((props, ref) => {
 
         <Text style={styles.sectionTitle}>Host brings the car to me</Text>
         <Text style={styles.sectionSubtitle}>
-          Show cars that can be delivered directly to an address
+          Show cars that can be delivered directly to an address or specific
+          location.
         </Text>
 
         <View style={styles.inputContainer}>

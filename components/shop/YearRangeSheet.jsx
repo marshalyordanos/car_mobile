@@ -43,7 +43,7 @@ const YearRangeSheet = React.forwardRef((props, ref) => {
         <View style={styles.sliderContainer}>
           <MultiSlider
             values={[yearRange[0], yearRange[1]]}
-            sliderLength={280}
+            sliderLength={300}
             onValuesChange={handleValuesChange}
             min={MIN_YEAR}
             max={MAX_YEAR}
@@ -52,18 +52,18 @@ const YearRangeSheet = React.forwardRef((props, ref) => {
             snapped
             minMarkerOverlapDistance={40}
             trackStyle={{
-              height: 4,
+              height: 3,
               backgroundColor: "#e5e7eb",
             }}
             selectedStyle={{
-              backgroundColor: "#393381",
+              backgroundColor: "#111827",
             }}
             markerStyle={{
               height: 24,
               width: 24,
               borderRadius: 12,
-              backgroundColor: "#393381",
-              borderWidth: 2,
+              backgroundColor: "#111827",
+              borderWidth: 1,
               borderColor: "white",
               elevation: 2,
             }}
