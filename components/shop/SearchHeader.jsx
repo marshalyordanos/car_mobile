@@ -9,10 +9,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AgePickerModal from "./AgePickerModal";
 
 const SearchHeader = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [location, setLocation] = useState("Addis Ababa, Ethiopia");
+  const [driverAge, setDriverAge] = useState("25");
+  const [isAgePickerVisible, setAgePickerVisible] = useState(false);
   const router = useRouter();
   const params = useLocalSearchParams();
 
@@ -27,19 +30,27 @@ const SearchHeader = () => {
     }
   };
 
+  const handleSelectAge = (age) => {
+    setDriverAge(age);
+    setAgePickerVisible(false);
+  };
+
   return (
     <>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack}>
-          <Icon name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={styles.searchText}>{location}</Text>
-          <Text style={styles.subText}>Add dates • Age: 25</Text>
-        </TouchableOpacity>
+        <View style={styles.searchBarContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+            <Icon name="arrow-back" size={24} color="#111827" />
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity
+            style={styles.textContainer}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.searchText}>{location}</Text>
+            <Text style={styles.subText}>Add dates • Age: 25</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <Modal
@@ -63,7 +74,13 @@ const SearchHeader = () => {
             <TextInput style={styles.input} placeholder="Add dates or months" />
 
             <Text style={styles.modalTitle}>Driver Age</Text>
-            <TextInput style={styles.input} placeholder="25" />
+            <TouchableOpacity
+              style={styles.inputButton}
+              onPress={() => setAgePickerVisible(true)}
+            >
+              <Text style={styles.inputText}>{driverAge}</Text>
+              <Icon name="chevron-down-outline" size={20} color="#6b7280" />
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.searchModalButton}
@@ -81,6 +98,12 @@ const SearchHeader = () => {
           </View>
         </View>
       </Modal>
+      <AgePickerModal
+        isVisible={isAgePickerVisible}
+        onClose={() => setAgePickerVisible(false)}
+        onSelectAge={handleSelectAge}
+        currentAge={driverAge}
+      />
     </>
   );
 };
@@ -89,16 +112,40 @@ export default SearchHeader;
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#f3f4f6",
   },
-  searchButton: { flex: 1, marginLeft: 15, backgroundColor: "#f3f4f6" },
-  searchText: { fontSize: 16, fontWeight: "bold" },
-  subText: { fontSize: 12, color: "gray" },
+  searchBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f3f4f6",
+    borderRadius: 30,
+    height: 60,
+  },
+  backButton: {
+    paddingHorizontal: 16,
+  },
+  divider: {
+    width: 1,
+    height: "100%",
+    backgroundColor: "#d1d5db",
+  },
+  textContainer: {
+    flex: 1,
+    paddingHorizontal: 12,
+  },
+  searchText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#111827",
+  },
+  subText: {
+    fontSize: 12,
+    color: "gray",
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "flex-start",
@@ -118,6 +165,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     paddingVertical: 8,
     marginTop: 5,
+  },
+  inputButton: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+    paddingVertical: 8,
+    marginTop: 5,
+  },
+  inputText: {
+    fontSize: 18,
   },
   searchModalButton: {
     backgroundColor: "#111827",

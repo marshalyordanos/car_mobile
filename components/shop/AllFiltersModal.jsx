@@ -80,6 +80,7 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
 
   const handleReset = () => {
     setPriceRange([10, 500]);
+    setAddress("");
     setYearRange([1952, new Date().getFullYear()]);
     setEcoFriendly([]);
     setSelectedFeatures([]);
