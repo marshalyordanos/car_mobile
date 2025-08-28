@@ -3,13 +3,13 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const locationSuggestions = [
   {
@@ -40,6 +40,7 @@ const locationSuggestions = [
 ];
 
 const LocationSearchScreen = () => {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [searchText, setSearchText] = useState("");
 
@@ -74,46 +75,44 @@ const LocationSearchScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.inputContainer}>
-            <Icon name="search-outline" size={20} color="#75787cff" />
-            <TextInput
-              style={styles.input}
-              placeholder="City, airport, address, or train station"
-              placeholderTextColor="#75787cff"
-              value={searchText}
-              onChangeText={setSearchText}
-              autoFocus={true}
-            />
-          </View>
-          <TouchableOpacity onPress={handleCancel}>
-            <Text style={styles.cancelButton}>Cancel</Text>
-          </TouchableOpacity>
+    <View style={{ flex: 1, backgroundColor: "white", paddingTop: insets.top }}>
+      <View style={styles.header}>
+        <View style={styles.inputContainer}>
+          <Icon name="search-outline" size={20} color="#75787cff" />
+          <TextInput
+            style={styles.input}
+            placeholder="City, airport, address, or train station"
+            placeholderTextColor="#75787cff"
+            value={searchText}
+            onChangeText={setSearchText}
+            autoFocus={true}
+          />
         </View>
-
-        <FlatList
-          data={locationSuggestions}
-          keyExtractor={(item, index) => `${item.label}-${index}`}
-          renderItem={renderItem}
-        />
-        <Text style={styles.footerText}>Powered by Google</Text>
+        <TouchableOpacity onPress={handleCancel}>
+          <Text style={styles.cancelButton}>Cancel</Text>
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+
+      <FlatList
+        data={locationSuggestions}
+        keyExtractor={(item, index) => `${item.label}-${index}`}
+        renderItem={renderItem}
+      />
+      <Text style={styles.footerText}>Powered by Google</Text>
+    </View>
   );
 };
 
 export default LocationSearchScreen;
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "white" },
-  container: { flex: 1, marginTop: 15 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomColor: "#f3f4f6",
   },
   inputContainer: {
