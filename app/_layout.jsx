@@ -54,6 +54,10 @@ const RootScreen = () => {
               presentation: "modal",
             }}
           />
+          <Stack.Screen
+            name="DatePickerScreen"
+            options={{ headerShown: false }}
+          />
         </Stack>
         <StatusBar barStyle="dark-content" />
       </PersistGate>

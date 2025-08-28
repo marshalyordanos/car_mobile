@@ -1,14 +1,7 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Modal,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import AgePickerModal from "./AgePickerModal";
 
 const SearchHeader = () => {
@@ -71,7 +64,11 @@ const SearchHeader = () => {
             </TouchableOpacity>
 
             <Text style={styles.modalTitle}>When</Text>
-            <TextInput style={styles.input} placeholder="Add dates or months" />
+            <TouchableOpacity onPress={() => router.push("/DatePickerScreen")}>
+              <View style={styles.input}>
+                <Text style={styles.inputText}>Add dates or months</Text>
+              </View>
+            </TouchableOpacity>
 
             <Text style={styles.modalTitle}>Driver Age</Text>
             <TouchableOpacity
@@ -165,6 +162,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     paddingVertical: 8,
     marginTop: 5,
+    color: "#9ca3af",
   },
   inputButton: {
     flexDirection: "row",
@@ -177,6 +175,7 @@ const styles = StyleSheet.create({
   },
   inputText: {
     fontSize: 18,
+    color: "#9ca3af",
   },
   searchModalButton: {
     backgroundColor: "#111827",
