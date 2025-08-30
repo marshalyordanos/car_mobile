@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import MonthsView from "../components/date/MonthsView";
 
 const DatePickerScreen = () => {
   const insets = useSafeAreaInsets();
@@ -20,6 +21,8 @@ const DatePickerScreen = () => {
   const [endDate, setEndDate] = useState(null);
   const [pickupTime, setPickupTime] = useState(null);
   const [returnTime, setReturnTime] = useState(null);
+  const [selectedMonths, setSelectedMonths] = useState(3);
+  const monthOptions = Array.from({ length: 11 }, (_, i) => i + 1);
 
   const formatDate = (dateString, timeString) => {
     if (!dateString) return null;
@@ -38,6 +41,11 @@ const DatePickerScreen = () => {
     setEndDate(null);
     setPickupTime(null);
     setReturnTime(null);
+  };
+
+  const handleSearch = () => {
+    console.log("Searching...");
+    router.back();
   };
 
   const onDayPress = (day) => {
@@ -133,107 +141,133 @@ const DatePickerScreen = () => {
         <View style={{ width: 24 }} />
       </View>
 
-      <View style={styles.dateHeader}>
-        <Text
-          style={
-            startDate ? styles.dateHeaderText : styles.dateHeaderPlaceholder
-          }
-        >
-          {formatDate(startDate, pickupTime) || "Start date"}
-        </Text>
-        <Icon name="arrow-forward" size={22} color="#9ca3af" />
-        <Text
-          style={endDate ? styles.dateHeaderText : styles.dateHeaderPlaceholder}
-        >
-          {formatDate(endDate, returnTime) || "End date"}
-        </Text>
-      </View>
-
-      <Calendar
-        markingType={"period"}
-        markedDates={selectedDates}
-        onDayPress={onDayPress}
-        heme={{
-          backgroundColor: "white",
-          calendarBackground: "white",
-          textSectionTitleColor: "#111827",
-          dayHeaderTextColor: "#111827",
-          dayTextColor: "#111827",
-          todayTextColor: "#111827",
-          selectedDayTextColor: "white",
-          monthTextColor: "#111827",
-          arrowColor: "#111827",
-          "stylesheet.calendar.header": {
-            week: {
-              marginTop: 10,
-              flexDirection: "row",
-              justifyContent: "space-between",
-            },
-          },
-        }}
-      />
-      <View style={styles.divider} />
-      <View style={styles.footer}>
-        <Text style={styles.timeLabel}>PICKUP</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {timeSlots.map((time) => (
-            <TouchableOpacity
-              key={`p-${time}`}
-              style={[
-                styles.timeSlot,
-                pickupTime === time && styles.activeTimeSlot,
-              ]}
-              onPress={() => setPickupTime(time)}
+      {activeTab === "Dates" && (
+        <>
+          <View style={styles.dateHeader}>
+            <Text
+              style={
+                startDate ? styles.dateHeaderText : styles.dateHeaderPlaceholder
+              }
             >
-              <Text
-                style={[
-                  styles.timeText,
-                  pickupTime === time && styles.activeTimeText,
-                ]}
-              >
-                {time}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-        <Text style={styles.timeLabel}>RETURN</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {timeSlots.map((time) => (
-            <TouchableOpacity
-              key={`r-${time}`}
-              style={[
-                styles.timeSlot,
-                returnTime === time && styles.activeTimeSlot,
-              ]}
-              onPress={() => setReturnTime(time)}
+              {formatDate(startDate, pickupTime) || "Start date"}
+            </Text>
+            <Icon name="arrow-forward" size={22} color="#9ca3af" />
+            <Text
+              style={
+                endDate ? styles.dateHeaderText : styles.dateHeaderPlaceholder
+              }
             >
-              <Text
-                style={[
-                  styles.timeText,
-                  returnTime === time && styles.activeTimeText,
-                ]}
-              >
-                {time}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+              {formatDate(endDate, returnTime) || "End date"}
+            </Text>
+          </View>
 
-        <View style={styles.footerActions}>
-          <TouchableOpacity onPress={handleReset}>
-            <Text style={styles.resetButton}>Reset</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.searchButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.searchButtonText}>Search</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          <Calendar
+            markingType={"period"}
+            markedDates={selectedDates}
+            onDayPress={onDayPress}
+            theme={{
+              backgroundColor: "white",
+              calendarBackground: "white",
+              textDayFontSize: 16,
+              textMonthFontSize: 20,
+              textDayHeaderFontSize: 14,
+              textMonthFontWeight: "bold",
+              textDayHeaderFontWeight: "bold",
+              textSectionTitleColor: "#111827",
+              dayHeaderTextColor: "#111827",
+              dayTextColor: "#111827",
+              todayTextColor: "#111827",
+              selectedDayTextColor: "white",
+              monthTextColor: "#111827",
+              arrowColor: "#111827",
+              "stylesheet.calendar.header": {
+                week: {
+                  marginTop: 10,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                },
+              },
+            }}
+          />
+        </>
+      )}
+
+      {activeTab === "Months" && (
+        <MonthsView
+          selectedMonths={selectedMonths}
+          onMonthChange={setSelectedMonths}
+          monthOptions={monthOptions}
+          onReset={() => setSelectedMonths(3)}
+          onSearch={handleSearch}
+        />
+      )}
+      {activeTab === "Dates" && (
+        <>
+          <View style={styles.divider} />
+          <View style={styles.footer}>
+            <Text style={styles.timeLabel}>PICKUP</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {timeSlots.map((time) => (
+                <TouchableOpacity
+                  key={`p-${time}`}
+                  style={[
+                    styles.timeSlot,
+                    pickupTime === time && styles.activeTimeSlot,
+                  ]}
+                  onPress={() => setPickupTime(time)}
+                >
+                  <Text
+                    style={[
+                      styles.timeText,
+                      pickupTime === time && styles.activeTimeText,
+                    ]}
+                  >
+                    {time}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <Text style={styles.timeLabel}>RETURN</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {timeSlots.map((time) => (
+                <TouchableOpacity
+                  key={`r-${time}`}
+                  style={[
+                    styles.timeSlot,
+                    returnTime === time && styles.activeTimeSlot,
+                  ]}
+                  onPress={() => setReturnTime(time)}
+                >
+                  <Text
+                    style={[
+                      styles.timeText,
+                      returnTime === time && styles.activeTimeText,
+                    ]}
+                  >
+                    {time}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <View style={styles.footerActions}>
+              <TouchableOpacity onPress={handleReset}>
+                <Text style={styles.resetButton}>Reset</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.searchButton}
+                onPress={() => router.back()}
+              >
+                <Text style={styles.searchButtonText}>Search</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </>
+      )}
     </View>
   );
 };
+
 export default DatePickerScreen;
 
 const styles = StyleSheet.create({

@@ -2,7 +2,7 @@ import { Ionicons as Icon } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import AgePickerModal from "./AgePickerModal";
+import AgePickerModal from "./modals/AgePickerModal";
 
 const SearchHeader = () => {
   const [modalVisible, setModalVisible] = useState(false);
