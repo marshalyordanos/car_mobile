@@ -11,10 +11,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import icons from "../../constants/icons";
-import FilterRow from "./FilterRow";
-import FilterToggle from "./FilterToggle";
-import TypeButton from "./TypeButton";
+import icons from "../../../constants/icons";
+import TypeButton from "../shared/ui/TypeButton";
+import FilterRow from "../ui/FilterRow";
+import FilterToggle from "../ui/FilterToggle";
 
 const vehicleTypes = [
   { label: "Cars", icon: icons.car },

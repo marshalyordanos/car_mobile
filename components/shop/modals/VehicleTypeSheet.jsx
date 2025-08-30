@@ -1,8 +1,8 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import icons from "../../constants/icons";
-import TypeButton from "./TypeButton";
+import icons from "../../../constants/icons";
+import TypeButton from "../shared/ui/TypeButton";
 
 const vehicleTypes = [
   { label: "Cars", icon: icons.car },

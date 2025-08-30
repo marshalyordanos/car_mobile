@@ -4,15 +4,15 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CarCard from "../../components/car/CarCard";
-import AllFiltersModal from "../../components/shop/AllFiltersModal";
-import DeliverySheet from "../../components/shop/DeliverySheet";
-import FilterPills from "../../components/shop/FilterPills";
-import MakeModelModal from "../../components/shop/MakeModelModal";
-import PriceRangeSheet from "../../components/shop/PriceRangeSheet";
+import AllFiltersModal from "../../components/shop/modals/AllFiltersModal";
+import DeliverySheet from "../../components/shop/modals/DeliverySheet";
+import MakeModelModal from "../../components/shop/modals/MakeModelModal";
+import PriceRangeSheet from "../../components/shop/modals/PriceRangeSheet";
+import SeatsSheet from "../../components/shop/modals/SeatsSheet";
+import VehicleTypeSheet from "../../components/shop/modals/VehicleTypeSheet";
+import YearRangeSheet from "../../components/shop/modals/YearRangeSheet";
 import SearchHeader from "../../components/shop/SearchHeader";
-import SeatsSheet from "../../components/shop/SeatsSheet";
-import VehicleTypeSheet from "../../components/shop/VehicleTypeSheet";
-import YearRangeSheet from "../../components/shop/YearRangeSheet";
+import FilterPills from "../../components/shop/ui/FilterPills";
 import images from "../../constants/images";
 
 const cars = [
