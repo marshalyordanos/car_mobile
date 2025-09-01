@@ -1,8 +1,15 @@
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { useRef, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
 import CarCard from "../../components/car/CarCard";
 import AllFiltersModal from "../../components/shop/modals/AllFiltersModal";
 import DeliverySheet from "../../components/shop/modals/DeliverySheet";
@@ -13,18 +20,21 @@ import VehicleTypeSheet from "../../components/shop/modals/VehicleTypeSheet";
 import YearRangeSheet from "../../components/shop/modals/YearRangeSheet";
 import SearchHeader from "../../components/shop/SearchHeader";
 import FilterPills from "../../components/shop/ui/FilterPills";
-import images from "../../constants/images";
+import { fetchCars } from "../../redux/carsSlice";
 
-const cars = [
-  { id: 1, name: "Model S", price: 79999, brand: "Tesla", image: images.car1 },
-  { id: 2, name: "Civic", price: 22000, brand: "Honda", image: images.car2 },
-  { id: 3, name: "Mustang", price: 35000, brand: "Ford", image: images.car3 },
-  { id: 4, name: "Corolla", price: 19000, brand: "Toyota", image: images.van1 },
-  { id: 5, name: "A4", price: 40000, brand: "Audi", image: images.car1 },
-  { id: 6, name: "Camry", price: 24000, brand: "Toyota", image: images.car2 },
-];
 const Shop = () => {
   const insets = useSafeAreaInsets();
+  const dispatch = useDispatch();
+  const {
+    items: carList,
+    status,
+    totalCars,
+  } = useSelector((state) => state.cars);
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchCars());
+    }
+  }, [status, dispatch]);
   // const language = useSelector((state) => state.auth.lan);
 
   // const { t, i18n } = useTranslation();
@@ -37,6 +47,7 @@ const Shop = () => {
   const deliverySheetRef = useRef(null);
 
   const handlePillPress = (item) => {
+    console.log("Pill pressed:", item);
     if (item === "Price") {
       priceSheetRef.current?.present();
     } else if (item === "Vehicle type") {
@@ -62,24 +73,38 @@ const Shop = () => {
         <View style={[styles.container, { paddingTop: insets.top }]}>
           <SearchHeader />
           <FilterPills onPillPress={handlePillPress} />
-          <FlatList
-            data={cars}
-            keyExtractor={(item) => item.id.toString()}
-            ListHeaderComponent={() => (
-              <View style={styles.resultsContainer}>
-                <Text style={styles.resultsTitle}>200+ cars available</Text>
-                <Text style={styles.resultsSubtitle}>
-                  These cars are located in and around Addis Ababa
-                </Text>
-              </View>
-            )}
-            renderItem={({ item }) => (
-              <View style={styles.cardWrapper}>
-                <CarCard car={item} onRent={() => console.log(item.name)} />
-              </View>
-            )}
-            showsVerticalScrollIndicator={false}
-          />
+
+          {status === "loading" && (
+            <ActivityIndicator size="large" style={{ marginTop: 50 }} />
+          )}
+
+          {status === "failed" && (
+            <Text style={styles.errorText}>
+              Error loading cars. Please try again.
+            </Text>
+          )}
+          {status === "succeeded" && (
+            <FlatList
+              data={carList}
+              keyExtractor={(item) => item.id.toString()}
+              ListHeaderComponent={() => (
+                <View style={styles.resultsContainer}>
+                  <Text style={styles.resultsTitle}>
+                    {totalCars} cars available
+                  </Text>
+                  <Text style={styles.resultsSubtitle}>
+                    These cars are located in and around Addis Ababa
+                  </Text>
+                </View>
+              )}
+              renderItem={({ item }) => (
+                <View style={styles.cardWrapper}>
+                  <CarCard car={item} onRent={() => console.log(item.name)} />
+                </View>
+              )}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
         </View>
         <PriceRangeSheet ref={priceSheetRef} />
         <VehicleTypeSheet ref={vehicleTypeSheetRef} />
@@ -122,5 +147,11 @@ const styles = StyleSheet.create({
   cardWrapper: {
     paddingHorizontal: 20,
     marginBottom: 20,
+  },
+  errorText: {
+    textAlign: "center",
+    marginTop: 50,
+    fontSize: 16,
+    color: "red",
   },
 });

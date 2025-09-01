@@ -1,34 +1,50 @@
-import { FontAwesome as Icon } from "@expo/vector-icons";
+import { Ionicons as Icon } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { addFavorite, removeFavorite } from "../../redux/favoritesSlice";
 
-const CarCard = ({ car, onRent }) => {
+const CarCard = ({ car }) => {
+  const dispatch = useDispatch();
+  const favoriteCarIds = useSelector((state) => state.favorites.ids);
+  const isFavorited = favoriteCarIds.includes(car?.id);
+  const toggleFavorite = () => {
+    if (!car?.id) return;
+    if (isFavorited) {
+      dispatch(removeFavorite(car.id));
+    } else {
+      dispatch(addFavorite(car.id));
+    }
+  };
+  const carName = car.name || `${car.make} ${car.model}`;
+  const carBrand = car.brand?.name || car.make || "N/A";
+  const price = car.price || car.daily_rate || 0;
+  const imageUrl = car.images && car.images.length > 0 ? car.images[0] : null;
   return (
     <View style={styles.card}>
-      <Image source={car.image} style={styles.image} resizeMode="contain" />
+      <Image
+        source={
+          imageUrl
+            ? { uri: imageUrl }
+            : require("../../assets/images/car1.jpeg")
+        }
+        style={styles.image}
+        resizeMode="cover"
+      />
+
+      <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
+        <Icon
+          name={isFavorited ? "heart" : "heart-outline"}
+          size={24}
+          color={isFavorited ? "#111827" : "white"}
+        />
+      </TouchableOpacity>
 
       <View style={styles.info}>
-        <View>
-          <Text style={styles.name}>{car.name}</Text>
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingBottom: 10,
-          }}
-        >
-          <View>
-            <Text style={styles.brand}>{car.brand}</Text>
-
-            <Text style={styles.price}>{car.price.toLocaleString()} ETB</Text>
-          </View>
-          <TouchableOpacity style={styles.button} onPress={() => onRent(car)}>
-            {/* <Text style={styles.buttonText}>Rent</Text> */}
-            {/* <Image /> */}
-            <Icon name="shopping-cart" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.name} numberOfLines={1}>
+          {carName}
+        </Text>
+        <Text style={styles.brand}>{carBrand}</Text>
+        <Text style={styles.price}>{price.toLocaleString()} ETB / day</Text>
       </View>
     </View>
   );
@@ -38,63 +54,47 @@ export default CarCard;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "white",
     borderRadius: 16,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-    marginVertical: 10,
-
-    // marginHorizontal: 16,
-    // padding: 16,
+    elevation: 5,
+    marginBottom: 20,
   },
   image: {
     width: "100%",
-    height: 160,
-    borderRadius: 12,
-    backgroundColor: "#f4f4f4",
-    objectFit: "cover",
-    borderBottomWidth: 1,
-    borderTopWidth: 1,
-    borderBottomColor: "lightgray",
+    height: 190,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  favoriteButton: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    padding: 6,
+    borderRadius: 20,
   },
   info: {
-    paddingHorizontal: 8,
-    marginTop: 6,
-    // flexDirection: "row",
-    // justifyContent: "space-between",
+    paddingHorizontal: 16,
   },
   name: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#1e1e1e",
+    fontWeight: "bold",
+    color: "#111827",
   },
   brand: {
     fontSize: 14,
-    color: "#777",
-    marginVertical: 4,
+    color: "#6b7280",
+    marginTop: 4,
   },
   price: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#2ecc71",
-  },
-  button: {
-    marginTop: 12,
-    backgroundColor: "#393381",
-    paddingVertical: 10,
-    // borderRadius: 10,
-    // alignItems: "center",
-    paddingHorizontal: 10,
-    alignContent: "center",
-    justifyContent: "center",
-    borderRadius: 50,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+    marginTop: 8,
+    marginBottom: 16,
   },
 });
