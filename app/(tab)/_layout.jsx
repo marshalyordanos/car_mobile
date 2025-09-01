@@ -1,36 +1,18 @@
+import { Ionicons as Icon } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import React from "react";
 import { useTranslation } from "react-i18next";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useSelector } from "react-redux";
-import Icons from "../../constants/icons";
 
-const TabIcon = ({ icon, color, name, focused, badgeCount }) => {
+const TabIcon = ({ iconName, color, name, focused }) => {
   return (
-    <View style={styles.tab_con}>
-      <View style={styles.iconContainer}>
-        <Image
-          source={icon}
-          resizeMode="contain"
-          tintColor={color}
-          style={styles.icon}
-        />
-        {badgeCount > 0 && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{badgeCount}</Text>
-          </View>
-        )}
-      </View>
-      <Text
-        style={{
-          fontFamily: focused ? "Play" : "OpenSans",
-          fontSize: 10,
-          color: color,
-          marginTop: 4,
-        }}
-      >
-        {name}
-      </Text>
+    <View style={styles.tabContainer}>
+      <Icon
+        name={focused ? iconName : `${iconName}-outline`}
+        size={22}
+        color={color}
+      />
+      <Text style={[{ color }, styles.tabLabel]}>{name}</Text>
     </View>
   );
 };
@@ -43,12 +25,14 @@ const TabLayout = () => {
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
-        tabBarActiveTintColor: "#393381",
-        tabBarInactiveTintColor: "#5A8581",
+        tabBarActiveTintColor: "#111827",
+        tabBarInactiveTintColor: "#6b7280",
         tabBarStyle: {
+          backgroundColor: "white",
           borderTopWidth: 1,
-          borderTopColor: "#e0e0e0",
-          height: 84,
+          borderTopColor: "#f3f4f6",
+          paddingBottom: 5,
+          height: 60,
         },
       }}
     >
@@ -59,9 +43,9 @@ const TabLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              icon={Icons.home}
+              iconName="home"
               color={color}
-              name={t("home")}
+              name={"Home"}
               focused={focused}
             />
           ),
@@ -75,9 +59,9 @@ const TabLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              icon={Icons.shop}
+              iconName="search"
               color={color}
-              name={t("shop")}
+              name={"Search"}
               focused={focused}
             />
           ),
@@ -85,33 +69,16 @@ const TabLayout = () => {
       />
 
       <Tabs.Screen
-        name="brand"
+        name="favorites"
         options={{
-          title: "Brand",
+          title: "Favorites",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              icon={Icons.play}
+              iconName="heart"
               color={color}
-              name={t("brand")}
+              name={"Favorites"}
               focused={focused}
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="order"
-        options={{
-          title: "Order",
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              icon={Icons.cart}
-              color={color}
-              name={t("cart")}
-              focused={focused}
-              badgeCount={totalQuantity}
             />
           ),
         }}
@@ -124,9 +91,24 @@ const TabLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              icon={Icons.profile}
+              iconName="person"
               color={color}
-              name={t("profile")}
+              name={"Profile"}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="brand"
+        options={{
+          title: "Brand",
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              iconName="play-circle"
+              color={color}
+              name={"Brand"}
               focused={focused}
             />
           ),
@@ -139,38 +121,12 @@ const TabLayout = () => {
 export default TabLayout;
 
 const styles = StyleSheet.create({
-  tab_con: {
-    display: "flex",
-    flex: 1,
-    justifyContent: "center",
+  tabContainer: {
     alignItems: "center",
+    gap: 2,
   },
-  iconContainer: {
-    position: "relative",
-    width: 24,
-    height: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  icon: {
-    width: 20,
-    height: 20,
-  },
-  badge: {
-    position: "absolute",
-    right: -6,
-    top: -13,
-    backgroundColor: "red",
-    borderRadius: 9,
-    minWidth: 18,
-    height: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 2,
-  },
-  badgeText: {
-    color: "white",
+  tabLabel: {
     fontSize: 10,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
 });

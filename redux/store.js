@@ -1,15 +1,17 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer } from 'redux-persist';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { persistReducer, persistStore } from "redux-persist";
 import authReducer from "./authReducer";
-import categoryReducer from "./categoryReducer";
+import carsReducer from "./carsSlice";
 import cartReducer, { cartMiddleware } from "./cartReducer";
+import categoryReducer from "./categoryReducer";
+import favoritesReducer from "./favoritesSlice";
 
 // Configuration for redux-persist
 const persistConfig = {
-  key: 'root',
+  key: "root",
   storage: AsyncStorage,
-  whitelist: ['cart'], // only cart will be persisted
+  whitelist: ["cart"], // only cart will be persisted
 };
 
 // Create persisted reducers
@@ -20,16 +22,15 @@ export const store = configureStore({
     auth: authReducer,
     main_category: categoryReducer,
     cart: persistedCartReducer,
+    cars: carsReducer,
+    favorites: favoritesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST'],
+        ignoredActions: ["persist/PERSIST"],
       },
     }).concat(cartMiddleware),
 });
-
-
-
 
 export const persistor = persistStore(store);
