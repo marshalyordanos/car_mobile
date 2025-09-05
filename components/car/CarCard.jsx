@@ -34,7 +34,7 @@ const CarCard = ({ car }) => {
       <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
         <Icon
           name={isFavorited ? "heart" : "heart-outline"}
-          size={24}
+          size={20}
           color={isFavorited ? "#111827" : "white"}
         />
       </TouchableOpacity>
@@ -73,9 +73,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 12,
     right: 12,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    backgroundColor: "#acb0b9ff",
     padding: 6,
-    borderRadius: 20,
+    borderRadius: 10,
   },
   info: {
     paddingHorizontal: 16,
