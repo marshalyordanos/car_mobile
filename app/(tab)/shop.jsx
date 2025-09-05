@@ -30,11 +30,28 @@ const Shop = () => {
     status,
     totalCars,
   } = useSelector((state) => state.cars);
+  const activeFilters = useSelector((state) => state.filters);
   useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchCars());
-    }
-  }, [status, dispatch]);
+    const apiFilters = {
+      minPrice:
+        activeFilters.price.min === 10 ? undefined : activeFilters.price.min,
+      maxPrice:
+        activeFilters.price.max === 500 ? undefined : activeFilters.price.max,
+      vehicle_type:
+        activeFilters.vehicleTypes.length > 0
+          ? activeFilters.vehicleTypes.join(",")
+          : undefined,
+      model: activeFilters.model,
+    };
+
+    dispatch(fetchCars(apiFilters));
+  }, [activeFilters, dispatch]);
+
+  // useEffect(() => {
+  //   if (status === "idle") {
+  //     dispatch(fetchCars());
+  //   }
+  // }, [status, dispatch]);
   // const language = useSelector((state) => state.auth.lan);
 
   // const { t, i18n } = useTranslation();

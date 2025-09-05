@@ -1,9 +1,10 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import React, { useState } from "react";
+import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import icons from "../../../constants/icons";
+import { setVehicleTypesFilter } from "../../../redux/filtersSlice";
 import TypeButton from "../shared/ui/TypeButton";
-
 const vehicleTypes = [
   { label: "Cars", icon: icons.car },
   { label: "SUVs", icon: icons.suv },
@@ -16,14 +17,20 @@ const vehicleTypes = [
 
 const VehicleTypeSheet = React.forwardRef((props, ref) => {
   const snapPoints = ["67%"];
-  const [selectedTypes, setSelectedTypes] = useState([]);
-
+  const dispatch = useDispatch();
+  const selectedTypes = useSelector((state) => state.filters.vehicleTypes);
   const handleSelectType = (typeLabel) => {
+    let newSelection;
     if (selectedTypes.includes(typeLabel)) {
-      setSelectedTypes(selectedTypes.filter((t) => t !== typeLabel));
+      newSelection = selectedTypes.filter((t) => t !== typeLabel);
     } else {
-      setSelectedTypes([...selectedTypes, typeLabel]);
+      newSelection = [...selectedTypes, typeLabel];
     }
+    dispatch(setVehicleTypesFilter(newSelection));
+  };
+
+  const handleReset = () => {
+    dispatch(setVehicleTypesFilter([]));
   };
 
   return (
@@ -40,7 +47,7 @@ const VehicleTypeSheet = React.forwardRef((props, ref) => {
             <Text style={styles.headerButton}>X</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Vehicle type</Text>
-          <TouchableOpacity onPress={() => setSelectedTypes([])}>
+          <TouchableOpacity onPress={handleReset}>
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>

@@ -5,12 +5,13 @@ import authReducer from "./authReducer";
 import carsReducer from "./carsSlice";
 import categoryReducer from "./categoryReducer";
 import favoritesReducer from "./favoritesSlice";
-
+import filtersReducer from "./filtersSlice";
 const rootReducer = combineReducers({
   auth: authReducer,
   main_category: categoryReducer,
   cars: carsReducer,
   favorites: favoritesReducer,
+  filters: filtersReducer,
 });
 const persistConfig = {
   key: "root",
