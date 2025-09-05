@@ -1,7 +1,8 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import React, { useState } from "react";
+import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
+import { useDispatch, useSelector } from "react-redux";
+import { setSeatsFilter } from "../../../redux/filtersSlice";
 const seatOptions = [
   "All seats",
   "4 or more",
@@ -13,7 +14,16 @@ const seatOptions = [
 
 const SeatsSheet = React.forwardRef((props, ref) => {
   const snapPoints = ["59%"];
-  const [selectedOption, setSelectedOption] = useState("All seats");
+  const dispatch = useDispatch();
+  const selectedOption = useSelector((state) => state.filters.seats);
+  const handleSelectOption = (option) => {
+    dispatch(setSeatsFilter(option));
+    ref.current?.close();
+  };
+
+  const handleReset = () => {
+    dispatch(setSeatsFilter("All seats"));
+  };
 
   return (
     <BottomSheetModal
@@ -29,7 +39,7 @@ const SeatsSheet = React.forwardRef((props, ref) => {
             <Text style={styles.headerButton}>X</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Number of seats</Text>
-          <TouchableOpacity onPress={() => setSelectedOption("All seats")}>
+          <TouchableOpacity onPress={handleReset}>
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>
@@ -39,7 +49,7 @@ const SeatsSheet = React.forwardRef((props, ref) => {
             <TouchableOpacity
               key={option}
               style={styles.optionRow}
-              onPress={() => setSelectedOption(option)}
+              onPress={() => handleSelectOption(option)}
             >
               <View style={styles.radioCircle}>
                 {selectedOption === option && (
@@ -55,7 +65,7 @@ const SeatsSheet = React.forwardRef((props, ref) => {
           style={styles.resultsButton}
           onPress={() => ref.current?.close()}
         >
-          <Text style={styles.resultsButtonText}>View results</Text>
+          <Text style={styles.resultsButtonText}>View 200+ results</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>

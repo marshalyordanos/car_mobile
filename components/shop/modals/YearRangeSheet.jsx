@@ -1,23 +1,38 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
+import { useDispatch, useSelector } from "react-redux";
+import { setYearFilter } from "../../../redux/filtersSlice";
 const MIN_YEAR = 1952;
 const MAX_YEAR = new Date().getFullYear();
 
 const YearRangeSheet = React.forwardRef((props, ref) => {
   const snapPoints = ["35%"];
-  const [yearRange, setYearRange] = useState([MIN_YEAR, MAX_YEAR]);
+  const dispatch = useDispatch();
+  const globalYears = useSelector((state) => state.filters.years);
+  const [localYearRange, setLocalYearRange] = useState([
+    globalYears.min,
+    globalYears.max,
+  ]);
 
-  const handleValuesChange = (values) => {
-    setYearRange(values);
+  useEffect(() => {
+    setLocalYearRange([globalYears.min, globalYears.max]);
+  }, [globalYears]);
+  const handleViewResults = () => {
+    dispatch(setYearFilter({ min: localYearRange[0], max: localYearRange[1] }));
+    ref.current?.close();
+  };
+
+  const handleReset = () => {
+    setLocalYearRange([MIN_YEAR, MAX_YEAR]);
+    dispatch(setYearFilter({ min: MIN_YEAR, max: MAX_YEAR }));
   };
 
   const rangeText =
-    yearRange[0] === MIN_YEAR && yearRange[1] === MAX_YEAR
+    localYearRange[0] === MIN_YEAR && localYearRange[1] === MAX_YEAR
       ? "All years"
-      : `${yearRange[0]} - ${yearRange[1]}`;
+      : `${localYearRange[0]} - ${localYearRange[1]}`;
 
   return (
     <BottomSheetModal
@@ -33,7 +48,7 @@ const YearRangeSheet = React.forwardRef((props, ref) => {
             <Text style={styles.headerButton}>X</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Years</Text>
-          <TouchableOpacity onPress={() => setYearRange([MIN_YEAR, MAX_YEAR])}>
+          <TouchableOpacity onPress={handleReset}>
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>
@@ -42,9 +57,9 @@ const YearRangeSheet = React.forwardRef((props, ref) => {
 
         <View style={styles.sliderContainer}>
           <MultiSlider
-            values={[yearRange[0], yearRange[1]]}
+            values={localYearRange}
             sliderLength={300}
-            onValuesChange={handleValuesChange}
+            onValuesChange={setLocalYearRange}
             min={MIN_YEAR}
             max={MAX_YEAR}
             step={1}
@@ -72,9 +87,9 @@ const YearRangeSheet = React.forwardRef((props, ref) => {
 
         <TouchableOpacity
           style={styles.resultsButton}
-          onPress={() => ref.current?.close()}
+          onPress={handleViewResults}
         >
-          <Text style={styles.resultsButtonText}>View results</Text>
+          <Text style={styles.resultsButtonText}>View 200+ results</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>

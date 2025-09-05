@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 import images from "../constants/images";
 const cars_mock = [
   { id: 1, name: "Model S", price: 79999, brand: "Tesla", image: images.car1 },
@@ -11,23 +12,23 @@ const cars_mock = [
 export const fetchCars = createAsyncThunk(
   "cars/fetchCars",
   async (filters, { rejectWithValue }) => {
-    console.log(" mock car data ");
-    return {
-      success: true,
-      page: 1,
-      totalPages: 1,
-      totalCars: 6,
-      data: cars_mock,
-    };
-    // try {
-    //   const response = await axios.get(
-    //     "https://car-rental-back-hzzg.onrender.com/api/v1/cars",
-    //     { params: filters }
-    //   );
-    //   return response.data;
-    // } catch (error) {
-    //   return rejectWithValue(error.response.data);
-    // }
+    // console.log(" mock car data ");
+    // return {
+    //   success: true,
+    //   page: 1,
+    //   totalPages: 1,
+    //   totalCars: 6,
+    //   data: cars_mock,
+    // };
+    try {
+      const response = await axios.get(
+        "https://car-rental-back-hzzg.onrender.com/api/v1/cars",
+        { params: filters }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
   }
 );
 

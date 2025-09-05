@@ -1,4 +1,5 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
+import { useMemo } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -6,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
+import { useSelector } from "react-redux";
 const filterOptions = [
   "ICON_ONLY_FILTER",
   "Price",
@@ -20,6 +21,102 @@ const filterOptions = [
 ];
 
 const FilterPills = ({ onPillPress }) => {
+  const filters = useSelector((state) => state.filters);
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.price.min !== 10 || filters.price.max !== 500) count++;
+    if (filters.vehicleTypes.length > 0) count++;
+    if (
+      filters.years.min !== 1952 ||
+      filters.years.max !== new Date().getFullYear()
+    )
+      count++;
+    if (filters.seats !== "All seats") count++;
+    return count;
+  }, [filters]);
+
+  const getPriceLabel = () => {
+    const { min, max } = filters.price;
+    if (min === 10 && max === 500) {
+      return "Price";
+    }
+    return `$${min} - $${max}${max >= 500 ? "+" : ""}`;
+  };
+  const isPriceActive = () => {
+    return filters.price.min !== 10 || filters.price.max !== 500;
+  };
+
+  const getVehicleTypeLabel = () => {
+    const count = filters.vehicleTypes.length;
+    if (count === 0) return "Vehicle type";
+    if (count === 1) return filters.vehicleTypes[0];
+    return `Vehicle type (${count})`;
+  };
+  const isVehicleTypeActive = () => filters.vehicleTypes.length > 0;
+
+  const renderItem = ({ item }) => {
+    let isActive = false;
+    let label = item;
+
+    switch (item) {
+      case "Price":
+        label = getPriceLabel();
+        isActive = isPriceActive();
+        break;
+      case "Vehicle type":
+        label = getVehicleTypeLabel();
+        isActive = isVehicleTypeActive();
+        break;
+      // we will add more cases here for the other filters
+    }
+
+    const showBadge = activeFilterCount > 0;
+
+    if (item === "ICON_ONLY_FILTER") {
+      return (
+        <TouchableOpacity
+          style={styles.iconOnlyPill}
+          onPress={() => onPillPress("All filters")}
+        >
+          <Icon name="options-outline" size={20} color="#111827" />
+          {showBadge && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{activeFilterCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.pill, isActive && styles.activePill]}
+        onPress={() => onPillPress(item)}
+      >
+        {/* {item === "All filters" && (
+          <Icon name="options-outline" size={16} color="#111827" />
+        )} */}
+
+        <Text style={[styles.pillText, isActive && styles.activePillText]}>
+          {label}
+        </Text>
+        {item === "All filters" ? (
+          showBadge && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{activeFilterCount}</Text>
+            </View>
+          )
+        ) : (
+          <Icon
+            name="chevron-down-outline"
+            size={16}
+            color={isActive ? "white" : "#6b7280"}
+          />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -27,32 +124,7 @@ const FilterPills = ({ onPillPress }) => {
         keyExtractor={(item) => item}
         horizontal
         showsHorizontalScrollIndicator={false}
-        renderItem={({ item }) => {
-          if (item === "ICON_ONLY_FILTER") {
-            return (
-              <TouchableOpacity
-                style={styles.iconOnlyPill}
-                onPress={() => onPillPress("All filters")}
-              >
-                <Icon name="options-outline" size={20} color="#111827" />
-              </TouchableOpacity>
-            );
-          }
-          return (
-            <TouchableOpacity
-              style={styles.pill}
-              onPress={() => onPillPress(item)}
-            >
-              {item === "All filters" && (
-                <Icon name="options-outline" size={16} color="#111827" />
-              )}
-              <Text style={styles.pillText}>{item}</Text>
-              {item !== "All filters" && (
-                <Icon name="chevron-down-outline" size={16} color="#6b7280" />
-              )}
-            </TouchableOpacity>
-          );
-        }}
+        renderItem={renderItem}
         contentContainerStyle={{ paddingRight: 20 }}
       />
     </View>
@@ -69,12 +141,29 @@ const styles = StyleSheet.create({
     borderBottomColor: "#f3f4f6",
   },
   iconOnlyPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     padding: 10,
     borderRadius: 15,
     marginRight: 9,
     borderWidth: 1,
     borderColor: "#d1d5db",
     backgroundColor: "#f3f4f6",
+  },
+  badge: {
+    backgroundColor: "#393381",
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 6,
+  },
+  badgeText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
   },
   pill: {
     flexDirection: "row",
@@ -88,9 +177,17 @@ const styles = StyleSheet.create({
     borderColor: "#d1d5db",
     gap: 6,
   },
+  activePill: {
+    backgroundColor: "#111827",
+    borderColor: "#111827",
+  },
   pillText: {
     fontSize: 14,
     fontWeight: "500",
     color: "#111827",
+  },
+  activePillText: {
+    color: "white",
+    fontWeight: "600",
   },
 });

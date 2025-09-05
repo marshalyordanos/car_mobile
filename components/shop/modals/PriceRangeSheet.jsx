@@ -1,13 +1,33 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { setPriceFilter } from "../../../redux/filtersSlice";
 
 const PriceRangeSheet = React.forwardRef((props, ref) => {
   const snapPoints = ["35%"];
-  const [priceRange, setPriceRange] = useState([10, 500]);
-  const handleValuesChange = (values) => {
-    setPriceRange(values);
+  const dispatch = useDispatch();
+  const globalPrice = useSelector((state) => state.filters.price);
+  const [localPriceRange, setLocalPriceRange] = useState([
+    globalPrice.min,
+    globalPrice.max,
+  ]);
+
+  useEffect(() => {
+    setLocalPriceRange([globalPrice.min, globalPrice.max]);
+  }, [globalPrice]);
+
+  const handleViewResults = () => {
+    dispatch(
+      setPriceFilter({ min: localPriceRange[0], max: localPriceRange[1] })
+    );
+    ref.current?.close();
+  };
+  const handleReset = () => {
+    const defaultPrice = { min: 10, max: 500 };
+    setLocalPriceRange([defaultPrice.min, defaultPrice.max]);
+    dispatch(setPriceFilter(defaultPrice));
   };
   return (
     <BottomSheetModal
@@ -23,22 +43,21 @@ const PriceRangeSheet = React.forwardRef((props, ref) => {
             <Text style={styles.headerButton}>X</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Price range</Text>
-          <TouchableOpacity onPress={() => setPriceRange([10, 500])}>
+          <TouchableOpacity onPress={handleReset}>
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>
 
         <Text style={styles.rangeText}>
-          {" "}
-          ${priceRange[0]} - ${priceRange[1]}
-          {priceRange[1] >= 500 ? "+" : ""}/day{" "}
+          ${localPriceRange[0]} - ${localPriceRange[1]}
+          {localPriceRange[1] >= 500 ? "+" : ""}/day
         </Text>
 
         <View style={styles.sliderContainer}>
           <MultiSlider
-            values={[priceRange[0], priceRange[1]]}
+            values={localPriceRange}
             sliderLength={300}
-            onValuesChange={handleValuesChange}
+            onValuesChange={setLocalPriceRange}
             min={10}
             max={500}
             step={5}
@@ -69,7 +88,7 @@ const PriceRangeSheet = React.forwardRef((props, ref) => {
         </View>
         <TouchableOpacity
           style={styles.resultsButton}
-          onPress={() => ref.current?.close()}
+          onPress={handleViewResults}
         >
           <Text style={styles.resultsButtonText}>View 200+ results</Text>
         </TouchableOpacity>
