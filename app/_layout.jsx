@@ -5,7 +5,6 @@ import React, { useEffect } from "react";
 import { StatusBar, StyleSheet } from "react-native";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { initializeCart } from "../redux/cartReducer"; // Ensure you have this action
 import { persistor, store } from "../redux/store";
 
 import "../localization";
@@ -27,17 +26,6 @@ const RootScreen = () => {
     if (error) throw error;
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded, error]);
-
-  useEffect(() => {
-    // This will log the state on every update
-    initializeCart();
-
-    // console.log('Store updated:', store.getState());
-  }, [store]);
-
-  useEffect(() => {
-    initializeCart();
-  }, []);
 
   if (!fontsLoaded && !error) return null;
 

@@ -2,15 +2,16 @@ import { Ionicons as Icon } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import CarCard from "../../components/car/CarCard";
 const Favorites = () => {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const allCars = useSelector((state) => state.cars.items);
   const favoriteCarIds = useSelector((state) => state.favorites.ids);
@@ -19,50 +20,44 @@ const Favorites = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Favorites</Text>
-        </View>
-
-        {favoritedCars.length > 0 ? (
-          <FlatList
-            data={favoritedCars}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={styles.cardWrapper}>
-                <CarCard car={item} />
-              </View>
-            )}
-            contentContainerStyle={styles.listContainer}
-          />
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Icon name="heart-outline" size={80} color="#d1d5db" />
-            <Text style={styles.emptyTitle}>No Favorites Yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Tap the heart icon on any car to save it here.
-            </Text>
-            <TouchableOpacity
-              style={styles.browseButton}
-              onPress={() => router.push("/shop")}
-            >
-              <Text style={styles.browseButtonText}>Browse Cars</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Favorites</Text>
       </View>
-    </SafeAreaView>
+
+      {favoritedCars.length > 0 ? (
+        <FlatList
+          data={favoritedCars}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.cardWrapper}>
+              <CarCard car={item} />
+            </View>
+          )}
+          contentContainerStyle={styles.listContainer}
+        />
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Icon name="heart-outline" size={80} color="#d1d5db" />
+          <Text style={styles.emptyTitle}>No Favorites Yet</Text>
+          <Text style={styles.emptySubtitle}>
+            Tap the heart icon on any car to save it here.
+          </Text>
+          <TouchableOpacity
+            style={styles.browseButton}
+            onPress={() => router.push("/shop")}
+          >
+            <Text style={styles.browseButtonText}>Browse Cars</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
   );
 };
 
 export default Favorites;
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "white",
-  },
   container: {
     flex: 1,
   },

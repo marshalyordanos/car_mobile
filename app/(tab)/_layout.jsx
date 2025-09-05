@@ -2,7 +2,6 @@ import { Ionicons as Icon } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
-import { useSelector } from "react-redux";
 
 const TabIcon = ({ iconName, color, name, focused }) => {
   return (
@@ -18,7 +17,6 @@ const TabIcon = ({ iconName, color, name, focused }) => {
 };
 
 const TabLayout = () => {
-  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
   const { t, i18n } = useTranslation();
 
   return (

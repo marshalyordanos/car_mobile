@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
@@ -19,8 +19,6 @@ import SearchInput from "../../components/home/SearchInput";
 import icons from "../../constants/icons";
 import images from "../../constants/images";
 import { changeLanguageHandler, login } from "../../redux/authReducer";
-import { cartLocalstorage } from "../../redux/cartReducer";
-
 const cars = [
   { id: 1, name: "Model S", price: 79999, brand: "Tesla", image: images.car1 },
   { id: 2, name: "Civic", price: 22000, brand: "Honda", image: images.car2 },
@@ -49,54 +47,33 @@ const Home = () => {
   const { t, i18n } = useTranslation();
   const router = useRouter();
 
-  const checkTheUser = async () => {
-    const data = await AsyncStorage.getItem("data");
-    dispatch(login(JSON.parse(data)));
-  };
-
   const handleSearchPress = () => {
     router.push("/LocationSearchScreen");
   };
-  const fetchData = async () => {
-    console.log("Fetching data...");
-  };
-  useEffect(() => {
-    fetchData();
-  }, []);
 
-  useEffect(() => {
-    checkTheUser();
+  const fetchData = useCallback(async () => {
+    console.log("Fetching data...");
   }, []);
-  const getLanguage = async () => {
+  const checkTheUser = useCallback(async () => {
+    const data = await AsyncStorage.getItem("data");
+    if (data) {
+      dispatch(login(JSON.parse(data)));
+    }
+  }, [dispatch]);
+
+  const getLanguage = useCallback(async () => {
     const lan = await AsyncStorage.getItem("locale");
-    console.log("******: ", lan);
-    console.log("Language: ", lan);
     if (lan) {
       dispatch(changeLanguageHandler(lan));
       setLanguage(lan);
     }
-  };
-  const getCart = async () => {
-    const items = await AsyncStorage.getItem("items");
-    const totalQuantity = await AsyncStorage.getItem("totalQuantity");
-    const totalamount = await AsyncStorage.getItem("totalAmount");
-    console.log("total1122", totalQuantity, totalamount);
-    // await AsyncStorage.removeItem("items");
-    // await AsyncStorage.removeItem("totalQuantity");
-    // await AsyncStorage.removeItem("totalAmount");
+  }, [dispatch, setLanguage]);
 
-    dispatch(
-      cartLocalstorage({
-        items: items ? JSON.parse(items) : [],
-        totalQuantity: totalQuantity * 1 ? totalQuantity : 0,
-        totalAmount: totalamount ? totalamount * 1 : 0,
-      })
-    );
-  };
   useEffect(() => {
+    fetchData();
+    checkTheUser();
     getLanguage();
-    getCart();
-  }, []);
+  }, [fetchData, checkTheUser, getLanguage]);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -108,14 +85,14 @@ const Home = () => {
 
   const toggleLanguage = async (lan) => {
     console.log("=====");
-    if (lan == "en") {
+    if (lan === "en") {
       i18n.changeLanguage("am");
       setLanguage("am");
       dispatch(changeLanguageHandler("am"));
 
       await AsyncStorage.setItem("locale", "am");
     }
-    if (lan == "am") {
+    if (lan === "am") {
       i18n.changeLanguage("en");
       setLanguage("en");
       dispatch(changeLanguageHandler("en"));
