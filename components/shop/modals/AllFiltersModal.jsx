@@ -1,6 +1,6 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import {
   Modal,
   SafeAreaView,
@@ -345,7 +345,7 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
     </Modal>
   );
 };
-export default AllFiltersModal;
+export default memo(AllFiltersModal);
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "white" },

@@ -1,36 +1,78 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { memo, useEffect } from "react";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import icons from "../../../constants/icons";
 import { setVehicleTypesFilter } from "../../../redux/filtersSlice";
+import { fetchVehicleTypes } from "../../../redux/vehicleOptionsSlice";
 import TypeButton from "../shared/ui/TypeButton";
-const vehicleTypes = [
-  { label: "Cars", icon: icons.car },
-  { label: "SUVs", icon: icons.suv },
-  { label: "Minivans", icon: icons.minivan },
-  { label: "Trucks", icon: icons.truck },
-  { label: "Vans", icon: icons.van },
-  { label: "Cargo vans", icon: icons.cargovan },
-  { label: "Box trucks", icon: icons.boxtruck },
-];
+
+const iconMap = {
+  Cars: icons.car,
+  SUVs: icons.suv,
+  Minivans: icons.minivan,
+  Trucks: icons.truck,
+  Vans: icons.van,
+  "Cargo vans": icons.cargovan,
+  "Box trucks": icons.boxtruck,
+};
 
 const VehicleTypeSheet = React.forwardRef((props, ref) => {
   const snapPoints = ["67%"];
   const dispatch = useDispatch();
+  const { items: availableTypes, status } = useSelector(
+    (state) => state.filterOptions.vehicleTypes
+  );
   const selectedTypes = useSelector((state) => state.filters.vehicleTypes);
-  const handleSelectType = (typeLabel) => {
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchVehicleTypes());
+    }
+  }, [status, dispatch]);
+
+  const handleSelectType = (typeId) => {
     let newSelection;
-    if (selectedTypes.includes(typeLabel)) {
-      newSelection = selectedTypes.filter((t) => t !== typeLabel);
+    if (selectedTypes.includes(typeId)) {
+      newSelection = selectedTypes.filter((id) => id !== typeId);
     } else {
-      newSelection = [...selectedTypes, typeLabel];
+      newSelection = [...selectedTypes, typeId];
     }
     dispatch(setVehicleTypesFilter(newSelection));
   };
 
   const handleReset = () => {
     dispatch(setVehicleTypesFilter([]));
+  };
+
+  const renderContent = () => {
+    if (status === "loading") {
+      return <ActivityIndicator size="large" />;
+    }
+    if (status === "failed") {
+      return <Text>Error loading vehicle types.</Text>;
+    }
+    return (
+      <View style={styles.gridContainer}>
+        {availableTypes.map((type) => (
+          <View key={type._id} style={styles.buttonWrapper}>
+            <TypeButton
+              label={type.name}
+              icon={iconMap[type.name] || icons.car}
+              isSelected={selectedTypes.includes(type._id)}
+              onPress={() => handleSelectType(type._id)}
+              iconSize={40}
+            />
+          </View>
+        ))}
+      </View>
+    );
   };
 
   return (
@@ -51,21 +93,7 @@ const VehicleTypeSheet = React.forwardRef((props, ref) => {
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>
-
-        <View style={styles.gridContainer}>
-          {vehicleTypes.map((type) => (
-            <View key={type.label} style={styles.buttonWrapper}>
-              <TypeButton
-                label={type.label}
-                icon={type.icon}
-                isSelected={selectedTypes.includes(type.label)}
-                onPress={() => handleSelectType(type.label)}
-                iconSize={40}
-              />
-            </View>
-          ))}
-        </View>
-
+        {renderContent()}
         <TouchableOpacity
           style={styles.resultsButton}
           onPress={() => ref.current?.close()}
@@ -78,7 +106,7 @@ const VehicleTypeSheet = React.forwardRef((props, ref) => {
 });
 
 VehicleTypeSheet.displayName = "VehicleTypeSheet";
-export default VehicleTypeSheet;
+export default memo(VehicleTypeSheet);
 
 const styles = StyleSheet.create({
   modalBackground: { backgroundColor: "white", borderRadius: 24 },

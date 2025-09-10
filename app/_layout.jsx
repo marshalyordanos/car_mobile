@@ -7,11 +7,13 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "../redux/store";
 
-import "../localization";
-
 import { useTranslation } from "react-i18next";
-SplashScreen.preventAutoHideAsync();
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Reanimated from "react-native-reanimated";
+import "../localization";
+Reanimated.Globals.fortunatelyYouCanNowDisableThisWarning = true;
 
+SplashScreen.preventAutoHideAsync();
 const RootScreen = () => {
   const [fontsLoaded, error] = useFonts({
     OpenSans: require("../assets/fonts/OpenSans.ttf"),
@@ -30,26 +32,28 @@ const RootScreen = () => {
   if (!fontsLoaded && !error) return null;
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <Stack>
-          <Stack.Screen name="(tab)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="LocationSearchScreen"
-            options={{
-              headerShown: false,
-              presentation: "modal",
-            }}
-          />
-          <Stack.Screen
-            name="DatePickerScreen"
-            options={{ headerShown: false }}
-          />
-        </Stack>
-        <StatusBar barStyle="dark-content" />
-      </PersistGate>
-    </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <Stack>
+            <Stack.Screen name="(tab)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="LocationSearchScreen"
+              options={{
+                headerShown: false,
+                presentation: "modal",
+              }}
+            />
+            <Stack.Screen
+              name="DatePickerScreen"
+              options={{ headerShown: false }}
+            />
+          </Stack>
+          <StatusBar barStyle="dark-content" />
+        </PersistGate>
+      </Provider>
+    </GestureHandlerRootView>
   );
 };
 

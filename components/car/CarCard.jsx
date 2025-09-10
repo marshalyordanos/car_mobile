@@ -1,32 +1,37 @@
-import { Ionicons as Icon } from "@expo/vector-icons";
+import { FontAwesome, Ionicons as Icon } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { addFavorite, removeFavorite } from "../../redux/favoritesSlice";
 
+const placeholderImage = require("../../assets/images/car1.jpeg");
 const CarCard = ({ car }) => {
   const dispatch = useDispatch();
   const favoriteCarIds = useSelector((state) => state.favorites.ids);
-  const isFavorited = favoriteCarIds.includes(car?.id);
+  const carId = car?._id;
+  const carName = `${car?.brand?.name || ""} ${
+    car?.model?.name || car?.title || ""
+  } ${car?.year || ""}`.trim();
+  const price = car?.rental_price_per_day || 0;
+  const imageUrl = car?.images && car.images.length > 0 ? car.images[0] : null;
+  const rating = car?.average_rating || 0;
+  const tripCount = car?.review_count || 0;
+  const locationCity = car?.location?.city || "Unknown Location";
+  const isFavorited = favoriteCarIds.includes(carId);
   const toggleFavorite = () => {
-    if (!car?.id) return;
+    if (!carId) return;
     if (isFavorited) {
-      dispatch(removeFavorite(car.id));
+      dispatch(removeFavorite(carId));
     } else {
-      dispatch(addFavorite(car.id));
+      dispatch(addFavorite(carId));
     }
   };
-  const carName = car.name || `${car.make} ${car.model}`;
-  const carBrand = car.brand?.name || car.make || "N/A";
-  const price = car.price || car.daily_rate || 0;
-  const imageUrl = car.images && car.images.length > 0 ? car.images[0] : null;
+  if (!carId || !carName) {
+    return null;
+  }
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card}>
       <Image
-        source={
-          imageUrl
-            ? { uri: imageUrl }
-            : require("../../assets/images/car1.jpeg")
-        }
+        source={imageUrl ? { uri: imageUrl } : placeholderImage}
         style={styles.image}
         resizeMode="cover"
       />
@@ -43,10 +48,30 @@ const CarCard = ({ car }) => {
         <Text style={styles.name} numberOfLines={1}>
           {carName}
         </Text>
-        <Text style={styles.brand}>{carBrand}</Text>
-        <Text style={styles.price}>{price.toLocaleString()} ETB / day</Text>
+        <View style={styles.statsRow}>
+          <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+          <FontAwesome
+            name="star"
+            size={14}
+            color="#f59e0b"
+            style={{ marginHorizontal: 4 }}
+          />
+          <Text style={styles.statsText}>({tripCount} trips)</Text>
+          {/* later for All-Star Host  */}
+        </View>
+
+        <View style={styles.locationRow}>
+          <Icon name="location-outline" size={16} color="#6b7280" />
+          <Text style={styles.statsText}>{locationCity}</Text>
+        </View>
+
+        <View style={styles.priceContainer}>
+          <Text style={styles.price}>{price.toLocaleString()} ETB</Text>
+          <Text style={styles.priceLabel}> total</Text>
+        </View>
+        <Text style={styles.taxLabel}>Before taxes</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -79,22 +104,49 @@ const styles = StyleSheet.create({
   },
   info: {
     paddingHorizontal: 16,
+    gap: 8,
   },
   name: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#111827",
   },
-  brand: {
+  statsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  statsText: {
     fontSize: 14,
     color: "#6b7280",
-    marginTop: 4,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  priceContainer: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    alignSelf: "flex-end",
   },
   price: {
-    fontSize: 16,
+    fontSize: 22,
     fontWeight: "700",
     color: "#111827",
-    marginTop: 8,
-    marginBottom: 16,
+  },
+  priceLabel: {
+    fontSize: 14,
+    color: "#6b7280",
+    fontWeight: "500",
+  },
+  taxLabel: {
+    fontSize: 12,
+    color: "#6b7280",
+    alignSelf: "flex-end",
   },
 });
