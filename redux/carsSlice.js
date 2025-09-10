@@ -1,28 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import images from "../constants/images";
-const cars_mock = [
-  { id: 1, name: "Model S", price: 79999, brand: "Tesla", image: images.car1 },
-  { id: 2, name: "Civic", price: 22000, brand: "Honda", image: images.car2 },
-  { id: 3, name: "Mustang", price: 35000, brand: "Ford", image: images.car3 },
-  { id: 4, name: "Corolla", price: 19000, brand: "Toyota", image: images.van1 },
-  { id: 5, name: "A4", price: 40000, brand: "Audi", image: images.car1 },
-  { id: 6, name: "Camry", price: 24000, brand: "Toyota", image: images.car2 },
-];
 export const fetchCars = createAsyncThunk(
   "cars/fetchCars",
   async (filters, { rejectWithValue }) => {
-    // console.log(" mock car data ");
-    // return {
-    //   success: true,
-    //   page: 1,
-    //   totalPages: 1,
-    //   totalCars: 6,
-    //   data: cars_mock,
-    // };
     try {
       const response = await axios.get(
-        "https://car-rental-back-hzzg.onrender.com/api/v1/cars",
+        "https://car-rental-back-hzzg.onrender.com/api/v1/cars/search",
         { params: filters }
       );
       return response.data;

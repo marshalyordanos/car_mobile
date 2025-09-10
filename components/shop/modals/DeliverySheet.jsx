@@ -1,6 +1,6 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import React, { useState } from "react";
+import React, { memo, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -65,7 +65,7 @@ const DeliverySheet = React.forwardRef((props, ref) => {
 });
 
 DeliverySheet.displayName = "DeliverySheet";
-export default DeliverySheet;
+export default memo(DeliverySheet);
 
 const styles = StyleSheet.create({
   modalBackground: {

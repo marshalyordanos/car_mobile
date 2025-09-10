@@ -1,6 +1,6 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { setPriceFilter } from "../../../redux/filtersSlice";
@@ -98,7 +98,7 @@ const PriceRangeSheet = React.forwardRef((props, ref) => {
 });
 
 PriceRangeSheet.displayName = "PriceRangeSheet";
-export default PriceRangeSheet;
+export default memo(PriceRangeSheet);
 
 const styles = StyleSheet.create({
   modalBackground: {

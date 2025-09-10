@@ -11,7 +11,12 @@ const initialState = {
     max: new Date().getFullYear(),
   },
   seats: "All seats",
-  // We will add more filters here later (years, seats, etc.)
+  make: null,
+  model: null,
+  transmission: "All",
+  ecoFriendly: [],
+  features: [],
+  sortBy: "Relevance",
 };
 
 const filtersSlice = createSlice({
@@ -32,15 +37,36 @@ const filtersSlice = createSlice({
     setSeatsFilter: (state, action) => {
       state.seats = action.payload;
     },
+    setMakeModelFilter: (state, action) => {
+      state.make = action.payload.make;
+      state.model = action.payload.model;
+    },
+    setTransmissionFilter: (state, action) => {
+      state.transmission = action.payload;
+    },
+    setEcoFriendlyFilter: (state, action) => {
+      state.ecoFriendly = action.payload;
+    },
+    setFeaturesFilter: (state, action) => {
+      state.features = action.payload;
+    },
+    setSortByFilter: (state, action) => {
+      state.sortBy = action.payload;
+    },
     resetAllFilters: () => initialState,
   },
 });
 
 export const {
   setPriceFilter,
-  setVehicleTypesFilter,
   setYearFilter,
   setSeatsFilter,
+  setVehicleTypesFilter,
+  setMakeModelFilter,
+  setTransmissionFilter,
+  setEcoFriendlyFilter,
+  setFeaturesFilter,
+  setSortByFilter,
   resetAllFilters,
 } = filtersSlice.actions;
 

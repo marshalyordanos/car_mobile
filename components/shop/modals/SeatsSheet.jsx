@@ -1,5 +1,5 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import React from "react";
+import React, { memo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { setSeatsFilter } from "../../../redux/filtersSlice";
@@ -73,7 +73,7 @@ const SeatsSheet = React.forwardRef((props, ref) => {
 });
 
 SeatsSheet.displayName = "SeatsSheet";
-export default SeatsSheet;
+export default memo(SeatsSheet);
 
 const styles = StyleSheet.create({
   modalBackground: { backgroundColor: "white", borderRadius: 24 },

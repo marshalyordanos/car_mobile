@@ -1,6 +1,6 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { setYearFilter } from "../../../redux/filtersSlice";
@@ -97,7 +97,7 @@ const YearRangeSheet = React.forwardRef((props, ref) => {
 });
 
 YearRangeSheet.displayName = "YearRangeSheet";
-export default YearRangeSheet;
+export default memo(YearRangeSheet);
 
 const styles = StyleSheet.create({
   modalBackground: {

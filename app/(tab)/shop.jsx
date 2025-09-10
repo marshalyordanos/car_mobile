@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useDispatch, useSelector } from "react-redux";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import CarCard from "../../components/car/CarCard";
 import AllFiltersModal from "../../components/shop/modals/AllFiltersModal";
 import DeliverySheet from "../../components/shop/modals/DeliverySheet";
@@ -30,29 +30,45 @@ const Shop = () => {
     status,
     totalCars,
   } = useSelector((state) => state.cars);
-  const activeFilters = useSelector((state) => state.filters);
+  const activeFilters = useSelector((state) => state.filters, shallowEqual);
   useEffect(() => {
     const apiFilters = {
       minPrice:
         activeFilters.price.min === 10 ? undefined : activeFilters.price.min,
       maxPrice:
         activeFilters.price.max === 500 ? undefined : activeFilters.price.max,
+      minYear:
+        activeFilters.years.min === 1952 ? undefined : activeFilters.years.min,
+      maxYear:
+        activeFilters.years.max === new Date().getFullYear()
+          ? undefined
+          : activeFilters.years.max,
+      seating_capacity:
+        activeFilters.seats !== "All seats"
+          ? parseInt(activeFilters.seats)
+          : undefined,
       vehicle_type:
         activeFilters.vehicleTypes.length > 0
-          ? activeFilters.vehicleTypes.join(",")
+          ? activeFilters.vehicleTypes
           : undefined,
+      brand: activeFilters.make,
       model: activeFilters.model,
+      transmission:
+        activeFilters.transmission !== "All"
+          ? activeFilters.transmission
+          : undefined,
+      eco_friendly:
+        activeFilters.ecoFriendly.length > 0
+          ? activeFilters.ecoFriendly.join(",")
+          : undefined,
+      features:
+        activeFilters.features.length > 0 ? activeFilters.features : undefined,
+      sortby:
+        activeFilters.sortBy !== "Relevance" ? activeFilters.sortBy : undefined,
     };
 
     dispatch(fetchCars(apiFilters));
   }, [activeFilters, dispatch]);
-
-  // useEffect(() => {
-  //   if (status === "idle") {
-  //     dispatch(fetchCars());
-  //   }
-  // }, [status, dispatch]);
-  // const language = useSelector((state) => state.auth.lan);
 
   // const { t, i18n } = useTranslation();
   const [isMakeModalVisible, setMakeModalVisible] = useState(false);
@@ -103,7 +119,7 @@ const Shop = () => {
           {status === "succeeded" && (
             <FlatList
               data={carList}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item?._id}
               ListHeaderComponent={() => (
                 <View style={styles.resultsContainer}>
                   <Text style={styles.resultsTitle}>

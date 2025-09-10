@@ -1,5 +1,5 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import {
   FlatList,
   Modal,
@@ -155,7 +155,7 @@ const MakeModelModal = ({ isVisible, onClose }) => {
   );
 };
 
-export default MakeModelModal;
+export default memo(MakeModelModal);
 
 const styles = StyleSheet.create({
   safeArea: {
