@@ -1,6 +1,7 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Modal,
   SafeAreaView,
@@ -10,62 +11,45 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-const ALL_MAKES = [
-  "AM General",
-  "Acura",
-  "Alfa-Romeo",
-  "Amc",
-  "Aston Martin",
-  "Audi",
-  "Austin-healy",
-  "BMW",
-  "Bentley",
-  "Buick",
-  "Cadillac",
-  "Chevrolet",
-  "Chrysler",
-  "Dodge",
-  "Ferrari",
-  "Ford",
-  "GMC",
-  "Honda",
-  "Hyundai",
-  "Jaguar",
-  "Jeep",
-  "Kia",
-  "Lamborghini",
-  "Land Rover",
-  "Lexus",
-  "Maserati",
-  "Mazda",
-  "Mercedes-Benz",
-  "Nissan",
-  "Porsche",
-  "Tesla",
-  "Toyota",
-  "Volkswagen",
-];
+import { useDispatch, useSelector } from "react-redux";
+import { fetchBrands } from "../../../redux/filterOptionsSlice";
+import { setBrandsFilter } from "../../../redux/filtersSlice";
 
 const MakeModelModal = ({ isVisible, onClose }) => {
+  const dispatch = useDispatch();
+  const selectedBrandIds = useSelector((state) => state.filters.brands);
+  const { items: allBrands, status } = useSelector(
+    (state) => state.filterOptions.brands
+  );
   const [searchText, setSearchText] = useState("");
-  const [selectedMakes, setSelectedMakes] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
 
-  const filteredMakes = useMemo(
+  useEffect(() => {
+    if (isVisible && status === "idle") {
+      dispatch(fetchBrands());
+    }
+  }, [isVisible, status, dispatch]);
+
+  const filteredBrands = useMemo(
     () =>
-      ALL_MAKES.filter((make) =>
-        make.toLowerCase().includes(searchText.toLowerCase())
+      allBrands.filter((brand) =>
+        brand.name.toLowerCase().includes(searchText.toLowerCase())
       ),
-    [searchText]
+    [allBrands, searchText]
   );
 
-  const handleSelectMake = (make) => {
-    if (selectedMakes.includes(make)) {
-      setSelectedMakes(selectedMakes.filter((m) => m !== make));
+  const handleSelectBrand = (brandId) => {
+    let newSelection;
+    if (selectedBrandIds.includes(brandId)) {
+      newSelection = selectedBrandIds.filter((id) => id !== brandId);
     } else {
-      setSelectedMakes([...selectedMakes, make]);
+      newSelection = [...selectedBrandIds, brandId];
     }
+    dispatch(setBrandsFilter(newSelection));
+  };
+
+  const handleReset = () => {
+    dispatch(setBrandsFilter([]));
   };
 
   return (
@@ -77,7 +61,7 @@ const MakeModelModal = ({ isVisible, onClose }) => {
               <Icon name="close" size={28} color="#111827" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Make & model</Text>
-            <TouchableOpacity onPress={() => setSelectedMakes([])}>
+            <TouchableOpacity onPress={handleReset}>
               <Text style={styles.headerButton}>Reset</Text>
             </TouchableOpacity>
           </View>
@@ -122,27 +106,36 @@ const MakeModelModal = ({ isVisible, onClose }) => {
               </TouchableOpacity>
             )}
           </View>
-
-          <FlatList
-            data={filteredMakes}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.row}
-                onPress={() => handleSelectMake(item)}
-              >
-                <Icon
-                  name={
-                    selectedMakes.includes(item) ? "checkbox" : "square-outline"
-                  }
-                  size={24}
-                  color="#111827"
-                />
-                <Text style={styles.rowText}>{item}</Text>
-                <Icon name="chevron-forward" size={20} color="#6b7280" />
-              </TouchableOpacity>
-            )}
-          />
+          {status === "loading" && (
+            <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+          )}
+          {status === "failed" && (
+            <Text style={styles.errorText}>Error loading brands.</Text>
+          )}
+          {status === "succeeded" && (
+            <FlatList
+              data={filteredBrands}
+              keyExtractor={(item) => item._id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.row}
+                  onPress={() => handleSelectBrand(item._id)}
+                >
+                  <Icon
+                    name={
+                      selectedBrandIds.includes(item._id)
+                        ? "checkbox"
+                        : "square-outline"
+                    }
+                    size={24}
+                    color="#111827"
+                  />
+                  <Text style={styles.rowText}>{item.name}</Text>
+                  <Icon name="chevron-forward" size={20} color="#6b7280" />
+                </TouchableOpacity>
+              )}
+            />
+          )}
 
           <View style={styles.footer}>
             <TouchableOpacity style={styles.resultsButton} onPress={onClose}>
@@ -250,4 +243,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   resultsButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  errorText: { textAlign: "center", marginTop: 20, color: "red" },
 });

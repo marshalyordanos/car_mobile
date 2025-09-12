@@ -9,8 +9,8 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import icons from "../../../constants/icons";
+import { fetchVehicleTypes } from "../../../redux/filterOptionsSlice";
 import { setVehicleTypesFilter } from "../../../redux/filtersSlice";
-import { fetchVehicleTypes } from "../../../redux/vehicleOptionsSlice";
 import TypeButton from "../shared/ui/TypeButton";
 
 const iconMap = {
@@ -24,13 +24,15 @@ const iconMap = {
 };
 
 const VehicleTypeSheet = React.forwardRef((props, ref) => {
-  const snapPoints = ["67%"];
+  const snapPoints = ["60%"];
   const dispatch = useDispatch();
   const { items: availableTypes, status } = useSelector(
     (state) => state.filterOptions.vehicleTypes
   );
   const selectedTypes = useSelector((state) => state.filters.vehicleTypes);
 
+  console.log("Vehicle Type Sheet Status:", status);
+  console.log("Available Types:", availableTypes);
   useEffect(() => {
     if (status === "idle") {
       dispatch(fetchVehicleTypes());

@@ -11,8 +11,8 @@ const initialState = {
     max: new Date().getFullYear(),
   },
   seats: "All seats",
-  make: null,
-  model: null,
+  brands: [],
+  models: null,
   transmission: "All",
   ecoFriendly: [],
   features: [],
@@ -37,9 +37,11 @@ const filtersSlice = createSlice({
     setSeatsFilter: (state, action) => {
       state.seats = action.payload;
     },
-    setMakeModelFilter: (state, action) => {
-      state.make = action.payload.make;
-      state.model = action.payload.model;
+    setBrandsFilter: (state, action) => {
+      state.brands = action.payload;
+    },
+    setModelsFilter: (state, action) => {
+      state.models = action.payload;
     },
     setTransmissionFilter: (state, action) => {
       state.transmission = action.payload;
@@ -53,7 +55,9 @@ const filtersSlice = createSlice({
     setSortByFilter: (state, action) => {
       state.sortBy = action.payload;
     },
-    resetAllFilters: () => initialState,
+    resetAllFilters: (state) => {
+      return state.initialState;
+    },
   },
 });
 
@@ -62,7 +66,8 @@ export const {
   setYearFilter,
   setSeatsFilter,
   setVehicleTypesFilter,
-  setMakeModelFilter,
+  setBrandsFilter,
+  setModelsFilter,
   setTransmissionFilter,
   setEcoFriendlyFilter,
   setFeaturesFilter,

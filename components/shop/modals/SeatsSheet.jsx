@@ -13,7 +13,7 @@ const seatOptions = [
 ];
 
 const SeatsSheet = React.forwardRef((props, ref) => {
-  const snapPoints = ["59%"];
+  const snapPoints = ["53%"];
   const dispatch = useDispatch();
   const selectedOption = useSelector((state) => state.filters.seats);
   const handleSelectOption = (option) => {
@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
+    marginTop: 16,
   },
   resultsButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
 

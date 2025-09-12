@@ -1,4 +1,3 @@
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -7,7 +6,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import CarCard from "../../components/car/CarCard";
@@ -49,9 +47,12 @@ const Shop = () => {
           : undefined,
       vehicle_type:
         activeFilters.vehicleTypes.length > 0
-          ? activeFilters.vehicleTypes
+          ? activeFilters.vehicleTypes.join(",")
           : undefined,
-      brand: activeFilters.make,
+      brand:
+        activeFilters.brands.length > 0
+          ? activeFilters.brands.join(",")
+          : undefined,
       model: activeFilters.model,
       transmission:
         activeFilters.transmission !== "All"
@@ -62,7 +63,9 @@ const Shop = () => {
           ? activeFilters.ecoFriendly.join(",")
           : undefined,
       features:
-        activeFilters.features.length > 0 ? activeFilters.features : undefined,
+        activeFilters.features.length > 0
+          ? activeFilters.features.join(",")
+          : undefined,
       sortby:
         activeFilters.sortBy !== "Relevance" ? activeFilters.sortBy : undefined,
     };
@@ -101,50 +104,51 @@ const Shop = () => {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "white" }}>
-      <BottomSheetModalProvider>
-        <View style={[styles.container, { paddingTop: insets.top }]}>
-          <SearchHeader />
-          <FilterPills onPillPress={handlePillPress} />
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <SearchHeader />
+      <FilterPills onPillPress={handlePillPress} />
 
-          {status === "loading" && (
-            <ActivityIndicator size="large" style={{ marginTop: 50 }} />
-          )}
+      {status === "loading" && carList.length === 0 && (
+        <ActivityIndicator size="large" style={{ marginTop: 50 }} />
+      )}
 
-          {status === "failed" && (
-            <Text style={styles.errorText}>
-              Error loading cars. Please try again.
-            </Text>
-          )}
-          {status === "succeeded" && (
-            <FlatList
-              data={carList}
-              keyExtractor={(item) => item?._id}
-              ListHeaderComponent={() => (
-                <View style={styles.resultsContainer}>
-                  <Text style={styles.resultsTitle}>
-                    {totalCars} cars available
-                  </Text>
-                  <Text style={styles.resultsSubtitle}>
-                    These cars are located in and around Addis Ababa
-                  </Text>
-                </View>
-              )}
-              renderItem={({ item }) => (
-                <View style={styles.cardWrapper}>
-                  <CarCard car={item} onRent={() => console.log(item.name)} />
-                </View>
-              )}
-              showsVerticalScrollIndicator={false}
-            />
-          )}
+      {status === "failed" && (
+        <Text style={styles.errorText}>
+          Error loading cars. Please try again.
+        </Text>
+      )}
+      {status === "loading" && carList.length > 0 && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#111827" />
         </View>
-        <PriceRangeSheet ref={priceSheetRef} />
-        <VehicleTypeSheet ref={vehicleTypeSheetRef} />
-        <YearRangeSheet ref={yearSheetRef} />
-        <SeatsSheet ref={seatsSheetRef} />
-        <DeliverySheet ref={deliverySheetRef} />
-      </BottomSheetModalProvider>
+      )}
+      {status === "succeeded" && (
+        <FlatList
+          data={carList}
+          keyExtractor={(item) => item?._id}
+          ListHeaderComponent={() => (
+            <View style={styles.resultsContainer}>
+              <Text style={styles.resultsTitle}>
+                {totalCars} cars available
+              </Text>
+              <Text style={styles.resultsSubtitle}>
+                These cars are located in and around Addis Ababa
+              </Text>
+            </View>
+          )}
+          renderItem={({ item }) => (
+            <View style={styles.cardWrapper}>
+              <CarCard car={item} onRent={() => console.log(item.name)} />
+            </View>
+          )}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+      <PriceRangeSheet ref={priceSheetRef} />
+      <VehicleTypeSheet ref={vehicleTypeSheetRef} />
+      <YearRangeSheet ref={yearSheetRef} />
+      <SeatsSheet ref={seatsSheetRef} />
+      <DeliverySheet ref={deliverySheetRef} />
       <MakeModelModal
         isVisible={isMakeModalVisible}
         onClose={() => setMakeModalVisible(false)}
@@ -153,7 +157,7 @@ const Shop = () => {
         isVisible={isAllFiltersVisible}
         onClose={() => setAllFiltersVisible(false)}
       />
-    </GestureHandlerRootView>
+    </View>
   );
 };
 
@@ -161,6 +165,7 @@ export default Shop;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "white",
   },
   resultsContainer: {
     paddingHorizontal: 20,
@@ -186,5 +191,12 @@ const styles = StyleSheet.create({
     marginTop: 50,
     fontSize: 16,
     color: "red",
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
   },
 });
