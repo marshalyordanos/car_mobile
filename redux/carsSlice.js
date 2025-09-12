@@ -10,6 +10,7 @@ export const fetchCars = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
+      console.error("API call failed:", error.response?.data || error.message);
       return rejectWithValue(error.response.data);
     }
   }

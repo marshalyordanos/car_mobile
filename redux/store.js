@@ -5,15 +5,15 @@ import authReducer from "./authReducer";
 import carsReducer from "./carsSlice";
 import categoryReducer from "./categoryReducer";
 import favoritesReducer from "./favoritesSlice";
+import filterOptionsReducer from "./filterOptionsSlice";
 import filtersReducer from "./filtersSlice";
-import vehicleOptionsReducer from "./vehicleOptionsSlice";
 const rootReducer = combineReducers({
   auth: authReducer,
   main_category: categoryReducer,
   cars: carsReducer,
   favorites: favoritesReducer,
   filters: filtersReducer,
-  filterOptions: vehicleOptionsReducer,
+  filterOptions: filterOptionsReducer,
 });
 const persistConfig = {
   key: "root",

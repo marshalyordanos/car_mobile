@@ -9,11 +9,10 @@ import { persistor, store } from "../redux/store";
 
 import { useTranslation } from "react-i18next";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Reanimated from "react-native-reanimated";
 import "../localization";
-Reanimated.Globals.fortunatelyYouCanNowDisableThisWarning = true;
 
 SplashScreen.preventAutoHideAsync();
+
 const RootScreen = () => {
   const [fontsLoaded, error] = useFonts({
     OpenSans: require("../assets/fonts/OpenSans.ttf"),

@@ -22,6 +22,9 @@ const filterOptions = [
 
 const FilterPills = ({ onPillPress }) => {
   const filters = useSelector((state) => state.filters);
+  const { items: availableTypes } = useSelector(
+    (state) => state.filterOptions.vehicleTypes
+  );
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.price.min !== 10 || filters.price.max !== 500) count++;
@@ -47,9 +50,15 @@ const FilterPills = ({ onPillPress }) => {
   };
 
   const getVehicleTypeLabel = () => {
-    const count = filters.vehicleTypes.length;
+    const selectedIds = filters.vehicleTypes;
+    const count = selectedIds.length;
     if (count === 0) return "Vehicle type";
-    if (count === 1) return filters.vehicleTypes[0];
+    if (count === 1) {
+      const selectedType = availableTypes.find(
+        (type) => type._id === selectedIds[0]
+      );
+      return selectedType ? selectedType.name : "Vehicle type";
+    }
     return `Vehicle type (${count})`;
   };
   const isVehicleTypeActive = () => filters.vehicleTypes.length > 0;
