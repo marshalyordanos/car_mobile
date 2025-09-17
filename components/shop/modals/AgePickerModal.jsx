@@ -2,12 +2,12 @@ import { Ionicons as Icon } from "@expo/vector-icons";
 import {
   FlatList,
   Modal,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ageOptions = Array.from({ length: 54 - 18 + 1 }, (_, i) =>
   (18 + i).toString()

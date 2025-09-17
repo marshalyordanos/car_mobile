@@ -3,7 +3,6 @@ import MultiSlider from "@ptomasroos/react-native-multi-slider";
 import { memo, useMemo, useState } from "react";
 import {
   Modal,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import icons from "../../../constants/icons";
 import TypeButton from "../shared/ui/TypeButton";
 import FilterRow from "../ui/FilterRow";

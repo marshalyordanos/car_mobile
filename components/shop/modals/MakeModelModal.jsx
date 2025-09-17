@@ -4,13 +4,13 @@ import {
   ActivityIndicator,
   FlatList,
   Modal,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBrands } from "../../../redux/filterOptionsSlice";
 import { setBrandsFilter } from "../../../redux/filtersSlice";
