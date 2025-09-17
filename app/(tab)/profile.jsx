@@ -1,4 +1,11 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  FontAwesome6,
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+  SimpleLineIcons,
+} from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Link,
@@ -9,6 +16,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -20,292 +28,397 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import AppLoader from "../../components/AppLoader";
 import FormField from "../../components/FormField";
+import Colors from "../../constants/Colors";
 import images from "../../constants/images";
 import api from "../../redux/api";
-import { login, selectCurrentUser } from "../../redux/authReducer";
+import { login, logout, selectCurrentUser } from "../../redux/authReducer";
 
-// const { height } = Dimensions.get("window");
-// const minHeight = height * 0.85;
 const Profile = () => {
   const query = useLocalSearchParams();
-  const [isLoadding, setLoding] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const user = useSelector(selectCurrentUser);
-  const { t, i18n } = useTranslation();
-  const [login, setLogin] = useState(false);
+  const { t } = useTranslation();
+  const [showLogin, setShowLogin] = useState(false);
   const language = useSelector((state) => state.auth.lan);
 
   useFocusEffect(
     useCallback(() => {
-      // This will run every time the screen is focused
-      setLogin(false);
-      // Return a cleanup function if needed
-      // return () => {
-      //   console.log('Screen is unfocused');
-      // };
+      setShowLogin(false);
     }, [])
   );
 
-  useEffect(() => {
-    const featchAddress = async () => {
-      try {
-        const res = await api.get("api/v1/addresses/");
-      } catch (error) {}
-    };
-    featchAddress();
-  }, []);
-
   return (
-    <>
-      <SafeAreaView style={{ height: "100%", backgroundColor: "white" }}>
-        <ScrollView style={{ height: "100%" }}>
-          <Login
-            t={t}
-            lan={language}
-            setLoding={setLoding}
-            status={query?.success}
-            setLogin={setLogin}
-          />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.mainContainer}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {!showLogin || user ? (
+            <ProfileHome
+              t={t}
+              setLoading={setLoading}
+              lan={language}
+              user={user}
+              setShowLogin={setShowLogin}
+            />
+          ) : (
+            <Login
+              t={t}
+              lan={language}
+              setLoading={setLoading}
+              status={query?.success}
+              setShowLogin={setShowLogin}
+            />
+          )}
         </ScrollView>
-        {isLoadding && <AppLoader />}
-      </SafeAreaView>
-    </>
+        {isLoading && <AppLoader />}
+      </View>
+    </SafeAreaView>
   );
 };
 
-const CustomButton = ({ Icon, iconName, name, link }) => {
-  return (
-    <Link
-      href={link}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-      asChild
-    >
-      <TouchableOpacity>
-        <View
-          style={{
-            width: "100%",
-            flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
-            <Icon name={iconName} size={28} color="#343434" />
-            <Text style={{ fontSize: 18, marginBottom: 3 }}>{name}</Text>
-          </View>
-          <MaterialIcons name={"arrow-forward-ios"} size={24} color="#343434" />
-        </View>
-      </TouchableOpacity>
-    </Link>
-  );
-};
-
-const Login = ({ status, setLoding, setLogin, lan, t }) => {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-  const [stat, setStat] = useState(status);
-  useEffect(() => {
-    let intervalId;
-
-    if (stat) {
-      intervalId = setInterval(() => {
-        setStat(false);
-      }, 5000);
-    }
-
-    return () => clearInterval(intervalId);
-  }, [stat]);
-
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [error, setError] = useState(null);
+const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
   const dispatch = useDispatch();
-  const validate = (email, password, type) => {
-    let isvalid = true;
-    if (type == "all" || type == "email") {
-      if (email == "") {
-        isvalid = false;
 
-        setEmailError("Plase provide your email or phone number.");
-      } else {
-        isvalid = true;
+  const menuSections = [
+    {
+      id: "account",
+      visible: !!user,
+      items: [
+        {
+          Icon: MaterialCommunityIcons, // Changed from lowercase 'icon' to uppercase 'Icon'
+          iconName: "account-details-outline",
+          name: t("detail"),
+          link: "/profile-detail",
+        },
+        {
+          Icon: MaterialCommunityIcons, // Changed from lowercase 'icon' to uppercase 'Icon'
+          iconName: "history",
+          name: t("purchase_history"),
+          link: "/purchase-history",
+        },
+      ],
+    },
+    {
+      id: "orders",
+      items: [
+        {
+          Icon: SimpleLineIcons, // Changed from lowercase 'icon' to uppercase 'Icon'
+          iconName: "question",
+          name: t("check_item"),
+          link: "/check-item",
+        },
+      ],
+    },
+    {
+      id: "info",
+      items: [
+        {
+          Icon: AntDesign, // Changed from lowercase 'icon' to uppercase 'Icon'
+          iconName: "message1",
+          name: t("about_us"),
+          link: "/about",
+        },
+        {
+          Icon: AntDesign, // Changed from lowercase 'icon' to uppercase 'Icon'
+          iconName: "phone",
+          name: t("contact_us"),
+          link: "/contact",
+        },
+      ],
+    },
+  ];
 
-        setEmailError("");
-      }
-    }
-    if (type == "all" || type == "password") {
-      const hasUpperCase = /[A-Z]/.test(password);
-      const hasSpecialChar = /[!@#$%^&*]/.test(password);
-      const isValidLength = password.length >= 8;
-
-      if (password == "") {
-        isvalid = false;
-
-        setPasswordError("Please provide you passowrd.");
-      } else {
-        isvalid = true;
-
-        setPasswordError("");
-      }
-    }
-
-    return isvalid;
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoading(true);
+              await api.post("api/v1/auth/users/delete/");
+              await AsyncStorage.removeItem("data");
+              dispatch(logout());
+            } catch (error) {
+              console.error(error);
+              Alert.alert(
+                "Error",
+                "Failed to delete account. Please try again."
+              );
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
   };
-  const BASE_URL = "https://localhost:8000";
-
-  const handleSignIn = async () => {
-    const isValid = validate(form.email, form.password, "all");
-
-    if (isValid) {
-      setLoding(true);
-      try {
-        const res = await api.post("api/v1/auth/jwt/signin/", {
-          phoneEmail: form.email,
-          password: form.password,
-        });
-
-        console.log(res.data.access);
-        await AsyncStorage.setItem("data", JSON.stringify(res.data));
-        dispatch(login(res.data));
-
-        setLoding(false);
-
-        router.push({ pathname: "/profile", params: { success: true } });
-      } catch (error) {
-        setLoding(false);
-
-        console.log(error);
-        console.log(error.response);
-        if (error.response) {
-          setError("Invalid password or phone/email");
-        }
-      }
-      console.log(form);
-    }
-  };
-  const router = useRouter();
+  console.log("user:2ss ", user);
 
   return (
-    <View style={styles.login_con}>
-      <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <Image
-          style={styles.top_image}
-          source={images.logo}
-          resizeMode="contain"
+    <View style={styles.profileContainer}>
+      <Text style={styles.headerTitle}>{t("profile")}</Text>
+
+      {user && (
+        <View style={styles.userCard}>
+          <View style={styles.userInfo}>
+            <View style={styles.avatarContainer}>
+              <FontAwesome6 name="user-tie" size={40} color="white" />
+            </View>
+            <View style={styles.userDetails}>
+              <Text style={styles.userName}>
+                {user?.user?.first_name + " " + user?.user?.last_name}
+              </Text>
+              <Text style={styles.lastLogin}>
+                Last Login:{" "}
+                {new Date(user?.user?.last_login).toLocaleDateString()}
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {menuSections.map(
+        (section, index) =>
+          section.visible !== false && (
+            <View
+              key={section.id}
+              style={[
+                styles.menuSection,
+                index > 0 && styles.menuSectionMargin,
+              ]}
+            >
+              {section.items.map((item, idx) => (
+                <React.Fragment key={item.link}>
+                  <MenuButton {...item} />
+                  {idx < section.items.length - 1 && (
+                    <View style={styles.divider} />
+                  )}
+                </React.Fragment>
+              ))}
+            </View>
+          )
+      )}
+
+      {user && (
+        <View style={[styles.menuSection, styles.menuSectionMargin]}>
+          <TouchableOpacity
+            style={styles.dangerButton}
+            onPress={async () => {
+              await AsyncStorage.removeItem("data");
+              dispatch(logout());
+            }}
+          >
+            <Text style={styles.dangerButtonText}>{t("logout")}</Text>
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity
+            style={styles.dangerButton}
+            onPress={async () => {
+              Alert.alert(
+                "Delete Account",
+                "Are you sure you want to delete your account?",
+                [
+                  {
+                    text: "Cancel",
+                    style: "cancel",
+                  },
+                  {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                      try {
+                        setLoading(true);
+                        await api.post("api/v1/auth/users/delete/");
+                        await AsyncStorage.removeItem("data");
+                        dispatch(logout());
+                      } catch (error) {
+                        console.error(error);
+                      } finally {
+                        setLoading(false);
+                      }
+                    },
+                  },
+                ]
+              );
+            }}
+          >
+            <Text style={styles.dangerButtonText}>{t("delete_account")}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {!user && (
+        <TouchableOpacity
+          onPress={() => setShowLogin(true)}
+          style={styles.continueShopping}
+        >
+          <Text style={styles.continueShoppingText}>Login</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
+const MenuButton = ({ Icon, iconName, name, link }) => (
+  <Link href={link} asChild>
+    <TouchableOpacity style={styles.menuButton}>
+      <View style={styles.menuButtonContent}>
+        <View style={styles.menuButtonLeft}>
+          <Icon name={iconName} size={24} color={Colors.primary} />
+          <Text style={styles.menuButtonText}>{name}</Text>
+        </View>
+        <MaterialIcons
+          name="arrow-forward-ios"
+          size={20}
+          color={Colors.primary}
         />
       </View>
-      <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <Text style={styles.login_main_text}>{t("sign_in")} </Text>
-      </View>
+    </TouchableOpacity>
+  </Link>
+);
 
-      <Text style={{ marginTop: 10, color: "grey", fontSize: 1 }}>
-        {t("sign_desc")}
-      </Text>
-      <Text style={{ color: "gray" }}>
-        Make sure to enter phone number in this format "251*********" (without
-        the +)
+const Login = ({ status, setLoading, setShowLogin, lan, t }) => {
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    general: "",
+  });
+  const [showSuccess, setShowSuccess] = useState(status);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => setShowSuccess(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
+
+  const validate = () => {
+    const newErrors = {};
+    if (!form.email)
+      newErrors.email = "Please provide your email or phone number";
+    if (!form.password) newErrors.password = "Please provide your password";
+    setErrors({ ...errors, ...newErrors });
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSignIn = async () => {
+    if (!validate()) return;
+
+    setLoading(true);
+    try {
+      console.log({
+        phoneEmail: "+" + form.email,
+        password: form.password,
+      });
+      const res = await api.post("user/login", {
+        phone_number: "+" + form.email,
+        password: form.password,
+      });
+      await AsyncStorage.setItem("data", JSON.stringify(res.data.data));
+      dispatch(login(res.data.data));
+      router.push({ pathname: "/profile", params: { success: true } });
+    } catch (error) {
+      console.log(error);
+      setErrors({
+        ...errors,
+        general: "Invalid password or phone/email",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.loginContainer}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => setShowLogin(false)}
+      >
+        <Ionicons name="arrow-back" size={32} color={Colors.dark} />
+        <Text style={styles.backButtonText}>Profile</Text>
+      </TouchableOpacity>
+
+      <Image
+        style={styles.logoImage}
+        source={images.logo}
+        resizeMode="contain"
+      />
+
+      <Text style={styles.loginTitle}>{t("sign_in")}</Text>
+      <Text style={styles.loginSubtitle}>{t("sign_desc")}</Text>
+      <Text style={styles.phoneFormat}>
+        Enter phone number as "251*********" (without +)
       </Text>
 
-      {status && (
-        <View
-          style={{
-            backgroundColor: "#678e65",
-            borderRadius: 8,
-            marginTop: 20,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            height: 50,
-            paddingHorizontal: 10,
-          }}
-        >
-          <Text style={{ color: "white" }}>
-            Registration was successful. Please log in
+      {showSuccess && (
+        <View style={styles.successAlert}>
+          <Text style={styles.alertText}>
+            Registration successful. Please log in.
           </Text>
         </View>
       )}
 
       <FormField
-        title={t("phoneEmail")}
+        title={t("phone")}
         value={form.email}
-        handleChangeText={(e) => {
-          validate(e, form.password, "email");
-          setForm({ ...form, email: e });
+        handleChangeText={(text) => {
+          setForm({ ...form, email: text });
+          setErrors({ ...errors, email: "", general: "" });
         }}
-        otherStyles={{ marginTop: 0 }}
+        error={errors.email}
+        placeholder="Phone"
         keyboardType="email-address"
-        placeholder={"email or phone"}
+        style={styles.formField}
       />
-      <Text style={{ color: "red" }}>{emailError}</Text>
 
       <FormField
         title={t("password")}
         value={form.password}
-        handleChangeText={(e) => {
-          validate(form.email, e, "password");
-          setForm({ ...form, password: e });
+        handleChangeText={(text) => {
+          setForm({ ...form, password: text });
+          setErrors({ ...errors, password: "", general: "" });
         }}
-        otherStyles={{ marginTop: 15 }}
-        keyboardType="email-address"
-        placeholder={"password"}
+        error={errors.password}
+        placeholder="Password"
+        secureTextEntry
+        style={styles.formField}
       />
-      <Text style={{ color: "red" }}>{passwordError}</Text>
 
-      {error && (
-        <View
-          style={{
-            backgroundColor: "#d98989",
-            borderRadius: 8,
-            marginBottom: 10,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            height: 50,
-            paddingHorizontal: 10,
-          }}
-        >
-          <Text style={{ color: "white" }}>{error}</Text>
+      {errors.general && (
+        <View style={styles.errorAlert}>
+          <Text style={styles.alertText}>{errors.general}</Text>
           <TouchableOpacity
-            style={{
-              height: 50,
-              justifyContent: "center",
-              paddingHorizontal: 10,
-            }}
-            onPress={() => setError(null)}
+            style={styles.closeButton}
+            onPress={() => setErrors({ ...errors, general: "" })}
           >
-            <Ionicons name="close" size={20} />
+            <Ionicons name="close" size={20} color="white" />
           </TouchableOpacity>
         </View>
       )}
-      <TouchableOpacity onPress={handleSignIn} style={styles.login_button}>
-        <Text style={{ color: "white", fontSize: 24, textAlign: "center" }}>
-          {t("sign_in")}
-        </Text>
+
+      <TouchableOpacity onPress={handleSignIn} style={styles.signInButton}>
+        <Text style={styles.signInButtonText}>{t("sign_in")}</Text>
       </TouchableOpacity>
 
-      <Link style={{ textAlign: "center", color: "blue" }} href={"/forget"}>
+      <Link style={styles.forgotPassword} href="/forget">
         {t("forget")}
       </Link>
 
-      <View style={styles.registerPage_link}>
-        <Text style={{ fontSize: 16 }}>
-          {" "}
-          {lan == "en" && "Dont't have account?"}
+      <View style={styles.signUpContainer}>
+        <Text style={styles.signUpText}>
+          {lan === "en" && "Don't have an account?"}
         </Text>
-        <Link
-          style={{
-            fontSize: 18,
-            color: "#393381",
-            textDecorationLine: "underline",
-          }}
-          href={"/sign-up"}
-        >
+        <Link style={styles.signUpLink} href="/sign-up">
           {t("sign_up")}
         </Link>
       </View>
@@ -313,45 +426,244 @@ const Login = ({ status, setLoding, setLogin, lan, t }) => {
   );
 };
 
-export default Profile;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#469E70",
+    backgroundColor: "#f8f9fa",
   },
-  registerPage_link: {
-    display: "flex",
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#f8f9fa",
+  },
+  profileContainer: {
+    padding: 20,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginVertical: 20,
+    color: Colors.dark,
+  },
+  userCard: {
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    marginBottom: 20,
+  },
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 15,
+  },
+  avatarContainer: {
+    backgroundColor: Colors.primary,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     justifyContent: "center",
-    paddingTop: 20,
+    alignItems: "center",
+  },
+  userDetails: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: Colors.dark,
+    marginBottom: 4,
+  },
+  lastLogin: {
+    fontSize: 14,
+    color: Colors.gray,
+  },
+  menuSection: {
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  menuSectionMargin: {
+    marginTop: 20,
+  },
+  menuButton: {
+    paddingVertical: 12,
+  },
+  menuButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  menuButtonLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 15,
+  },
+  menuButtonText: {
+    fontSize: 16,
+    color: Colors.dark,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#e9ecef",
+    marginVertical: 8,
+  },
+  dangerButton: {
+    paddingVertical: 12,
+  },
+  dangerButtonText: {
+    fontSize: 16,
+    color: "#dc3545",
+    textAlign: "center",
+  },
+  loginButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginTop: 30,
+  },
+  loginButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    textAlign: "center",
+    fontWeight: "600",
+    backgroundColor: "#393381",
+  },
+
+  continueShopping: {
+    marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: "#393381",
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  continueShoppingText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  // Login styles
+  loginContainer: {
+    padding: 20,
+    minHeight: "100%",
+  },
+  backButton: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    marginBottom: 20,
   },
-  login_con: {
-    // width: "100%",
-    // justifyContent: "center",
-    margin: 15,
-    minHeight: "100%",
-    // backgroundColor: "red",
-    paddingHorizontal: "16px",
-    marginVertical: 24,
+  backButtonText: {
+    fontSize: 16,
+    color: Colors.dark,
   },
-  top_image: {
+  logoImage: {
     width: 200,
     height: 100,
+    alignSelf: "center",
+    marginBottom: 20,
   },
-  login_main_text: {
+  loginTitle: {
     fontSize: 26,
-    marginTop: 10,
-    fontWeight: "semibold",
+    fontWeight: "600",
+    color: Colors.dark,
+    marginBottom: 10,
   },
-  login_button: {
-    backgroundColor: "#393381",
-    marginVertical: 20,
+  loginSubtitle: {
+    fontSize: 14,
+    color: Colors.gray,
+    marginBottom: 8,
+  },
+  phoneFormat: {
+    fontSize: 14,
+    color: Colors.gray,
+    marginBottom: 20,
+    fontStyle: "italic",
+  },
+  successAlert: {
+    backgroundColor: "#28a745",
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  errorAlert: {
+    backgroundColor: "#dc3545",
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  alertText: {
+    color: "white",
+    fontSize: 14,
+    flex: 1,
+  },
+  closeButton: {
+    padding: 5,
+  },
+  formField: {
+    marginBottom: 20,
+  },
+  signInButton: {
+    backgroundColor: "black",
     padding: 15,
     borderRadius: 10,
-
+    marginVertical: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  signInButtonText: {
+    color: "white",
+    fontSize: 18,
+    textAlign: "center",
+    fontWeight: "600",
+  },
+  forgotPassword: {
+    textAlign: "center",
+    color: Colors.primary,
+    fontSize: 14,
+    marginTop: 10,
+    textDecorationLine: "underline",
+  },
+  signUpContainer: {
+    flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
+    marginTop: 30,
+    gap: 8,
+  },
+  signUpText: {
+    fontSize: 16,
+    color: Colors.dark,
+  },
+  signUpLink: {
+    fontSize: 16,
+    color: Colors.primary,
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
 });
+
+export default Profile;

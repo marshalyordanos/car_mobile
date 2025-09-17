@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import AirportSection from "../../components/home/AirportSection";
 import DestinationCard from "../../components/home/DestinationCard";
 import SearchInput from "../../components/home/SearchInput";

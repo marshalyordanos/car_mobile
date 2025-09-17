@@ -1,12 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Link, router } from "expo-router";
+import { Entypo, Ionicons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
+import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
-  KeyboardAvoidingView,
+  Image,
   Linking,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,19 +15,24 @@ import {
 } from "react-native";
 import CheckBox from "react-native-check-box";
 import PhoneInput from "react-native-phone-number-input";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import AppLoader from "../../components/AppLoader";
 import FormField from "../../components/FormField";
 import api from "../../redux/api";
+
 const { height } = Dimensions.get("window");
 const minHeight = height * 0.85;
 
 const SignUp = () => {
+  const router = useRouter();
   const [value, setValue] = useState("");
   const [formattedValue, setFormattedValue] = useState("");
   const [valid, setValid] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [isLoadding, setLoding] = useState(false);
+  const [idFile, setIdFile] = useState(null);
+  const [driverLicenseFile, setDriverLicenseFile] = useState(null);
 
   const [form, setForm] = useState({
     fullname: "",
@@ -56,7 +61,7 @@ const SignUp = () => {
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [error, setError] = useState(null);
+  const [errors, setError] = useState([]);
   const { t, i18n } = useTranslation();
   const language = useSelector((state) => state.auth.lan);
   const [isSelected, setSelection] = useState(false);
@@ -66,147 +71,156 @@ const SignUp = () => {
     email,
     password,
     confirmPassword,
-    type
+    isTermsAccepted
   ) => {
-    let isvalid = true;
+    const errors = [];
 
-    if (type == "all" || type == "fullname") {
-      if (fullname == "") {
-        isvalid = false;
-        setFullnameError("Pleas provide you full name.");
-        return isvalid;
-      } else {
-        isvalid = true;
-        setFullnameError("");
-      }
-    }
-
-    if (type == "all" || type == "phone") {
-      if (phone == "" || !phone.startsWith("+251") || phone.length != 13) {
-        isvalid = false;
-        setPhoneError("Pleas provide a valid phone number.");
-        return isvalid;
-      } else {
-        isvalid = true;
-        setPhoneError("");
-      }
-    }
-
-    if (type == "all" || type == "email") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        isvalid = false;
-        setEmailError("The email is invalid.");
-        return isvalid;
-      } else {
-        isvalid = true;
-        setEmailError("");
-      }
-    }
-    if (type == "all" || type == "password") {
-      const hasUpperCase = /[A-Z]/.test(password);
-      const hasSpecialChar = /[!@#$%^&*]/.test(password);
-      const hasNumber = /[0-9]/.test(password);
-      const isValidLength = password.length >= 8;
-
-      if (!isValidLength) {
-        setPasswordError("Password must be at least 8 characters long.");
-        isvalid = false;
-        return isvalid;
-      } else if (!hasUpperCase) {
-        isvalid = false;
-        setPasswordError(
-          "Password must contain at least one uppercase letter."
-        );
-        return isvalid;
-      } else if (!hasSpecialChar) {
-        isvalid = false;
-        setPasswordError(
+    if (!fullname) errors.push("Please provide your full name.");
+    if (!phone || !phone.startsWith("+251") || phone.length !== 13)
+      errors.push("Please provide a valid phone number.");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) errors.push("The email is invalid.");
+    if (!password) errors.push("Password is required.");
+    if (password) {
+      if (password.length < 8)
+        errors.push("Password must be at least 8 characters long.");
+      if (!/[A-Z]/.test(password))
+        errors.push("Password must contain at least one uppercase letter.");
+      if (!/[!@#$%^&*]/.test(password))
+        errors.push(
           "Password must contain at least one special character (!@#$%^&*)."
         );
-        return isvalid;
-      } else if (!hasNumber) {
-        isvalid = false;
-        setPasswordError("Password must contain at least one Number.");
-        return isvalid;
-      } else {
-        isvalid = true;
-        setPasswordError("");
-      }
+      if (!/[0-9]/.test(password))
+        errors.push("Password must contain at least one number.");
     }
-    if (type == "all" || type == "confirmPassword") {
-      if (password != confirmPassword || confirmPassword == "") {
-        isvalid = false;
-        setConfirmPasswordError("The passwords are doesn't match.");
-      } else {
-        isvalid = true;
-        setConfirmPasswordError("");
-      }
-    }
-    if (!isSelected) {
-      setTermError("you must have aggre to terms and condtions");
-      return false;
-    } else {
-      setTermError("");
-    }
+    if (!confirmPassword || password !== confirmPassword)
+      errors.push("Passwords do not match.");
+    if (!isTermsAccepted)
+      errors.push("You must agree to the terms and conditions.");
 
-    return isvalid;
+    return errors;
   };
 
   const handleSignUp = async () => {
-    const isValid = validate(
+    console.log("phone: ", value, formattedValue);
+    const errors = validate(
       form.fullname,
-      form.phone,
+      formattedValue,
       form.email,
       form.password,
       form.confirmPassword,
-      "all"
+      isSelected
     );
-    let cleanedNumber = form.phone.replace("+", "");
+
+    // Check for missing files
+    if (!idFile) errors.push("ID file is missing.");
+    if (!driverLicenseFile) errors.push("Driver License file is missing.");
+
+    if (errors.length > 0) {
+      setError(errors); // show all errors at once
+      return;
+    }
+
     setLoding(true);
-    if (isValid) {
-      console.log(form);
-      try {
-        const res = await api.post("api/v1/auth/jwt/signup/", {
-          full_name: form.fullname,
-          phone_number: cleanedNumber,
-          email: form.email,
-          password: form.password,
-          self_created: true,
-          username: cleanedNumber,
-        });
-        setLoding(false);
 
-        router.push({ pathname: "/profile", params: { success: true } });
-      } catch (error) {
-        console.log(error);
-        setLoding(false);
+    try {
+      let cleanedNumber = form.phone.replace("+", "");
 
-        console.log(error.message);
-        if (error.response) {
-          setError(error.response.data?.error);
-        }
+      const formData = new FormData();
+      const [first, last] = form.fullname.split(" ");
+      formData.append("first_name", first);
+      formData.append("last_name", last || "");
+
+      formData.append("phone_number", formattedValue);
+      formData.append("email", form.email);
+      formData.append("password", form.password);
+      formData.append("self_created", true);
+      formData.append("role", "renter");
+      // formData.append("role", "renter");
+
+      // formData.append("username", cleanedNumber);
+
+      formData.append("national_id", {
+        uri: idFile.uri,
+        name: idFile.name,
+        type: idFile.mimeType || "application/octet-stream",
+      });
+
+      formData.append("driver_license", {
+        uri: driverLicenseFile.uri,
+        name: driverLicenseFile.name,
+        type: driverLicenseFile.mimeType || "application/octet-stream",
+      });
+
+      console.log("req sent: ");
+      const res = await api.post("user/register/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setLoding(false);
+
+      router.push({ pathname: "/profile", params: { success: true } });
+    } catch (error) {
+      console.log(error);
+      setLoding(false);
+
+      console.log(error.message);
+      if (error.response) {
+        setError(error.response.data?.error);
       }
     }
   };
+
+  const pickFile = async (type) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "application/pdf"],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+
+        const fileObj = {
+          uri: file.uri,
+          name: file.name,
+          type: file.mimeType || "application/octet-stream",
+        };
+
+        if (type === "id") {
+          setIdFile(fileObj);
+        } else if (type === "driverLicense") {
+          setDriverLicenseFile(fileObj);
+        }
+
+        console.log("Selected file:", fileObj); // optional, for debugging
+      }
+    } catch (err) {
+      console.log("File picking error:", err);
+    }
+  };
+
   return (
-    <ScrollView style={{ backgroundColor: "white" }}>
-      <View style={styles.login_con}>
-        {/* <View style={{ justifyContent: "center", alignItems: "center" }}>
+    <SafeAreaView style={{ height: "100%", backgroundColor: "white" }}>
+      <ScrollView style={{ backgroundColor: "white" }}>
+        <View style={styles.login_con}>
+          {/* <View style={{ justifyContent: "center", alignItems: "center" }}>
           <Image
             style={styles.top_image}
             source={images.logo}
             resizeMode="contain"
           />
         </View> */}
-        <Text style={styles.login_main_text}> {t("sign_up")} </Text>
-        <Text style={{ marginTop: 10, color: "grey", fontSize: 14 }}>
-          {t("sign_up_desc")}
-        </Text>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.container}
-        >
+          <Text style={styles.login_main_text}> {t("sign_up")} </Text>
+          <Text style={{ marginTop: 10, color: "grey", fontSize: 14 }}>
+            {t("sign_up_desc")}
+          </Text>
+          {/* <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
+          > */}
           <FormField
             title={t("fullname")}
             value={form.fullname}
@@ -244,7 +258,7 @@ const SignUp = () => {
                 backgroundColor: "#e7ebf0",
                 borderRadius: 8,
                 width: "100%",
-                height: 60, // reduced height
+                height: 52, // reduced height
               }}
               textContainerStyle={{
                 backgroundColor: "#e7ebf0",
@@ -252,7 +266,7 @@ const SignUp = () => {
 
                 paddingVertical: 0,
                 paddingHorizontal: 0,
-                height: 58, // match container height
+                height: 50, // match container height
               }}
               flagButtonStyle={{
                 width: 60,
@@ -266,44 +280,25 @@ const SignUp = () => {
               withDarkTheme
               withShadow
             />
-
-            {/* <PhoneInput
-              containerStyle={{
-                borderWidth: 1,
-                margin: 0,
-                padding: 0,
-                width: "100%",
-                height: 50,
-                // borderRadius: 6,
-              }}
-              value={form.phone}
-              defaultCode="ET"
-              layout="first"
-              onChangeText={(text) => {
-                console.log(text);
-              }}
-              onChangeFormattedText={(text) => {
-                console.log("phone: ", text);
-                validate(
-                  form.fullname,
-                  text,
-                  form.email,
-                  form.password,
-                  form.confirmPassword,
-                  "phone"
-                );
-
-                setForm({ ...form, phone: text });
-
-                // setFormattedValue(text);
-              }}
-              // withDarkTheme
-              // withShadow
-              // autoFocus
-            /> */}
           </View>
           <Text style={{ color: "red" }}>{phoneError}</Text>
 
+          <View>
+            {/* files */}
+            <FilePickerField
+              label="ID"
+              file={idFile}
+              setFile={setIdFile}
+              pickFile={() => pickFile("id")}
+            />
+
+            <FilePickerField
+              label="Driver License"
+              file={driverLicenseFile}
+              setFile={setDriverLicenseFile}
+              pickFile={() => pickFile("driverLicense")}
+            />
+          </View>
           <FormField
             title={t("email")}
             value={form.email}
@@ -394,44 +389,135 @@ const SignUp = () => {
           <Text style={{ color: "red" }}>{termError}</Text>
 
           <View style={{ marginTop: 10 }}></View>
-          {error && (
+          {errors.length > 0 && (
             <View
               style={{
-                backgroundColor: "#d98989",
+                backgroundColor: "#fde2e2", // light red background
                 borderRadius: 8,
-                marginBottom: 10,
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                height: 50,
-                paddingHorizontal: 10,
+                padding: 10,
+                marginBottom: 15,
+                position: "relative",
               }}
             >
-              <Text style={{ color: "white" }}>{error}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {errors.map((err, index) => (
+                  <Text
+                    key={index}
+                    style={{
+                      color: "#b00020", // dark red text
+                      fontSize: 13,
+                      marginBottom: 3,
+                      fontWeight: "500",
+                    }}
+                  >
+                    • {err}
+                  </Text>
+                ))}
+              </ScrollView>
               <TouchableOpacity
                 style={{
-                  height: 50,
+                  // height: 50,
                   justifyContent: "center",
-                  paddingHorizontal: 10,
+                  // paddingHorizontal: 10,
+                  position: "absolute",
+                  right: 0,
+                  top: -10,
+                  backgroundColor: "black",
+                  borderRadius: 100,
                 }}
-                onPress={() => setError(null)}
+                onPress={() => setError([])}
               >
-                <Ionicons name="close" size={20} />
+                <Ionicons name="close" size={20} color={"white"} />
               </TouchableOpacity>
             </View>
           )}
           <TouchableOpacity onPress={handleSignUp} style={styles.login_button}>
-            <Text style={{ color: "white", fontSize: 24, textAlign: "center" }}>
+            <Text style={{ color: "white", fontSize: 20, textAlign: "center" }}>
               {t("sign_up")}
             </Text>
           </TouchableOpacity>
-        </KeyboardAvoidingView>
-      </View>
-      {isLoadding && <AppLoader />}
-    </ScrollView>
+          {/* </KeyboardAvoidingView> */}
+        </View>
+        {isLoadding && <AppLoader />}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
+const FilePickerField = ({ label, file, setFile, pickFile }) => {
+  return (
+    <View style={{ marginBottom: 20 }}>
+      <Text style={{ fontSize: 16, marginBottom: 5 }}>{label}</Text>
 
+      {file ? (
+        <View
+          style={{
+            position: "relative",
+            borderRadius: 8,
+            overflow: "hidden",
+            backgroundColor: "#e0e0e0",
+          }}
+        >
+          {file.type.startsWith("image/") ? (
+            <Image
+              source={{ uri: file.uri }}
+              style={{ width: "100%", height: 150 }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                padding: 10,
+                backgroundColor: "black",
+              }}
+            >
+              <MaterialIcons name="insert-drive-file" size={24} color="white" />
+              <Text
+                style={{
+                  color: "white",
+                  marginLeft: 10,
+                  flexShrink: 1,
+                }}
+                numberOfLines={1}
+              >
+                {file.name}
+              </Text>
+            </View>
+          )}
+
+          {/* Cancel button */}
+          <TouchableOpacity
+            onPress={() => setFile(null)}
+            style={{
+              position: "absolute",
+              top: 5,
+              right: 5,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              borderRadius: 15,
+              padding: 3,
+            }}
+          >
+            <Entypo name="cross" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={{
+            height: 60,
+            backgroundColor: "black",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 8,
+          }}
+          onPress={pickFile}
+        >
+          <Entypo name="plus" size={37} color="white" />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -466,9 +552,9 @@ const styles = StyleSheet.create({
     fontWeight: "semibold",
   },
   login_button: {
-    backgroundColor: "#393381",
+    backgroundColor: "black",
     marginBottom: 40,
-    padding: 15,
+    padding: 14,
     borderRadius: 10,
 
     justifyContent: "center",
@@ -483,6 +569,15 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: 16,
+  },
+  file_con: {
+    backgroundColor: "black",
+    width: 75,
+    height: 75,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    // marginTop: 5,
   },
 });
 
