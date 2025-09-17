@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "expo-router";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   Image,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
-
-import axios from "axios";
-import { Link } from "expo-router";
-import { useTranslation } from "react-i18next";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AlphabetList } from "react-native-section-alphabet-list";
+import { useDispatch, useSelector } from "react-redux";
 import AppLoader from "../../components/AppLoader";
 import { baseImage, baseurl } from "../../constants/global";
 
@@ -71,7 +70,6 @@ const BrandMain = () => {
             display: "flex",
             flexDirection: "column",
             // borderWidth: 2,
-            height: "100%",
           }}
         >
           <View
