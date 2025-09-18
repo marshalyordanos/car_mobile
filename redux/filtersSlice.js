@@ -12,11 +12,12 @@ const initialState = {
   },
   seats: "All seats",
   brands: [],
-  models: null,
+  models: [],
   transmission: "All",
   ecoFriendly: [],
   features: [],
   sortBy: "Relevance",
+  closeSignal: 0,
 };
 
 const filtersSlice = createSlice({
@@ -55,9 +56,14 @@ const filtersSlice = createSlice({
     setSortByFilter: (state, action) => {
       state.sortBy = action.payload;
     },
-    resetAllFilters: (state) => {
-      return state.initialState;
+    triggerCloseSignal: (state) => {
+      state.closeSignal += 1;
     },
+    resetMakeModelFilter: (state) => {
+      state.brands = [];
+      state.models = [];
+    },
+    resetAllFilters: () => initialState,
   },
 });
 
@@ -72,6 +78,8 @@ export const {
   setEcoFriendlyFilter,
   setFeaturesFilter,
   setSortByFilter,
+  triggerCloseSignal,
+  resetMakeModelFilter,
   resetAllFilters,
 } = filtersSlice.actions;
 
