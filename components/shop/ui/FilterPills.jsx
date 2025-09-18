@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSelector } from "react-redux";
+import { shallowEqual, useSelector } from "react-redux";
 const filterOptions = [
   "ICON_ONLY_FILTER",
   "Price",
@@ -21,7 +21,7 @@ const filterOptions = [
 ];
 
 const FilterPills = ({ onPillPress }) => {
-  const filters = useSelector((state) => state.filters);
+  const filters = useSelector((state) => state.filters, shallowEqual);
   const { items: availableTypes } = useSelector(
     (state) => state.filterOptions.vehicleTypes
   );
@@ -35,6 +35,8 @@ const FilterPills = ({ onPillPress }) => {
     )
       count++;
     if (filters.seats !== "All seats") count++;
+    if (filters.brands.length > 0) count++;
+    if (filters.models.length > 0) count++;
     return count;
   }, [filters]);
 

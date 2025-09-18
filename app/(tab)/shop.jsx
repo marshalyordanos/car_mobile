@@ -57,7 +57,10 @@ const Shop = () => {
         activeFilters.brands.length > 0
           ? activeFilters.brands.join(",")
           : undefined,
-      model: activeFilters.model,
+      model:
+        activeFilters.models.length > 0
+          ? activeFilters.models.join(",")
+          : undefined,
       transmission:
         activeFilters.transmission !== "All"
           ? activeFilters.transmission

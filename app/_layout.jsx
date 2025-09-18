@@ -48,6 +48,10 @@ const RootScreen = () => {
               name="DatePickerScreen"
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="model-select"
+              options={{ headerShown: false }}
+            />
           </Stack>
           <StatusBar barStyle="dark-content" />
         </PersistGate>

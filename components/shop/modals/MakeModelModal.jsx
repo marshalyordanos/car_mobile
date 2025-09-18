@@ -1,5 +1,6 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
-import { memo, useEffect, useMemo, useState } from "react";
+import { useRouter } from "expo-router";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -13,10 +14,16 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBrands } from "../../../redux/filterOptionsSlice";
-import { setBrandsFilter } from "../../../redux/filtersSlice";
+import {
+  resetMakeModelFilter,
+  setBrandsFilter,
+} from "../../../redux/filtersSlice";
 
 const MakeModelModal = ({ isVisible, onClose }) => {
+  const router = useRouter();
   const dispatch = useDispatch();
+  const closeSignal = useSelector((state) => state.filters.closeSignal);
+  const lastSignal = useRef(closeSignal);
   const selectedBrandIds = useSelector((state) => state.filters.brands);
   const { items: allBrands, status } = useSelector(
     (state) => state.filterOptions.brands
@@ -30,6 +37,13 @@ const MakeModelModal = ({ isVisible, onClose }) => {
     }
   }, [isVisible, status, dispatch]);
 
+  useEffect(() => {
+    if (closeSignal > lastSignal.current) {
+      lastSignal.current = closeSignal;
+      onClose();
+    }
+  }, [closeSignal, onClose]);
+
   const filteredBrands = useMemo(
     () =>
       allBrands.filter((brand) =>
@@ -37,6 +51,13 @@ const MakeModelModal = ({ isVisible, onClose }) => {
       ),
     [allBrands, searchText]
   );
+
+  const handleNavigateToModel = (brand) => {
+    router.push({
+      pathname: "/model-select",
+      params: { brandId: brand._id, brandName: brand.name },
+    });
+  };
 
   const handleSelectBrand = (brandId) => {
     let newSelection;
@@ -49,7 +70,8 @@ const MakeModelModal = ({ isVisible, onClose }) => {
   };
 
   const handleReset = () => {
-    dispatch(setBrandsFilter([]));
+    console.log("Resetting Make & Model filters...");
+    dispatch(resetMakeModelFilter());
   };
 
   return (
@@ -117,22 +139,30 @@ const MakeModelModal = ({ isVisible, onClose }) => {
               data={filteredBrands}
               keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.row}
-                  onPress={() => handleSelectBrand(item._id)}
-                >
-                  <Icon
-                    name={
-                      selectedBrandIds.includes(item._id)
-                        ? "checkbox"
-                        : "square-outline"
-                    }
-                    size={24}
-                    color="#111827"
-                  />
-                  <Text style={styles.rowText}>{item.name}</Text>
-                  <Icon name="chevron-forward" size={20} color="#6b7280" />
-                </TouchableOpacity>
+                <View style={styles.row}>
+                  <TouchableOpacity
+                    style={styles.checkboxContainer}
+                    onPress={() => handleSelectBrand(item._id)}
+                  >
+                    <Icon
+                      name={
+                        selectedBrandIds.includes(item._id)
+                          ? "checkbox"
+                          : "square-outline"
+                      }
+                      size={24}
+                      color={
+                        selectedBrandIds.includes(item._id)
+                          ? "#393381"
+                          : "#111827"
+                      }
+                    />
+                    <Text style={styles.rowText}>{item.name}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleNavigateToModel(item)}>
+                    <Icon name="chevron-forward" size={20} color="#6b7280" />
+                  </TouchableOpacity>
+                </View>
               )}
             />
           )}
@@ -224,6 +254,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#f3f4f6",
   },
+  checkboxContainer: { flexDirection: "row", alignItems: "center", flex: 1 },
   rowText: {
     flex: 1,
     fontSize: 16,

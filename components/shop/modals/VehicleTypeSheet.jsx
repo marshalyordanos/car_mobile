@@ -30,9 +30,6 @@ const VehicleTypeSheet = React.forwardRef((props, ref) => {
     (state) => state.filterOptions.vehicleTypes
   );
   const selectedTypes = useSelector((state) => state.filters.vehicleTypes);
-
-  console.log("Vehicle Type Sheet Status:", status);
-  console.log("Available Types:", availableTypes);
   useEffect(() => {
     if (status === "idle") {
       dispatch(fetchVehicleTypes());
