@@ -1,12 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { logout } from "./authReducer";
-import { store } from "./store";
 const BASE_URL = "https://localhost:8000/";
 
 const api = axios.create({
-  baseURL: "https://localhost:8000/",
-  // baseURL: "http://192.168.0.113:8080",
+  baseURL: "http://10.0.2.2:8000/api/v1/",
+  // baseURL: "https://car-rental-back-hzzg.onrender.com",
   // baseURL: "http://10.10.4.135:8080",
 
   headers: {
@@ -17,8 +15,8 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    error.title = error.response?.data?.title;
-    error.description = error.response?.data?.detail;
+    // error.title = error.response?.data?.title;
+    // error.description = error.response?.data?.detail;
     return Promise.reject(error);
   }
 );
@@ -30,15 +28,15 @@ api.interceptors.response.use(
       "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||",
       api
     );
-    console.log(error.response.data);
-    if (error.response && error.response.status === 401) {
-      if (error.response.data.code == "token_not_valid") {
-        await AsyncStorage.removeItem("data");
+    // console.log(error.response.data);
+    // if (error.response && error.response.status === 401) {
+    //   if (error.response.data.code == "token_not_valid") {
+    //     await AsyncStorage.removeItem("data");
 
-        store.dispatch(logout());
-      }
-      // Dispatch the logout action
-    }
+    //     store.dispatch(logout());
+    //   }
+    //   // Dispatch the logout action
+    // }
     return Promise.reject(error);
   }
 );
@@ -47,10 +45,18 @@ api.interceptors.request.use(
   async (config) => {
     try {
       const data = await AsyncStorage.getItem("data");
-      const d = JSON.parse(data);
+      const d = data && JSON.parse(data);
+      const fullUrl = config.baseURL
+        ? `${config.baseURL.replace(/\/$/, "")}/${config.url.replace(
+            /^\//,
+            ""
+          )}`
+        : config.url;
+
+      console.log("Request URL:", fullUrl);
       if (d) {
-        console.log("==============", d.access);
-        config.headers.Authorization = `JWT ${d.access}`;
+        console.log("==============", d.accessToken);
+        config.headers.Authorization = `Bearer ${d.accessToken}`;
       }
       return config;
     } catch (error) {

@@ -4,9 +4,11 @@ import { persistReducer, persistStore } from "redux-persist";
 import authReducer from "./authReducer";
 import carsReducer from "./carsSlice";
 import categoryReducer from "./categoryReducer";
+import favoriteReducer from "./favoriteSlice.js";
 import favoritesReducer from "./favoritesSlice";
 import filterOptionsReducer from "./filterOptionsSlice";
 import filtersReducer from "./filtersSlice";
+
 const rootReducer = combineReducers({
   auth: authReducer,
   main_category: categoryReducer,
@@ -14,6 +16,7 @@ const rootReducer = combineReducers({
   favorites: favoritesReducer,
   filters: filtersReducer,
   filterOptions: filterOptionsReducer,
+  favorite: favoriteReducer,
 });
 const persistConfig = {
   key: "root",

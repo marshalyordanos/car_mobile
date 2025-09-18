@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -30,6 +31,9 @@ const Shop = () => {
   } = useSelector((state) => state.cars);
   const activeFilters = useSelector((state) => state.filters, shallowEqual);
   useEffect(() => {
+    searchCars();
+  }, [activeFilters, dispatch]);
+  const searchCars = () => {
     const apiFilters = {
       minPrice:
         activeFilters.price.min === 10 ? undefined : activeFilters.price.min,
@@ -74,7 +78,7 @@ const Shop = () => {
     };
 
     dispatch(fetchCars(apiFilters));
-  }, [activeFilters, dispatch]);
+  };
 
   // const { t, i18n } = useTranslation();
   const [isMakeModalVisible, setMakeModalVisible] = useState(false);
@@ -144,6 +148,12 @@ const Shop = () => {
               <CarCard car={item} onRent={() => console.log(item.name)} />
             </View>
           )}
+          refreshControl={
+            <RefreshControl
+              refreshing={status === "loading"}
+              onRefresh={searchCars}
+            />
+          }
           showsVerticalScrollIndicator={false}
         />
       )}

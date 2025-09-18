@@ -1,12 +1,17 @@
 import { FontAwesome, Ionicons as Icon } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { addFavorite, removeFavorite } from "../../redux/favoritesSlice";
+import api from "../../redux/api";
+import {
+  addFavorite,
+  removeFavorite,
+  selectFavorites,
+} from "../../redux/favoriteSlice";
 
 const placeholderImage = require("../../assets/images/car1.jpeg");
 const CarCard = ({ car }) => {
   const dispatch = useDispatch();
-  const favoriteCarIds = useSelector((state) => state.favorites.ids);
+  const favorites = useSelector(selectFavorites);
   const carId = car?._id;
   const carName = `${car?.brand?.name || ""} ${
     car?.model?.name || car?.title || ""
@@ -16,18 +21,36 @@ const CarCard = ({ car }) => {
   const rating = car?.average_rating || 0;
   const tripCount = car?.review_count || 0;
   const locationCity = car?.location?.city || "Unknown Location";
-  const isFavorited = favoriteCarIds.includes(carId);
+  const isFavorited = favorites.find((f) => f._id == carId);
   const toggleFavorite = () => {
     if (!carId) return;
     if (isFavorited) {
-      dispatch(removeFavorite(carId));
+      removeFromFavorite();
     } else {
-      dispatch(addFavorite(carId));
+      addToFavorite();
     }
   };
   if (!carId || !carName) {
     return null;
   }
+  const addToFavorite = async () => {
+    try {
+      const res = await api.post("cars/favorite/add", { carId: carId });
+      dispatch(addFavorite(car));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const removeFromFavorite = async () => {
+    try {
+      const res = await api.delete("cars/favorite/remove/" + carId, {
+        carId: carId,
+      });
+      dispatch(removeFavorite(carId));
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <TouchableOpacity style={styles.card}>
       <Image

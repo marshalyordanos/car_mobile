@@ -1,6 +1,8 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -8,16 +10,38 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CarCard from "../../components/car/CarCard";
+import api from "../../redux/api";
+import { selectFavorites, setFavorites } from "../../redux/favoriteSlice";
 const Favorites = () => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const allCars = useSelector((state) => state.cars.items);
+  const fevorites = useSelector(selectFavorites);
   const favoriteCarIds = useSelector((state) => state.favorites.ids);
-  const favoritedCars = allCars.filter((car) =>
-    favoriteCarIds.includes(car.id)
-  );
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    console.log(fevorites.length);
+    if (fevorites.length == 0) {
+      fetchFavorites();
+    }
+  }, []);
+
+  const fetchFavorites = async () => {
+    try {
+      setLoading(true); // start loading
+      const res = await api.get("cars/favorite/");
+
+      console.log("favorites: ", res.data);
+      dispatch(setFavorites(res.data.favorites)); // adjust based on your API response
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false); // stop loadings
+    }
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -25,32 +49,42 @@ const Favorites = () => {
         <Text style={styles.headerTitle}>Favorites</Text>
       </View>
 
-      {favoritedCars.length > 0 ? (
-        <FlatList
-          data={favoritedCars}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.cardWrapper}>
-              <CarCard car={item} />
+      <FlatList
+        data={fevorites}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.cardWrapper}>
+            <CarCard car={item} />
+          </View>
+        )}
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.emptyContainer}>
+              <Icon name="heart-outline" size={80} color="#d1d5db" />
+              <Text style={styles.emptyTitle}>No Favorites Yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Tap the heart icon on any car to save it here.
+              </Text>
+              <TouchableOpacity
+                style={styles.browseButton}
+                onPress={() => router.push("/shop")}
+              >
+                <Text style={styles.browseButtonText}>Browse Cars</Text>
+              </TouchableOpacity>
             </View>
-          )}
-          contentContainerStyle={styles.listContainer}
-        />
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Icon name="heart-outline" size={80} color="#d1d5db" />
-          <Text style={styles.emptyTitle}>No Favorites Yet</Text>
-          <Text style={styles.emptySubtitle}>
-            Tap the heart icon on any car to save it here.
-          </Text>
-          <TouchableOpacity
-            style={styles.browseButton}
-            onPress={() => router.push("/shop")}
-          >
-            <Text style={styles.browseButtonText}>Browse Cars</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+          ) : null
+        }
+        ListHeaderComponent={
+          loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#2563eb"
+              style={{ marginTop: 20 }}
+            />
+          ) : null
+        }
+        contentContainerStyle={styles.listContainer}
+      />
     </View>
   );
 };
