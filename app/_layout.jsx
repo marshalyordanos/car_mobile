@@ -38,7 +38,7 @@ const RootScreen = () => {
             <Stack.Screen name="(tab)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen
-              name="LocationSearchScreen"
+              name="location-search"
               options={{
                 headerShown: false,
                 presentation: "modal",
