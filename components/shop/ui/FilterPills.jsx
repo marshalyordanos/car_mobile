@@ -65,6 +65,51 @@ const FilterPills = ({ onPillPress }) => {
   };
   const isVehicleTypeActive = () => filters.vehicleTypes.length > 0;
 
+  const getYearLabel = () => {
+    const { min, max } = filters.years;
+    const defaultMin = 1952;
+    const defaultMax = new Date().getFullYear();
+
+    if (min === defaultMin && max === defaultMax) {
+      return "Years";
+    }
+    return `${min} - ${max}`;
+  };
+
+  const isYearActive = () => {
+    return (
+      filters.years.min !== 1952 ||
+      filters.years.max !== new Date().getFullYear()
+    );
+  };
+
+  const getMakeModelLabel = () => {
+    const brandCount = filters.brands.length;
+    const modelCount = filters.models.length;
+    const totalCount = brandCount + modelCount;
+    if (totalCount === 0) {
+      return "Make & model";
+    }
+    return `Make & model (${totalCount})`;
+  };
+
+  const isMakeModelActive = () => {
+    return filters.brands.length > 0 || filters.models.length > 0;
+  };
+
+  const getSeatsLabel = () => {
+    const selected = filters.seats;
+    if (selected === "All seats") {
+      return "Seats";
+    }
+    const seatNumber = parseInt(selected);
+    return `${seatNumber}+ seats`;
+  };
+
+  const isSeatsActive = () => {
+    return filters.seats !== "All seats";
+  };
+
   const renderItem = ({ item }) => {
     let isActive = false;
     let label = item;
@@ -77,6 +122,18 @@ const FilterPills = ({ onPillPress }) => {
       case "Vehicle type":
         label = getVehicleTypeLabel();
         isActive = isVehicleTypeActive();
+        break;
+      case "Make & model":
+        label = getMakeModelLabel();
+        isActive = isMakeModelActive();
+        break;
+      case "Years":
+        label = getYearLabel();
+        isActive = isYearActive();
+        break;
+      case "Seats":
+        label = getSeatsLabel();
+        isActive = isSeatsActive();
         break;
       // we will add more cases here for the other filters
     }

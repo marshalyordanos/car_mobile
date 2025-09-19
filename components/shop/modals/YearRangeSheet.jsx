@@ -89,7 +89,7 @@ const YearRangeSheet = React.forwardRef((props, ref) => {
           style={styles.resultsButton}
           onPress={handleViewResults}
         >
-          <Text style={styles.resultsButtonText}>View 200+ results</Text>
+          <Text style={styles.resultsButtonText}>View results</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>

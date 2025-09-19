@@ -65,7 +65,7 @@ const SeatsSheet = React.forwardRef((props, ref) => {
           style={styles.resultsButton}
           onPress={() => ref.current?.close()}
         >
-          <Text style={styles.resultsButtonText}>View 200+ results</Text>
+          <Text style={styles.resultsButtonText}>View results</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>

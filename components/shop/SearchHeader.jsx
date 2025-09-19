@@ -57,7 +57,7 @@ const SearchHeader = () => {
             <Text style={styles.modalTitle}>Where</Text>
             <TouchableOpacity
               onPress={() => {
-                router.push(`/LocationSearchScreen`);
+                router.push(`/location-search`);
               }}
             >
               <Text style={styles.input}>{location}</Text>

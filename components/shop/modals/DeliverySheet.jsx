@@ -1,20 +1,20 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import { useRouter } from "expo-router";
 import React, { memo, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const DeliverySheet = React.forwardRef((props, ref) => {
   const snapPoints = ["43%"];
   const [address, setAddress] = useState("");
+  const router = useRouter();
 
   const handleReset = () => {
     setAddress("");
+  };
+
+  const handleNavigateToSearch = () => {
+    router.push("/LocationSearchScreen");
   };
 
   return (
@@ -42,16 +42,15 @@ const DeliverySheet = React.forwardRef((props, ref) => {
           location.
         </Text>
 
-        <View style={styles.inputContainer}>
+        <TouchableOpacity
+          style={styles.inputContainer}
+          onPress={handleNavigateToSearch}
+        >
           <Icon name="search-outline" size={20} color="#6b7280" />
-          <TextInput
-            style={styles.input}
-            placeholder="Enter address"
-            placeholderTextColor="#9ca3af"
-            value={address}
-            onChangeText={setAddress}
-          />
-        </View>
+          <Text style={[styles.input, !address && styles.placeholderText]}>
+            {address || "Enter address"}
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.resultsButton}
@@ -112,5 +111,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 10,
     color: "#111827",
+  },
+  placeholderText: {
+    color: "#9ca3af",
   },
 });
