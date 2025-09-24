@@ -43,6 +43,20 @@ export const fetchModels = createAsyncThunk(
   }
 );
 
+export const fetchFeatures = createAsyncThunk(
+  "filterOptions/fetchFeatures",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        "https://car-rental-back-hzzg.onrender.com/api/v1/cars/features"
+      );
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const filterOptionsSlice = createSlice({
   name: "filterOptions",
   initialState: {
@@ -55,6 +69,10 @@ const filterOptionsSlice = createSlice({
       status: "idle",
     },
     models: {
+      items: [],
+      status: "idle",
+    },
+    features: {
       items: [],
       status: "idle",
     },
@@ -94,6 +112,17 @@ const filterOptionsSlice = createSlice({
       })
       .addCase(fetchModels.rejected, (state) => {
         state.models.status = "failed";
+      })
+      // Reducers for features
+      .addCase(fetchFeatures.pending, (state) => {
+        state.features.status = "loading";
+      })
+      .addCase(fetchFeatures.fulfilled, (state, action) => {
+        state.features.status = "succeeded";
+        state.features.items = action.payload;
+      })
+      .addCase(fetchFeatures.rejected, (state) => {
+        state.features.status = "failed";
       });
   },
 });

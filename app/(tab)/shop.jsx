@@ -45,6 +45,8 @@ const Shop = () => {
         activeFilters.years.max === new Date().getFullYear()
           ? undefined
           : activeFilters.years.max,
+      minMileage: activeFilters.mileage.min,
+      maxMileage: activeFilters.mileage.max,
       seating_capacity:
         activeFilters.seats !== "All seats"
           ? parseInt(activeFilters.seats)
@@ -67,7 +69,9 @@ const Shop = () => {
           : undefined,
       eco_friendly:
         activeFilters.ecoFriendly.length > 0
-          ? activeFilters.ecoFriendly.join(",")
+          ? activeFilters.ecoFriendly
+              .map((item) => item.toLowerCase())
+              .join(",")
           : undefined,
       features:
         activeFilters.features.length > 0
@@ -108,6 +112,17 @@ const Shop = () => {
     } else {
       console.log(item, "pressed");
     }
+  };
+
+  const handleNavigationFromAllFilters = (filterName) => {
+    setAllFiltersVisible(false);
+    setTimeout(() => {
+      if (filterName === "Make & model") {
+        setMakeModalVisible(true);
+      } else if (filterName === "Seats") {
+        seatsSheetRef.current?.present();
+      }
+    }, 250);
   };
 
   return (
@@ -169,6 +184,7 @@ const Shop = () => {
       <AllFiltersModal
         isVisible={isAllFiltersVisible}
         onClose={() => setAllFiltersVisible(false)}
+        onNavigateToFilter={handleNavigationFromAllFilters}
       />
     </View>
   );
