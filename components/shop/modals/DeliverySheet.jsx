@@ -14,7 +14,7 @@ const DeliverySheet = React.forwardRef((props, ref) => {
   };
 
   const handleNavigateToSearch = () => {
-    router.push("/LocationSearchScreen");
+    router.push("/location-search");
   };
 
   return (
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f4f6",
     borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingVertical: 16,
   },
   input: {
     flex: 1,

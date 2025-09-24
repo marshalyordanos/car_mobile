@@ -10,6 +10,10 @@ const initialState = {
     min: 1952,
     max: new Date().getFullYear(),
   },
+  mileage: {
+    min: 0,
+    max: 1000,
+  },
   seats: "All seats",
   brands: [],
   models: [],
@@ -50,6 +54,9 @@ const filtersSlice = createSlice({
     setEcoFriendlyFilter: (state, action) => {
       state.ecoFriendly = action.payload;
     },
+    setMileageFilter: (state, action) => {
+      state.mileage = action.payload;
+    },
     setFeaturesFilter: (state, action) => {
       state.features = action.payload;
     },
@@ -76,6 +83,7 @@ export const {
   setModelsFilter,
   setTransmissionFilter,
   setEcoFriendlyFilter,
+  setMileageFilter,
   setFeaturesFilter,
   setSortByFilter,
   triggerCloseSignal,

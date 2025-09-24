@@ -1,65 +1,146 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
-import { memo, useMemo, useState } from "react";
+import { useRouter } from "expo-router";
+import { memo, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Modal,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
 import icons from "../../../constants/icons";
+import {
+  fetchFeatures,
+  fetchVehicleTypes,
+} from "../../../redux/filterOptionsSlice";
+import {
+  resetAllFilters,
+  setEcoFriendlyFilter,
+  setFeaturesFilter,
+  setMileageFilter,
+  setPriceFilter,
+  setVehicleTypesFilter,
+  setYearFilter,
+} from "../../../redux/filtersSlice";
 import TypeButton from "../shared/ui/TypeButton";
 import FilterRow from "../ui/FilterRow";
 import FilterToggle from "../ui/FilterToggle";
+import SortByModal from "./SortByModal";
+import TransmissionModal from "./TransmissionModal";
 
-const vehicleTypes = [
-  { label: "Cars", icon: icons.car },
-  { label: "SUVs", icon: icons.suv },
-  { label: "Minivans", icon: icons.minivan },
-  { label: "Trucks", icon: icons.truck },
-  { label: "Vans", icon: icons.van },
-  { label: "Cargo vans", icon: icons.cargovan },
-  { label: "Box trucks", icon: icons.boxtruck },
-];
+const vehicleicons = {
+  Cars: icons.car,
+  SUVs: icons.suv,
+  Minivans: icons.minivan,
+  Trucks: icons.truck,
+  Vans: icons.van,
+  "Cargo vans": icons.cargovan,
+  "Box trucks": icons.boxtruck,
+};
 
-const features = [
-  {
-    label: "Wheelchair accessible",
-    iconName: "wheelchair",
-    iconSet: "FontAwesome",
-  },
-  { label: "All-wheel drive", iconName: "drive-eta", iconSet: "MaterialIcons" },
-  { label: "Android Auto", iconName: "android", iconSet: "FontAwesome" },
-  { label: "Apple CarPlay", iconName: "apple", iconSet: "FontAwesome" },
-  { label: "AUX input", iconName: "volume-up", iconSet: "FontAwesome" },
-  { label: "Backup camera", iconName: "camera-rear", iconSet: "MaterialIcons" },
-  { label: "GPS", iconName: "location-on", iconSet: "MaterialIcons" },
-  { label: "Sunroof", iconName: "wb-sunny", iconSet: "MaterialIcons" },
-];
+const featureicons = {
+  "AUX input": { name: "musical-notes-outline", set: "Ionicons" },
+  "All-wheel drive": { name: "snow", set: "Ionicons" },
+  "Android Auto": { name: "logo-android", set: "Ionicons" },
+  "Apple CarPlay": { name: "logo-apple", set: "Ionicons" },
+  "Backup camera": { name: "camera-reverse-outline", set: "Ionicons" },
+  "Bike rack": { name: "bicycle-outline", set: "Ionicons" },
+  "Blind spot warning": { name: "warning-outline", set: "Ionicons" },
+  Bluetooth: { name: "bluetooth-outline", set: "Ionicons" },
+  "Child seat": { name: "happy-outline", set: "Ionicons" },
+  Convertible: { name: "car-sport-outline", set: "Ionicons" },
+  GPS: { name: "navigate-outline", set: "Ionicons" },
+  "Heated seats": { name: "flame-outline", set: "Ionicons" },
+  "Keyless entry": { name: "key-outline", set: "Ionicons" },
+  "Pet friendly": { name: "paw-outline", set: "Ionicons" },
+  "Ski rack": { name: "analytics-outline", set: "Ionicons" },
+  "Snow tires": { name: "snow-outline", set: "Ionicons" },
+  Sunroof: { name: "sunny-outline", set: "Ionicons" },
+  "Toll pass": { name: "cash-outline", set: "Ionicons" },
+  "USB charger": { name: "battery-charging-outline", set: "Ionicons" },
+  "USB input": { name: "hardware-chip-outline", set: "Ionicons" },
+  "Wheelchair accessible": { name: "body-outline", set: "Ionicons" },
+};
 
-const ecoFriendlyTypes = [
-  { label: "Electric", iconName: "bolt", iconSet: "FontAwesome" },
-  { label: "Hybrid", iconName: "leaf", iconSet: "FontAwesome" },
-];
+const ecoFriendlyIcons = {
+  Electric: { name: "flash-outline", set: "Ionicons" },
+  Hybrid: { name: "leaf-outline", set: "Ionicons" },
+};
+const ecoFriendlyOptions = ["Electric", "Hybrid"];
 
 const MIN_YEAR = 1952;
 const MAX_YEAR = new Date().getFullYear();
 
-const AllFiltersModal = ({ isVisible, onClose }) => {
-  const [priceRange, setPriceRange] = useState([10, 500]);
+const AllFiltersModal = ({ isVisible, onClose, onNavigateToFilter }) => {
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const globalFilters = useSelector((state) => state.filters);
+  const { items: availableTypes, status: vehicleTypesStatus } = useSelector(
+    (state) => state.filterOptions.vehicleTypes
+  );
+  const { items: availableFeatures, status: featuresStatus } = useSelector(
+    (state) => state.filterOptions.features
+  );
+  const [selectedTypes, setSelectedTypes] = useState(
+    globalFilters.vehicleTypes
+  );
+  const [priceRange, setPriceRange] = useState([
+    globalFilters.price.min,
+    globalFilters.price.max,
+  ]);
+
   const [address, setAddress] = useState("");
-  const [yearRange, setYearRange] = useState([MIN_YEAR, MAX_YEAR]);
-  const [selectedTypes, setSelectedTypes] = useState([]);
-  const [selectedFeatures, setSelectedFeatures] = useState([]);
-  const [ecoFriendly, setEcoFriendly] = useState([]);
+  const [yearRange, setYearRange] = useState([
+    globalFilters.years.min,
+    globalFilters.years.max,
+  ]);
+  const [mileageRange, setMileageRange] = useState([
+    globalFilters.mileage.min,
+    globalFilters.mileage.max,
+  ]);
+  const [selectedFeatures, setSelectedFeatures] = useState(
+    globalFilters.features
+  );
+  const [ecoFriendly, setEcoFriendly] = useState(globalFilters.ecoFriendly);
+  const [isSortModalVisible, setSortModalVisible] = useState(false);
+  const [isTransmissionModalVisible, setTransmissionModalVisible] =
+    useState(false);
   const [isDeluxe, setIsDeluxe] = useState(false);
   const [isSuperDeluxe, setIsSuperDeluxe] = useState(false);
   const [isAllStar, setIsAllStar] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
+
+  useEffect(() => {
+    if (isVisible && vehicleTypesStatus === "idle") {
+      dispatch(fetchVehicleTypes());
+    }
+    if (isVisible && featuresStatus === "idle") {
+      dispatch(fetchFeatures());
+    }
+    if (isVisible) {
+      setSelectedTypes(globalFilters.vehicleTypes);
+      setSelectedFeatures(globalFilters.features);
+      setEcoFriendly(globalFilters.ecoFriendly);
+      setMileageRange([globalFilters.mileage.min, globalFilters.mileage.max]);
+    }
+  }, [isVisible, vehicleTypesStatus, featuresStatus, dispatch, globalFilters]);
+
+  useEffect(() => {
+    setPriceRange([globalFilters.price.min, globalFilters.price.max]);
+  }, [globalFilters.price]);
+
+  useEffect(() => {
+    setYearRange([globalFilters.years.min, globalFilters.years.max]);
+  }, [globalFilters.years]);
+
+  useEffect(() => {
+    setMileageRange([globalFilters.mileage.min, globalFilters.mileage.max]);
+  }, [globalFilters.mileage]);
 
   const rangeText =
     yearRange[0] === MIN_YEAR && yearRange[1] === MAX_YEAR
@@ -67,8 +148,8 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
       : `${yearRange[0]} - ${yearRange[1]}`;
 
   const displayedFeatures = useMemo(() => {
-    return showAllFeatures ? features : features.slice(0, 6);
-  }, [showAllFeatures]);
+    return showAllFeatures ? availableFeatures : availableFeatures.slice(0, 6);
+  }, [showAllFeatures, availableFeatures]);
 
   const handleToggleSelection = (item, selectedArray, setFunction) => {
     if (selectedArray.includes(item)) {
@@ -78,16 +159,21 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
     }
   };
 
+  const handleViewResults = () => {
+    dispatch(setPriceFilter({ min: priceRange[0], max: priceRange[1] }));
+    dispatch(setVehicleTypesFilter(selectedTypes));
+    dispatch(setYearFilter({ min: yearRange[0], max: yearRange[1] }));
+    dispatch(setFeaturesFilter(selectedFeatures));
+    dispatch(setEcoFriendlyFilter(ecoFriendly));
+    dispatch(setMileageFilter({ min: mileageRange[0], max: mileageRange[1] }));
+    onClose();
+  };
+
   const handleReset = () => {
-    setPriceRange([10, 500]);
-    setAddress("");
-    setYearRange([1952, new Date().getFullYear()]);
-    setEcoFriendly([]);
-    setSelectedFeatures([]);
-    setSelectedTypes([]);
-    setIsDeluxe(false);
-    setIsSuperDeluxe(false);
-    setIsAllStar(false);
+    dispatch(resetAllFilters());
+    setEcoFriendly(globalFilters.ecoFriendly);
+    setSelectedFeatures(globalFilters.features);
+    setMileageRange([globalFilters.mileage.min, globalFilters.mileage.max]);
   };
   return (
     <Modal animationType="slide" visible={isVisible} onRequestClose={onClose}>
@@ -108,8 +194,8 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
             {/* Sort by Section */}
             <FilterRow
               label="Sort by"
-              value="Relevance"
-              onPress={() => console.log("Open Sort by")}
+              value={globalFilters.sortBy}
+              onPress={() => setSortModalVisible(true)}
             />
             <View style={styles.divider} />
             {/* Daily Price Section */}
@@ -122,7 +208,7 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
 
             <View style={styles.sliderContainer}>
               <MultiSlider
-                values={[priceRange[0], priceRange[1]]}
+                values={priceRange}
                 sliderLength={330}
                 onValuesChange={setPriceRange}
                 min={10}
@@ -155,25 +241,31 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
             </View>
             {/* Vehicle Type Section */}
             <Text style={styles.sectionTitle}>Vehicle type</Text>
-            <View style={styles.gridContainer}>
-              {vehicleTypes.map((type) => (
-                <View key={type.label} style={styles.buttonWrapper}>
-                  <TypeButton
-                    label={type.label}
-                    icon={type.icon}
-                    isSelected={selectedTypes.includes(type.label)}
-                    onPress={() =>
-                      handleToggleSelection(
-                        type.label,
-                        selectedTypes,
-                        setSelectedTypes
-                      )
-                    }
-                    iconSize={40}
-                  />
-                </View>
-              ))}
-            </View>
+            {vehicleTypesStatus === "loading" && <ActivityIndicator />}
+            {vehicleTypesStatus === "failed" && (
+              <Text style={styles.errorText}>Error loading types</Text>
+            )}
+            {vehicleTypesStatus === "succeeded" && (
+              <View style={styles.gridContainer}>
+                {availableTypes.map((type) => (
+                  <View key={type._id} style={styles.buttonWrapper}>
+                    <TypeButton
+                      label={type.name}
+                      icon={vehicleicons[type.name] || icons.car}
+                      isSelected={selectedTypes.includes(type._id)}
+                      onPress={() =>
+                        handleToggleSelection(
+                          type._id,
+                          selectedTypes,
+                          setSelectedTypes
+                        )
+                      }
+                      iconSize={40}
+                    />
+                  </View>
+                ))}
+              </View>
+            )}
             <View style={styles.divider} />
 
             {/* Vehicle Attributes Section */}
@@ -181,7 +273,7 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
             <FilterRow
               label="Make & model"
               value="All makes and models"
-              onPress={() => console.log("Open Make & Model")}
+              onPress={() => onNavigateToFilter("Make & model")}
             />
             <Text style={styles.rangeText}>{rangeText}</Text>
 
@@ -217,75 +309,131 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
             <FilterRow
               label="Number of seats"
               value="All Seats"
-              onPress={() => console.log("Open Seats")}
+              onPress={() => onNavigateToFilter("Seats")}
             />
             <FilterRow
               label="Transmission"
-              value="All transmissions"
-              onPress={() => console.log("Open Transmissions")}
+              value={globalFilters.transmission}
+              onPress={() => setTransmissionModalVisible(true)}
             />
 
             {/* Eco-friendly Section */}
             <Text style={styles.sectionTitle}>Eco-friendly</Text>
             <View style={styles.ecoFriendlyContainer}>
-              {ecoFriendlyTypes.map((type) => (
-                <TypeButton
-                  key={type.label}
-                  label={type.label}
-                  iconName={type.iconName}
-                  iconSet={type.iconSet}
-                  isSelected={ecoFriendly.includes(type.label)}
-                  onPress={() =>
-                    handleToggleSelection(
-                      type.label,
-                      ecoFriendly,
-                      setEcoFriendly
-                    )
-                  }
-                />
-              ))}
+              {ecoFriendlyOptions.map((typeLabel) => {
+                const iconInfo = ecoFriendlyIcons[typeLabel];
+                return (
+                  <TypeButton
+                    key={typeLabel}
+                    label={typeLabel}
+                    iconName={iconInfo.name}
+                    iconSet={iconInfo.set}
+                    isSelected={ecoFriendly.includes(typeLabel)}
+                    onPress={() =>
+                      handleToggleSelection(
+                        typeLabel,
+                        ecoFriendly,
+                        setEcoFriendly
+                      )
+                    }
+                  />
+                );
+              })}
             </View>
             <View style={styles.divider} />
 
             {/* Features Section */}
             <Text style={styles.sectionTitle}>Features</Text>
-            <>
-              <View style={styles.gridContainer}>
-                {displayedFeatures.map((feature) => (
-                  <View key={feature.label} style={styles.buttonWrapper}>
-                    <TypeButton
-                      label={feature.label}
-                      iconName={feature.iconName}
-                      iconSet={feature.iconSet}
-                      isSelected={selectedFeatures.includes(feature.label)}
-                      onPress={() =>
-                        handleToggleSelection(
-                          feature.label,
-                          selectedFeatures,
-                          setSelectedFeatures
-                        )
-                      }
+            {featuresStatus === "loading" && <ActivityIndicator />}
+            {featuresStatus === "failed" && (
+              <Text style={styles.errorText}>Error loading features</Text>
+            )}
+            {featuresStatus === "succeeded" && (
+              <>
+                <View style={styles.gridContainer}>
+                  {displayedFeatures.map((feature) => {
+                    const iconInfo = featureicons[feature.name] || {
+                      name: "car-sport-outline",
+                      set: "Ionicons",
+                    };
+                    return (
+                      <View key={feature._id} style={styles.buttonWrapper}>
+                        <TypeButton
+                          label={feature.name}
+                          iconName={iconInfo.name}
+                          iconSet={iconInfo.set}
+                          isSelected={selectedFeatures.includes(feature._id)}
+                          onPress={() =>
+                            handleToggleSelection(
+                              feature._id,
+                              selectedFeatures,
+                              setSelectedFeatures
+                            )
+                          }
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+                {availableFeatures.length > 6 && (
+                  <TouchableOpacity
+                    style={styles.showMoreButton}
+                    onPress={() => setShowAllFeatures(!showAllFeatures)}
+                  >
+                    <Icon
+                      name={showAllFeatures ? "remove" : "add"}
+                      size={20}
+                      color="#111827"
                     />
-                  </View>
-                ))}
-              </View>
-              {features.length > 6 && (
-                <TouchableOpacity
-                  style={styles.showMoreButton}
-                  onPress={() => setShowAllFeatures(!showAllFeatures)}
-                >
-                  <Icon
-                    name={showAllFeatures ? "remove" : "add"}
-                    size={20}
-                    color="#111827"
-                  />
-                  <Text style={styles.showMoreText}>
-                    {showAllFeatures ? "Show less" : "Show more"}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              <View style={styles.divider} />
-            </>
+                    <Text style={styles.showMoreText}>
+                      {showAllFeatures ? "Show less" : "Show more"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
+            <View style={styles.divider} />
+
+            {/*  Mileage section */}
+            <Text style={styles.sectionTitle}>Mileage included</Text>
+            <Text style={styles.rangeText}>
+              {mileageRange[0]} - {mileageRange[1]}
+              {mileageRange[1] >= 1000 ? "+" : ""} mi/day
+            </Text>
+            <View style={styles.sliderContainer}>
+              <MultiSlider
+                values={mileageRange}
+                sliderLength={330}
+                onValuesChange={setMileageRange}
+                min={0}
+                max={1000}
+                step={25}
+                allowOverlap={false}
+                snapped
+                minMarkerOverlapDistance={40}
+                trackStyle={{
+                  height: 3,
+                  backgroundColor: "#e5e7eb",
+                }}
+                selectedStyle={{
+                  backgroundColor: "#111827",
+                }}
+                markerStyle={{
+                  height: 24,
+                  width: 24,
+                  borderRadius: 12,
+                  backgroundColor: "#111827",
+                  borderWidth: 1,
+                  borderColor: "white",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 2,
+                }}
+              />
+            </View>
+            <View style={styles.divider} />
 
             {/* Pickup Options Section */}
             <Text style={styles.sectionTitle}>Pickup options</Text>
@@ -295,16 +443,15 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
               Show cars that can be delivered directly to an address or specific
               location.
             </Text>
-            <View style={styles.inputContainer}>
+            <TouchableOpacity
+              style={styles.inputContainer}
+              onPress={() => router.push("/location-search")}
+            >
               <Icon name="search-outline" size={20} color="#6b7280" />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter address"
-                placeholderTextColor="#9ca3af"
-                value={address}
-                onChangeText={setAddress}
-              />
-            </View>
+              <Text style={[styles.input, !address && styles.placeholderText]}>
+                {address || "Enter address"}
+              </Text>
+            </TouchableOpacity>
 
             {/* Elevate Your Experience Section */}
             <Text style={styles.sectionTitle}>Elevate your experience</Text>
@@ -336,12 +483,23 @@ const AllFiltersModal = ({ isVisible, onClose }) => {
 
           {/* Footer */}
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.resultsButton} onPress={onClose}>
-              <Text style={styles.resultsButtonText}>View 200+ results</Text>
+            <TouchableOpacity
+              style={styles.resultsButton}
+              onPress={handleViewResults}
+            >
+              <Text style={styles.resultsButtonText}>View results</Text>
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
+      <SortByModal
+        isVisible={isSortModalVisible}
+        onClose={() => setSortModalVisible(false)}
+      />
+      <TransmissionModal
+        isVisible={isTransmissionModalVisible}
+        onClose={() => setTransmissionModalVisible(false)}
+      />
     </Modal>
   );
 };
@@ -359,7 +517,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#e6e6e6ff",
   },
   headerTitle: { fontSize: 20, fontWeight: "bold", color: "#111827" },
-  headerButton: { fontSize: 16, color: "#111827" },
+  headerButton: { fontSize: 16, fontWeight: "bold", color: "#111827" },
   scrollContainer: { paddingHorizontal: 24, paddingBottom: 100 },
   sectionTitle: {
     fontSize: 18,
@@ -390,10 +548,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f4f6",
     borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingVertical: 16,
   },
   input: {
+    flex: 1,
     fontSize: 14,
+    marginLeft: 10,
     color: "#111827",
   },
   footer: {
