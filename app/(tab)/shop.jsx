@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -19,7 +19,7 @@ import VehicleTypeSheet from "../../components/shop/modals/VehicleTypeSheet";
 import YearRangeSheet from "../../components/shop/modals/YearRangeSheet";
 import SearchHeader from "../../components/shop/SearchHeader";
 import FilterPills from "../../components/shop/ui/FilterPills";
-import { fetchCars } from "../../redux/carsSlice";
+import { clearCars, fetchCars } from "../../redux/carsSlice";
 
 const Shop = () => {
   const insets = useSafeAreaInsets();
@@ -27,61 +27,75 @@ const Shop = () => {
   const {
     items: carList,
     status,
-    totalCars,
+    pagination,
+    canLoadMore,
   } = useSelector((state) => state.cars);
+  const totalCars = pagination?.total || 0;
   const activeFilters = useSelector((state) => state.filters, shallowEqual);
-  useEffect(() => {
-    searchCars();
-  }, [activeFilters, dispatch]);
-  const searchCars = () => {
-    const apiFilters = {
-      minPrice:
-        activeFilters.price.min === 10 ? undefined : activeFilters.price.min,
-      maxPrice:
-        activeFilters.price.max === 500 ? undefined : activeFilters.price.max,
-      minYear:
-        activeFilters.years.min === 1952 ? undefined : activeFilters.years.min,
-      maxYear:
-        activeFilters.years.max === new Date().getFullYear()
-          ? undefined
-          : activeFilters.years.max,
-      minMileage: activeFilters.mileage.min,
-      maxMileage: activeFilters.mileage.max,
-      seating_capacity:
-        activeFilters.seats !== "All seats"
-          ? parseInt(activeFilters.seats)
-          : undefined,
-      vehicle_type:
-        activeFilters.vehicleTypes.length > 0
-          ? activeFilters.vehicleTypes.join(",")
-          : undefined,
-      brand:
-        activeFilters.brands.length > 0
-          ? activeFilters.brands.join(",")
-          : undefined,
-      model:
-        activeFilters.models.length > 0
-          ? activeFilters.models.join(",")
-          : undefined,
-      transmission:
-        activeFilters.transmission !== "All"
-          ? activeFilters.transmission
-          : undefined,
-      eco_friendly:
-        activeFilters.ecoFriendly.length > 0
-          ? activeFilters.ecoFriendly
-              .map((item) => item.toLowerCase())
-              .join(",")
-          : undefined,
-      features:
-        activeFilters.features.length > 0
-          ? activeFilters.features.join(",")
-          : undefined,
-      sortby:
-        activeFilters.sortBy !== "Relevance" ? activeFilters.sortBy : undefined,
-    };
 
-    dispatch(fetchCars(apiFilters));
+  const buildApiQuery = useCallback(
+    (page = 1) => {
+      const filterParts = [];
+      if (activeFilters.price.min !== 10) {
+        filterParts.push(`rentalPricePerDay_gte:${activeFilters.price.min}`);
+      }
+      if (activeFilters.price.max !== 500) {
+        filterParts.push(`rentalPricePerDay_lte:${activeFilters.price.max}`);
+      }
+      if (activeFilters.vehicleTypes.length > 0) {
+        filterParts.push(`carType:[${activeFilters.vehicleTypes.join(",")}]`);
+      }
+      if (activeFilters.brands.length > 0) {
+        filterParts.push(`makeId:[${activeFilters.brands.join(",")}]`);
+      }
+      if (activeFilters.models.length > 0) {
+        filterParts.push(`modelId:[${activeFilters.models.join(",")}]`);
+      }
+
+      // other filters
+      let sortString;
+      if (activeFilters.sortBy === "price_asc") {
+        sortString = "rentalPricePerDay:asc";
+      } else if (activeFilters.sortBy === "price_desc") {
+        sortString = "rentalPricePerDay:desc";
+      }
+
+      return {
+        filter: filterParts.length > 0 ? filterParts.join(",") : undefined,
+        sort: sortString,
+        page: page,
+      };
+    },
+    [activeFilters]
+  );
+
+  useEffect(() => {
+    if (status === "idle") {
+      const apiQuery = buildApiQuery(1);
+      dispatch(fetchCars(apiQuery));
+    }
+  }, [dispatch, status, buildApiQuery]);
+
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    dispatch(clearCars());
+    const apiQuery = buildApiQuery(1);
+    dispatch(fetchCars(apiQuery));
+  }, [activeFilters, dispatch, buildApiQuery]);
+
+  const handleLoadMore = () => {
+    if (canLoadMore && status !== "loadingMore") {
+      const nextPage = (pagination?.page || 1) + 1;
+      const apiQuery = buildApiQuery(nextPage);
+      dispatch(fetchCars(apiQuery));
+    }
+  };
+  const onRefresh = () => {
+    dispatch(clearCars());
   };
 
   // const { t, i18n } = useTranslation();
@@ -125,6 +139,11 @@ const Shop = () => {
     }, 250);
   };
 
+  const renderFooter = () => {
+    if (status !== "loadingMore") return null;
+    return <ActivityIndicator style={{ marginVertical: 20 }} />;
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <SearchHeader />
@@ -139,15 +158,10 @@ const Shop = () => {
           Error loading cars. Please try again.
         </Text>
       )}
-      {status === "loading" && carList.length > 0 && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#111827" />
-        </View>
-      )}
-      {status === "succeeded" && (
+      {status === "succeeded" || carList.length > 0 ? (
         <FlatList
           data={carList}
-          keyExtractor={(item) => item?._id}
+          keyExtractor={(item) => item?.id}
           ListHeaderComponent={() => (
             <View style={styles.resultsContainer}>
               <Text style={styles.resultsTitle}>
@@ -163,15 +177,18 @@ const Shop = () => {
               <CarCard car={item} onRent={() => console.log(item.name)} />
             </View>
           )}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5} // to trigger the load when its close to the end
+          ListFooterComponent={renderFooter}
           refreshControl={
             <RefreshControl
               refreshing={status === "loading"}
-              onRefresh={searchCars}
+              onRefresh={onRefresh}
             />
           }
           showsVerticalScrollIndicator={false}
         />
-      )}
+      ) : null}
       <PriceRangeSheet ref={priceSheetRef} />
       <VehicleTypeSheet ref={vehicleTypeSheetRef} />
       <YearRangeSheet ref={yearSheetRef} />

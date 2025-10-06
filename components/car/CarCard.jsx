@@ -12,16 +12,16 @@ const placeholderImage = require("../../assets/images/car1.jpeg");
 const CarCard = ({ car }) => {
   const dispatch = useDispatch();
   const favorites = useSelector(selectFavorites);
-  const carId = car?._id;
-  const carName = `${car?.brand?.name || ""} ${
+  const carId = car?.id;
+  const carName = `${car?.make?.name || ""} ${
     car?.model?.name || car?.title || ""
   } ${car?.year || ""}`.trim();
-  const price = car?.rental_price_per_day || 0;
-  const imageUrl = car?.images && car.images.length > 0 ? car.images[0] : null;
+  const price = car?.rentalPricePerDay || 0;
+  const imageUrl = car?.photos && car.photos.length > 0 ? car.photos[0] : null;
   const rating = car?.average_rating || 0;
   const tripCount = car?.review_count || 0;
   const locationCity = car?.location?.city || "Unknown Location";
-  const isFavorited = favorites.find((f) => f._id == carId);
+  const isFavorited = favorites.find((f) => f.id === carId);
   const toggleFavorite = () => {
     if (!carId) return;
     if (isFavorited) {

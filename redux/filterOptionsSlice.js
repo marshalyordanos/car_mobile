@@ -1,27 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-
-export const fetchVehicleTypes = createAsyncThunk(
-  "filterOptions/fetchVehicleTypes",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(
-        "https://car-rental-back-hzzg.onrender.com/api/v1/cars/vehicle-types"
-      );
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
-  }
-);
+import api from "./api";
 
 export const fetchBrands = createAsyncThunk(
   "filterOptions/fetchBrands",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        "https://car-rental-back-hzzg.onrender.com/api/v1/cars/brands"
-      );
+      const response = await api.get("/car-makes");
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -33,23 +17,7 @@ export const fetchModels = createAsyncThunk(
   "filterOptions/fetchModels",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        "https://car-rental-back-hzzg.onrender.com/api/v1/cars/models"
-      );
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
-  }
-);
-
-export const fetchFeatures = createAsyncThunk(
-  "filterOptions/fetchFeatures",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(
-        "https://car-rental-back-hzzg.onrender.com/api/v1/cars/features"
-      );
+      const response = await api.get("/car-models");
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -60,10 +28,6 @@ export const fetchFeatures = createAsyncThunk(
 const filterOptionsSlice = createSlice({
   name: "filterOptions",
   initialState: {
-    vehicleTypes: {
-      items: [],
-      status: "idle",
-    },
     brands: {
       items: [],
       status: "idle",
@@ -72,25 +36,10 @@ const filterOptionsSlice = createSlice({
       items: [],
       status: "idle",
     },
-    features: {
-      items: [],
-      status: "idle",
-    },
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Reducers for Vehicle Types
-      .addCase(fetchVehicleTypes.pending, (state) => {
-        state.vehicleTypes.status = "loading";
-      })
-      .addCase(fetchVehicleTypes.fulfilled, (state, action) => {
-        state.vehicleTypes.status = "succeeded";
-        state.vehicleTypes.items = action.payload;
-      })
-      .addCase(fetchVehicleTypes.rejected, (state) => {
-        state.vehicleTypes.status = "failed";
-      })
       // Reducers for Brands
       .addCase(fetchBrands.pending, (state) => {
         state.brands.status = "loading";
@@ -112,17 +61,6 @@ const filterOptionsSlice = createSlice({
       })
       .addCase(fetchModels.rejected, (state) => {
         state.models.status = "failed";
-      })
-      // Reducers for features
-      .addCase(fetchFeatures.pending, (state) => {
-        state.features.status = "loading";
-      })
-      .addCase(fetchFeatures.fulfilled, (state, action) => {
-        state.features.status = "succeeded";
-        state.features.items = action.payload;
-      })
-      .addCase(fetchFeatures.rejected, (state) => {
-        state.features.status = "failed";
       });
   },
 });
