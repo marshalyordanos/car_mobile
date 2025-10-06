@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { shallowEqual, useSelector } from "react-redux";
+import { vehicleTypes } from "../modals/VehicleTypeSheet";
 const filterOptions = [
   "ICON_ONLY_FILTER",
   "Price",
@@ -22,9 +23,6 @@ const filterOptions = [
 
 const FilterPills = ({ onPillPress }) => {
   const filters = useSelector((state) => state.filters, shallowEqual);
-  const { items: availableTypes } = useSelector(
-    (state) => state.filterOptions.vehicleTypes
-  );
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.price.min !== 10 || filters.price.max !== 500) count++;
@@ -52,14 +50,14 @@ const FilterPills = ({ onPillPress }) => {
   };
 
   const getVehicleTypeLabel = () => {
-    const selectedIds = filters.vehicleTypes;
-    const count = selectedIds.length;
+    const selectedValues = filters.vehicleTypes;
+    const count = selectedValues.length;
     if (count === 0) return "Vehicle type";
     if (count === 1) {
-      const selectedType = availableTypes.find(
-        (type) => type._id === selectedIds[0]
+      const selectedType = vehicleTypes.find(
+        (type) => type.value === selectedValues[0]
       );
-      return selectedType ? selectedType.name : "Vehicle type";
+      return selectedType ? selectedType.label : "Vehicle type";
     }
     return `Vehicle type (${count})`;
   };

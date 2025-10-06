@@ -1,13 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "./api";
+
 export const fetchCars = createAsyncThunk(
   "cars/fetchCars",
   async (filters, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        "https://car-rental-back-hzzg.onrender.com/api/v1/cars/search",
-        { params: filters }
-      );
+      const response = await api.get("/cars", { params: filters });
       return response.data;
     } catch (error) {
       console.error("API call failed:", error.response?.data || error.message);
@@ -20,23 +18,42 @@ const carsSlice = createSlice({
   name: "cars",
   initialState: {
     items: [],
-    totalCars: 0,
-    totalPages: 0,
+    pagination: {
+      total: 0,
+      page: 1,
+      pageSize: 10,
+      totalPages: 1,
+    },
+    canLoadMore: true,
     status: "idle",
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearCars: (state) => {
+      state.items = [];
+      state.pagination.page = 1;
+      state.status = "idle";
+      state.canLoadMore = true;
+    },
+  },
 
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCars.pending, (state) => {
-        state.status = "loading";
+      .addCase(fetchCars.pending, (state, action) => {
+        const isFirstPage =
+          action.meta.arg?.page === 1 || !action.meta.arg?.page;
+        state.status = isFirstPage ? "loading" : "loadingMore";
       })
       .addCase(fetchCars.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.items = action.payload.data;
-        state.totalCars = action.payload.totalCars;
-        state.totalPages = action.payload.totalPages;
+        const { data, pagination } = action.payload;
+        if (pagination.page === 1) {
+          state.items = data;
+        } else {
+          state.items = [...state.items, ...data];
+        }
+        state.pagination = pagination;
+        state.canLoadMore = pagination.page < pagination.totalPages;
       })
       .addCase(fetchCars.rejected, (state, action) => {
         state.status = "failed";
@@ -45,4 +62,5 @@ const carsSlice = createSlice({
   },
 });
 
+export const { clearCars } = carsSlice.actions;
 export default carsSlice.reducer;
