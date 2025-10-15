@@ -1,5 +1,4 @@
-import { Ionicons as Icon } from "@expo/vector-icons";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -9,11 +8,24 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import CalendarModal from "./CalendarModal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CalendarModalBetween from "./CalendarModalBetween";
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = 120;
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
+const formatDate = (dateString, timeString) => {
+  if (!dateString) return null;
+  const date = new Date(`${dateString}T00:00:00`);
+  const dateOptions = { weekday: "short", month: "short", day: "numeric" };
+  const formattedDate = date.toLocaleDateString("en-US", dateOptions);
+  if (timeString) {
+    return `${formattedDate}, ${timeString}`;
+  }
+  return formattedDate;
+};
 const MonthsView = ({
   selectedMonths,
   onMonthChange,
@@ -21,12 +33,12 @@ const MonthsView = ({
   onReset,
   onSearch,
 }) => {
+  const insets = useSafeAreaInsets();
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
-  const { width: screenWidth } = Dimensions.get("window");
-
   const [isCalendarModalVisible, setCalendarModalVisible] = useState(false);
   const [calendarMode, setCalendarMode] = useState("start");
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const openCalendarModal = (mode) => {
     setCalendarMode(mode);
@@ -37,17 +49,26 @@ const MonthsView = ({
     console.log(`Saved ${calendarMode} date:`, date);
   };
 
+  // Scroll to selected month when selectedMonths changes
   useEffect(() => {
-    const initialIndex = monthOptions.findIndex((m) => m === selectedMonths);
-    if (initialIndex !== -1 && flatListRef.current) {
-      setTimeout(() => {
-        flatListRef.current.scrollToIndex({
-          index: initialIndex,
-          animated: false,
-        });
-      }, 100);
+    const index = monthOptions.findIndex((m) => m === selectedMonths);
+    if (index !== -1 && flatListRef.current) {
+      flatListRef.current.scrollToIndex({
+        index,
+        animated: true,
+      });
+      setActiveIndex(index);
     }
-  }, [monthOptions, selectedMonths]);
+  }, [selectedMonths, monthOptions]);
+
+  // Track active index during scroll
+  useEffect(() => {
+    const listener = scrollX.addListener(({ value }) => {
+      const index = Math.round(value / ITEM_WIDTH);
+      setActiveIndex(index);
+    });
+    return () => scrollX.removeListener(listener);
+  }, []);
 
   const renderMonthItem = ({ item, index }) => {
     const inputRange = [
@@ -60,47 +81,97 @@ const MonthsView = ({
 
     const translateY = scrollX.interpolate({
       inputRange,
-      outputRange: [50, 20, 0, 20, 50],
+      outputRange: [40, 20, 0, 20, 40],
       extrapolate: "clamp",
     });
+
     const opacity = scrollX.interpolate({
       inputRange,
-      outputRange: [0.35, 0.7, 1, 0.7, 0.35],
+      outputRange: [0.3, 0.6, 1, 0.6, 0.3],
       extrapolate: "clamp",
     });
+
+    const scale = scrollX.interpolate({
+      inputRange,
+      outputRange: [0.8, 0.9, 1.2, 0.9, 0.8],
+      extrapolate: "clamp",
+    });
+
+    const isActive = index === activeIndex;
 
     return (
       <Animated.View
         style={[
           styles.monthItemContainer,
-          { transform: [{ translateY }], opacity },
+          {
+            transform: [{ translateY }, { scale }],
+            opacity,
+          },
         ]}
       >
         <Text
-          style={[
-            styles.monthNumber,
-            item === selectedMonths && styles.activeMonthNumber,
-          ]}
+          style={[styles.monthNumber, isActive && styles.activeMonthNumber]}
         >
           {item}
         </Text>
       </Animated.View>
     );
   };
-  const { startDate, endDate } = useMemo(() => {
+
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  // Update dates whenever selectedMonths changes
+  useEffect(() => {
     const start = new Date();
     const end = new Date(start);
-    end.setMonth(start.getMonth() + selectedMonths);
-    const options = { month: "short", day: "numeric" };
-    return {
-      startDate: start.toLocaleDateString("en-US", options),
-      endDate: end.toLocaleDateString("en-US", options),
-    };
+
+    const targetMonth = start.getMonth() + selectedMonths;
+    const targetYear = start.getFullYear() + Math.floor(targetMonth / 12);
+    const month = targetMonth % 12;
+
+    const lastDay = new Date(targetYear, month + 1, 0).getDate();
+    const day = Math.min(start.getDate(), lastDay);
+    end.setFullYear(targetYear, month, day);
+
+    const formatDate = (date) => date.toISOString().slice(0, 10);
+
+    setStartDate(formatDate(start));
+    setEndDate(formatDate(end));
   }, [selectedMonths]);
+  // Correctly calculate end date handling month ends
+  // const { startDate, endDate } = useMemo(() => {
+  //   const start = new Date();
+  //   const end = new Date(start);
+
+  //   // Add months manually to handle end-of-month correctly
+  //   const targetMonth = start.getMonth() + selectedMonths;
+  //   const targetYear = start.getFullYear() + Math.floor(targetMonth / 12);
+  //   const month = targetMonth % 12;
+
+  //   // Get last day of the target month
+  //   const lastDay = new Date(targetYear, month + 1, 0).getDate();
+  //   const day = Math.min(start.getDate(), lastDay);
+
+  //   end.setFullYear(targetYear, month, day);
+
+  //   // Format as YYYY-MM-DD
+  //   const formatDate = (date) => date.toISOString().slice(0, 10);
+
+  //   return {
+  //     startDate: formatDate(start),
+  //     endDate: formatDate(end),
+  //   };
+  // }, [selectedMonths]);
 
   return (
     <>
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          { height: SCREEN_HEIGHT - insets.bottom - insets.top },
+        ]}
+      >
         <View style={styles.content}>
           <Text style={styles.title}>I want a car for</Text>
           <View style={styles.scrollerContainer}>
@@ -113,6 +184,11 @@ const MonthsView = ({
               showsHorizontalScrollIndicator={false}
               snapToInterval={ITEM_WIDTH}
               decelerationRate="fast"
+              getItemLayout={(data, index) => ({
+                length: ITEM_WIDTH,
+                offset: ITEM_WIDTH * index,
+                index,
+              })}
               onScroll={Animated.event(
                 [{ nativeEvent: { contentOffset: { x: scrollX } } }],
                 { useNativeDriver: true }
@@ -126,9 +202,10 @@ const MonthsView = ({
                 }
               }}
               contentContainerStyle={{
-                paddingHorizontal: (screenWidth - ITEM_WIDTH) / 2,
+                paddingHorizontal: (SCREEN_WIDTH - ITEM_WIDTH) / 2,
               }}
             />
+
             <Text style={styles.monthsLabel}>
               {selectedMonths === 1 ? "month" : "months"}
             </Text>
@@ -136,37 +213,41 @@ const MonthsView = ({
 
           <View style={styles.dateRangeContainer}>
             <TouchableOpacity onPress={() => openCalendarModal("start")}>
-              <Text style={styles.dateLink}>{startDate}</Text>
+              <Text style={styles.dateLink}>{formatDate(startDate)}</Text>
             </TouchableOpacity>
             <Text style={styles.dateRangeText}> to </Text>
             <TouchableOpacity onPress={() => openCalendarModal("end")}>
-              <Text style={styles.dateLink}>{endDate}</Text>
+              <Text style={styles.dateLink}>{formatDate(endDate)}</Text>
             </TouchableOpacity>
           </View>
-
-          <TouchableOpacity style={styles.checkboxContainer}>
-            <Icon name="checkbox-outline" size={24} color="#6b7280" />
-            <Text style={styles.checkboxLabel}>
-              Show cars with similar dates
-            </Text>
-            <Icon name="information-circle-outline" size={20} color="#6b7280" />
-          </TouchableOpacity>
         </View>
+
         <View style={styles.footer}>
           <TouchableOpacity onPress={onReset}>
             <Text style={styles.resetButton}>Reset</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
-            <Text style={styles.searchButtonText}>Search</Text>
+            <Text style={styles.searchButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
       </View>
-      <CalendarModal
+
+      <CalendarModalBetween
         isVisible={isCalendarModalVisible}
         onClose={() => setCalendarModalVisible(false)}
         onSave={handleDateSave}
         mode={calendarMode}
+        startDate={startDate}
+        endDate={endDate}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
       />
+      {/* <CalendarModal
+        isVisible={isCalendarModalVisible}
+        onClose={() => setCalendarModalVisible(false)}
+        onSave={handleDateSave}
+        mode={calendarMode}
+      /> */}
     </>
   );
 };
@@ -177,7 +258,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "white" },
   content: { flex: 1, alignItems: "center", justifyContent: "center" },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#111827",
     marginBottom: 30,
@@ -188,10 +269,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   monthItemContainer: { width: ITEM_WIDTH, alignItems: "center" },
-  monthNumber: { fontSize: 80, fontWeight: "bold", color: "#d1d5db" },
-  activeMonthNumber: {
-    color: "#111827",
-  },
+  monthNumber: { fontSize: 70, fontWeight: "bold", color: "#d1d5db" },
+  activeMonthNumber: { color: "#111827", fontSize: 90 },
   monthsLabel: {
     position: "absolute",
     bottom: 0,
@@ -203,16 +282,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 30,
-    marginTop: 10,
+    marginTop: 30,
   },
-  dateRangeText: {
-    fontSize: 16,
-    color: "#6b7280",
-    marginHorizontal: 8,
+  dateRangeText: { fontSize: 16, color: "#6b7280", marginHorizontal: 8 },
+  dateLink: {
+    color: "#000000",
+    textDecorationLine: "underline",
+    fontSize: 15,
+    fontWeight: "500",
   },
-  dateLink: { color: "#393381", textDecorationLine: "underline", fontSize: 16 },
-  checkboxContainer: { flexDirection: "row", alignItems: "center", gap: 8 },
-  checkboxLabel: { fontSize: 14, color: "#111827" },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -221,12 +299,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#f3f4f6",
   },
-  resetButton: { fontSize: 16, fontWeight: "bold", color: "#111827" },
+  resetButton: { fontSize: 15, fontWeight: "bold", color: "#111827" },
   searchButton: {
     backgroundColor: "#111827",
-    paddingVertical: 14,
-    paddingHorizontal: 40,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
     borderRadius: 8,
   },
-  searchButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  searchButtonText: { color: "white", fontSize: 15, fontWeight: "bold" },
 });

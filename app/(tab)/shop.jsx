@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -32,6 +33,8 @@ const Shop = () => {
   } = useSelector((state) => state.cars);
   const totalCars = pagination?.total || 0;
   const activeFilters = useSelector((state) => state.filters, shallowEqual);
+  const { selectedLocation } = useLocalSearchParams();
+  console.log("selectedLocation:", selectedLocation);
 
   const buildApiQuery = useCallback(
     (page = 1) => {
@@ -145,64 +148,71 @@ const Shop = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <SearchHeader />
-      <FilterPills onPillPress={handlePillPress} />
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "white",
+      }}
+    >
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <SearchHeader selectedLocation={selectedLocation} />
+        <FilterPills onPillPress={handlePillPress} />
 
-      {status === "loading" && carList.length === 0 && (
-        <ActivityIndicator size="large" style={{ marginTop: 50 }} />
-      )}
+        {status === "loading" && carList.length === 0 && (
+          <ActivityIndicator size="large" style={{ marginTop: 50 }} />
+        )}
 
-      {status === "failed" && (
-        <Text style={styles.errorText}>
-          Error loading cars. Please try again.
-        </Text>
-      )}
-      {status === "succeeded" || carList.length > 0 ? (
-        <FlatList
-          data={carList}
-          keyExtractor={(item) => item?.id}
-          ListHeaderComponent={() => (
-            <View style={styles.resultsContainer}>
-              <Text style={styles.resultsTitle}>
-                {totalCars} cars available
-              </Text>
-              <Text style={styles.resultsSubtitle}>
-                These cars are located in and around Addis Ababa
-              </Text>
-            </View>
-          )}
-          renderItem={({ item }) => (
-            <View style={styles.cardWrapper}>
-              <CarCard car={item} onRent={() => console.log(item.name)} />
-            </View>
-          )}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5} // to trigger the load when its close to the end
-          ListFooterComponent={renderFooter}
-          refreshControl={
-            <RefreshControl
-              refreshing={status === "loading"}
-              onRefresh={onRefresh}
-            />
-          }
-          showsVerticalScrollIndicator={false}
+        {status === "failed" && (
+          <Text style={styles.errorText}>
+            Error loading cars. Please try again.
+          </Text>
+        )}
+        {status === "succeeded" || carList.length > 0 ? (
+          <FlatList
+            data={carList}
+            keyExtractor={(item) => item?.id}
+            ListHeaderComponent={() => (
+              <View style={styles.resultsContainer}>
+                <Text style={styles.resultsTitle}>
+                  {totalCars} cars available
+                </Text>
+                <Text style={styles.resultsSubtitle}>
+                  These cars are located in and around Addis Ababa
+                </Text>
+              </View>
+            )}
+            renderItem={({ item }) => (
+              <View style={styles.cardWrapper}>
+                <CarCard car={item} onRent={() => console.log(item.name)} />
+              </View>
+            )}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5} // to trigger the load when its close to the end
+            ListFooterComponent={renderFooter}
+            refreshControl={
+              <RefreshControl
+                refreshing={status === "loading"}
+                onRefresh={onRefresh}
+              />
+            }
+            showsVerticalScrollIndicator={false}
+          />
+        ) : null}
+        <PriceRangeSheet ref={priceSheetRef} />
+        <VehicleTypeSheet ref={vehicleTypeSheetRef} />
+        <YearRangeSheet ref={yearSheetRef} />
+        <SeatsSheet ref={seatsSheetRef} />
+        <DeliverySheet ref={deliverySheetRef} />
+        <MakeModelModal
+          isVisible={isMakeModalVisible}
+          onClose={() => setMakeModalVisible(false)}
         />
-      ) : null}
-      <PriceRangeSheet ref={priceSheetRef} />
-      <VehicleTypeSheet ref={vehicleTypeSheetRef} />
-      <YearRangeSheet ref={yearSheetRef} />
-      <SeatsSheet ref={seatsSheetRef} />
-      <DeliverySheet ref={deliverySheetRef} />
-      <MakeModelModal
-        isVisible={isMakeModalVisible}
-        onClose={() => setMakeModalVisible(false)}
-      />
-      <AllFiltersModal
-        isVisible={isAllFiltersVisible}
-        onClose={() => setAllFiltersVisible(false)}
-        onNavigateToFilter={handleNavigationFromAllFilters}
-      />
+        <AllFiltersModal
+          isVisible={isAllFiltersVisible}
+          onClose={() => setAllFiltersVisible(false)}
+          onNavigateToFilter={handleNavigationFromAllFilters}
+        />
+      </View>
     </View>
   );
 };

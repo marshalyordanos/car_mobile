@@ -5,7 +5,7 @@ import { initReactI18next } from "react-i18next";
 const am = {
   welcome: "ሰላም",
   welcome_back: "እንኳን ደህና መጡ",
-  home_mainTitle: "ወደ መኪና ኪራይ እንኳን በደህና መጡ",
+  home_mainTitle: "እንኳን በደህና መጡ",
   home_subTitle: "ትክክለኛውን መኪና ያግኙ",
   hero_title1: "AfriCar",
   hero_title2: "የመዋቢያ ዕቃዎች አቅርቦት",

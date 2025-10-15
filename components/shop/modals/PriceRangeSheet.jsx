@@ -2,10 +2,13 @@ import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
 import React, { memo, useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { setPriceFilter } from "../../../redux/filtersSlice";
 
 const PriceRangeSheet = React.forwardRef((props, ref) => {
+  const insets = useSafeAreaInsets();
+
   const snapPoints = ["35%"];
   const dispatch = useDispatch();
   const globalPrice = useSelector((state) => state.filters.price);
@@ -34,10 +37,12 @@ const PriceRangeSheet = React.forwardRef((props, ref) => {
       ref={ref}
       index={0}
       snapPoints={snapPoints}
-      backgroundStyle={styles.modalBackground}
+      backgroundStyle={[styles.modalBackground]}
       handleIndicatorStyle={{ backgroundColor: "#d1d5db" }}
     >
-      <BottomSheetView style={styles.contentContainer}>
+      <BottomSheetView
+        style={[styles.contentContainer, { paddingBottom: insets.bottom }]}
+      >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => ref.current?.close()}>
             <Text style={styles.headerButton}>X</Text>
@@ -104,6 +109,9 @@ const styles = StyleSheet.create({
   modalBackground: {
     backgroundColor: "white",
     borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#b1b1b1",
+    // elevation: 10,
   },
   contentContainer: {
     flex: 1,

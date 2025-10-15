@@ -3,6 +3,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabIcon = ({ iconName, color, name, focused }) => {
   return (
@@ -18,6 +19,8 @@ const TabIcon = ({ iconName, color, name, focused }) => {
 };
 
 const TabLayout = () => {
+  const insets = useSafeAreaInsets();
+
   const { t, i18n } = useTranslation();
 
   return (
@@ -31,8 +34,12 @@ const TabLayout = () => {
             backgroundColor: "white",
             borderTopWidth: 1,
             borderTopColor: "#f3f4f6",
-            paddingBottom: 5,
-            height: 60,
+            height: 50 + insets.bottom,
+          },
+          tabBarItemStyle: {
+            height: 50,
+            paddingTop: 15,
+            // paddingBottom: insets.bottom,
           },
         }}
       >
@@ -125,9 +132,11 @@ const styles = StyleSheet.create({
   tabContainer: {
     alignItems: "center",
     gap: 2,
+    minWidth: 50,
+    // borderWidth: 1,
   },
   tabLabel: {
-    fontSize: 10,
-    fontWeight: "600",
+    fontSize: 11,
+    fontWeight: "700",
   },
 });

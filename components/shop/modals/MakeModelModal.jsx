@@ -75,7 +75,13 @@ const MakeModelModal = ({ isVisible, onClose }) => {
   };
 
   return (
-    <Modal animationType="slide" visible={isVisible} onRequestClose={onClose}>
+    <Modal
+      animationType="slide"
+      // style={{ marginHorizontal: 10 }}
+      // transparent
+      visible={isVisible}
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <View style={styles.header}>

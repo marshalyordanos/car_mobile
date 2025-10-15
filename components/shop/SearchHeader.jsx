@@ -1,22 +1,21 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import AgePickerModal from "./modals/AgePickerModal";
 
-const SearchHeader = () => {
+const SearchHeader = ({ selectedLocation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [location, setLocation] = useState("Addis Ababa, Ethiopia");
   const [driverAge, setDriverAge] = useState("25");
   const [isAgePickerVisible, setAgePickerVisible] = useState(false);
   const router = useRouter();
-  const params = useLocalSearchParams();
 
   useEffect(() => {
-    if (params.selectedLocation) {
-      setLocation(params.selectedLocation);
+    if (selectedLocation) {
+      setLocation(selectedLocation);
     }
-  }, [params.selectedLocation]);
+  }, [selectedLocation]);
   const handleGoBack = () => {
     if (router.canGoBack()) {
       router.back();
@@ -70,14 +69,14 @@ const SearchHeader = () => {
               </View>
             </TouchableOpacity>
 
-            <Text style={styles.modalTitle}>Driver Age</Text>
+            {/* <Text style={styles.modalTitle}>Driver Age</Text>
             <TouchableOpacity
               style={styles.inputButton}
               onPress={() => setAgePickerVisible(true)}
             >
               <Text style={styles.inputText}>{driverAge}</Text>
               <Icon name="chevron-down-outline" size={20} color="#6b7280" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={styles.searchModalButton}
