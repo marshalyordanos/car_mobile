@@ -49,9 +49,9 @@ api.interceptors.request.use(
           )}`
         : config.url;
 
-      console.log("Request URL:", fullUrl);
+      console.log("Request URL:", fullUrl, JSON.stringify(d, null, 2));
       if (d) {
-        console.log("==============", d.accessToken);
+        console.log("==============", d?.tokens.accessToken);
         config.headers.Authorization = `Bearer ${d.accessToken}`;
       }
       return config;

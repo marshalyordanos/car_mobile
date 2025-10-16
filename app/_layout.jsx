@@ -37,6 +37,8 @@ const RootScreen = () => {
           <Stack>
             <Stack.Screen name="(tab)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="car" options={{ headerShown: false }} />
+
             <Stack.Screen
               name="location-search"
               options={{
@@ -52,6 +54,12 @@ const RootScreen = () => {
               name="model-select"
               options={{ headerShown: false }}
             />
+
+            {/* <Stack.Screen
+              name="car-rental-detail"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="Checkout" options={{ headerShown: false }} /> */}
           </Stack>
           <StatusBar barStyle="dark-content" />
         </PersistGate>

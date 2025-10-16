@@ -1,4 +1,5 @@
 import { FontAwesome, Ionicons as Icon } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../../redux/api";
@@ -10,6 +11,8 @@ import {
 
 const placeholderImage = require("../../assets/images/car1.jpeg");
 const CarCard = ({ car }) => {
+  const router = useRouter();
+
   const dispatch = useDispatch();
   const favorites = useSelector(selectFavorites);
   const carId = car?.id;
@@ -21,7 +24,7 @@ const CarCard = ({ car }) => {
   const rating = car?.average_rating || 0;
   const tripCount = car?.review_count || 0;
   const locationCity = car?.location?.city || "Unknown Location";
-  const isFavorited = favorites.find((f) => f.id === carId);
+  const isFavorited = favorites?.find((f) => f.id === carId);
   const toggleFavorite = () => {
     if (!carId) return;
     if (isFavorited) {
@@ -52,7 +55,17 @@ const CarCard = ({ car }) => {
     }
   };
   return (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity
+      onPress={() => {
+        // console.log(`/car/${carId}`,carName)
+        router.push({
+          pathname: `/car/${carId}`,
+          params: { name: carName },
+        });
+        // router.push("/car/Checkout");
+      }}
+      style={styles.card}
+    >
       <Image
         source={imageUrl ? { uri: imageUrl } : placeholderImage}
         style={styles.image}

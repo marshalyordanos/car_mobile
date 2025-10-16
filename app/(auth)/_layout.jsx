@@ -17,7 +17,6 @@ const AppLayout = () => {
         name="sign-up"
         options={{
           title: "",
-
           headerBackTitle: "",
           headerShadowVisible: false,
           headerStyle: {

@@ -13,7 +13,7 @@ import {
   useLocalSearchParams,
   useRouter,
 } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
@@ -173,12 +173,12 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
             </View>
             <View style={styles.userDetails}>
               <Text style={styles.userName}>
-                {user?.user?.first_name + " " + user?.user?.last_name}
+                {user?.user?.firstName + " " + user?.user?.lastName}
               </Text>
-              <Text style={styles.lastLogin}>
+              {/* <Text style={styles.lastLogin}>
                 Last Login:{" "}
                 {new Date(user?.user?.last_login).toLocaleDateString()}
-              </Text>
+              </Text> */}
             </View>
           </View>
         </View>
@@ -320,10 +320,11 @@ const Login = ({ status, setLoading, setShowLogin, lan, t }) => {
         phoneEmail: "+" + form.email,
         password: form.password,
       });
-      const res = await api.post("user/login", {
-        phone_number: "+" + form.email,
+      const res = await api.post("auth/login", {
+        phone: form.email,
         password: form.password,
       });
+      console.log("users: ", res.data);
       await AsyncStorage.setItem("data", JSON.stringify(res.data.data));
       dispatch(login(res.data.data));
       router.push({ pathname: "/profile", params: { success: true } });

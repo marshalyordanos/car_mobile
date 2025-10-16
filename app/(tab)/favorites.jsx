@@ -23,8 +23,8 @@ const Favorites = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log(fevorites.length);
-    if (fevorites.length == 0) {
+    // console.log(fevorites?.length);
+    if (fevorites && fevorites?.length == 0) {
       fetchFavorites();
     }
   }, []);
