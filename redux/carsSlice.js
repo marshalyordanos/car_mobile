@@ -5,7 +5,7 @@ export const fetchCars = createAsyncThunk(
   "cars/fetchCars",
   async (filters, { rejectWithValue }) => {
     try {
-      const response = await api.get("/cars", { params: filters });
+      const response = await api.get("cars", { params: filters });
       return response.data;
     } catch (error) {
       console.error("API call failed:", error.response?.data || error.message);

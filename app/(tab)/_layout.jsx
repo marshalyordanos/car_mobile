@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   tabContainer: {
     alignItems: "center",
     gap: 2,
-    minWidth: 50,
+    minWidth: 55,
     // borderWidth: 1,
   },
   tabLabel: {

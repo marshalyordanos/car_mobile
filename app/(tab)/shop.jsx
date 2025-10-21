@@ -78,7 +78,7 @@ const Shop = () => {
       dispatch(fetchCars(apiQuery));
     }
   }, [dispatch, status, buildApiQuery]);
-
+  //
   const isInitialMount = useRef(true);
   useEffect(() => {
     if (isInitialMount.current) {

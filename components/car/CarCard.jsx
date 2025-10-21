@@ -26,6 +26,7 @@ const CarCard = ({ car }) => {
   const locationCity = car?.location?.city || "Unknown Location";
   const isFavorited = favorites?.find((f) => f.id === carId);
   const toggleFavorite = () => {
+    console.log("return: ", carId, isFavorited);
     if (!carId) return;
     if (isFavorited) {
       removeFromFavorite();
@@ -38,18 +39,19 @@ const CarCard = ({ car }) => {
   }
   const addToFavorite = async () => {
     try {
-      const res = await api.post("cars/favorite/add", { carId: carId });
       dispatch(addFavorite(car));
+
+      const res = await api.post("users/wish-list", { carId: carId });
     } catch (error) {
       console.log(error);
     }
   };
   const removeFromFavorite = async () => {
     try {
-      const res = await api.delete("cars/favorite/remove/" + carId, {
-        carId: carId,
-      });
       dispatch(removeFavorite(carId));
+
+      const res = await api.delete("users/wish-list/" + carId);
+      console.log("000000000000000000000000000000000000000000:", res.data);
     } catch (error) {
       console.log(error);
     }
@@ -75,7 +77,7 @@ const CarCard = ({ car }) => {
       <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
         <Icon
           name={isFavorited ? "heart" : "heart-outline"}
-          size={20}
+          size={23}
           color={isFavorited ? "#111827" : "white"}
         />
       </TouchableOpacity>
