@@ -280,11 +280,20 @@ i18n.use(initReactI18next).init({
 
 async function confLocale() {
   console.log("confLocale ||||");
-  const locale = await AsyncStorage.getItem("locale");
-  if (locale != null) i18n.changeLanguage(locale);
+  try {
+    if (typeof window === 'undefined') {
+      console.warn("Running in Node.js, skipping AsyncStorage and using default locale 'en'");
+      return;
+    }
+    const locale = await AsyncStorage.getItem("locale");
+    if (locale != null) {
+      i18n.changeLanguage(locale);
+    }
+  } catch (error) {
+    console.error("Error in confLocale:", error);
+  }
 }
 
-confLocale();
-
+// Do NOT call confLocale() here
 export { confLocale };
 export default i18n;

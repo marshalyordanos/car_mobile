@@ -9,6 +9,31 @@ import favoritesReducer from "./favoritesSlice";
 import filterOptionsReducer from "./filterOptionsSlice";
 import filtersReducer from "./filtersSlice";
 
+// Custom storage engine to handle Node.js environment
+const storage = {
+  getItem: async (key) => {
+    if (typeof window === 'undefined') {
+      console.warn('Running in Node.js, skipping AsyncStorage.getItem');
+      return null; // Return null in Node.js to avoid persistence
+    }
+    return await AsyncStorage.getItem(key);
+  },
+  setItem: async (key, value) => {
+    if (typeof window === 'undefined') {
+      console.warn('Running in Node.js, skipping AsyncStorage.setItem');
+      return; // Skip persistence in Node.js
+    }
+    await AsyncStorage.setItem(key, value);
+  },
+  removeItem: async (key) => {
+    if (typeof window === 'undefined') {
+      console.warn('Running in Node.js, skipping AsyncStorage.removeItem');
+      return; // Skip persistence in Node.js
+    }
+    await AsyncStorage.removeItem(key);
+  },
+};
+
 const rootReducer = combineReducers({
   auth: authReducer,
   main_category: categoryReducer,
@@ -18,9 +43,10 @@ const rootReducer = combineReducers({
   filterOptions: filterOptionsReducer,
   favorite: favoriteReducer,
 });
+
 const persistConfig = {
   key: "root",
-  storage: AsyncStorage,
+  storage, // Use custom storage instead of AsyncStorage directly
   whitelist: ["auth", "favorites"],
 };
 

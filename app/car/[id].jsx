@@ -84,12 +84,14 @@ export default function DetailPage() {
         // Map reviews
         const mappedReviews = Array.isArray(reviews)
           ? reviews.map((review) => ({
+              id: review.id || null, // Include review ID for uniqueness
               revieweeId: review.revieweeId || null,
               reviewerId: review.reviewerId || null,
               type: review.type || "unknown",
               carId: review.carId || id,
               rating: Number(review.rating) || 0,
-              comment: review.comment || "No comment",
+              comment: review.comment || "No comment provided",
+              createdAt: review.createdAt || null, // Include timestamp for sorting/display
             }))
           : [];
 
@@ -127,7 +129,12 @@ export default function DetailPage() {
             desc: "Per day",
           },
           insurance: {
-            provider: apiCar.insurance?.provider || "Not specified",
+            provider: Array.isArray(apiCar.insurancePlans) && apiCar.insurancePlans.length > 0
+              ? apiCar.insurancePlans[0].provider || "Not specified"
+              : "Not specified",
+            details: Array.isArray(apiCar.insurancePlans) && apiCar.insurancePlans.length > 0
+              ? apiCar.insurancePlans[0].coverageDetails || "No coverage details available"
+              : "No coverage details available",
           },
           features: Array.isArray(apiCar.features)
             ? apiCar.features.map((f) => ({
@@ -209,7 +216,7 @@ export default function DetailPage() {
       source.cancel("Component unmounted");
     };
   }, [id, name]);
-  //
+
   if (loading) {
     return (
       <View
@@ -255,27 +262,8 @@ export default function DetailPage() {
       </View>
     );
   }
-  // return (
-  //   <View>
-  //     <Text>csjklm</Text>
-  //     <Text>csjklm</Text>
-  //     <Text>csjklm</Text>
-  //     <Text>csjklm</Text>
-  //     <Text>csjklm</Text>
-  //     <Text>csjklm</Text>
-  //   </View>
-  // );
-  // Remove header
-  // useEffect(() => {
-  //   navigation.setOptions({
-  //     headerShown: false,
-  //   });
-  // }, [navigation]);
-
-  // Handle user state
 
   console.log("Current state:", { loading, error, car: car?.name });
-
   console.log("Rendering CarRentalDetail with car:", car.name);
   return <CarRentalDetail car={car} />;
 }

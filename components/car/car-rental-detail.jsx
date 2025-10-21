@@ -211,7 +211,7 @@ export default function CarRentalDetail({ car }) {
 
   const renderReviewCard = (review) => (
     <View
-      key={`${review.reviewerId}-${review.comment}`}
+      key={review.key || review.id} // Use review.key or review.id
       style={styles.reviewCard}
     >
       <View style={styles.reviewHeader}>
@@ -220,7 +220,15 @@ export default function CarRentalDetail({ car }) {
           <Text style={styles.reviewerName}>
             {review.reviewerId || "Guest"}
           </Text>
-          <Text style={styles.reviewDate}>Date not available</Text>
+          <Text style={styles.reviewDate}>
+            {review.createdAt
+              ? new Date(review.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "Date not available"}
+          </Text>
         </View>
       </View>
       <View style={styles.starsContainer}>
@@ -673,6 +681,9 @@ export default function CarRentalDetail({ car }) {
               <View>
                 <Text style={styles.insuranceProvider}>
                   {car.insurance?.provider || "Not specified"}
+                </Text>
+                <Text style={styles.insuranceText}>
+                  {car.insurance?.details || "No coverage details available"}
                 </Text>
               </View>
             </View>
@@ -1166,20 +1177,7 @@ export default function CarRentalDetail({ car }) {
                 </View>
                 <ScrollView style={styles.insuranceContent}>
                   <Text style={styles.insuranceText}>
-                    For car rentals in Ethiopia, basic insurance like Collision
-                    Damage Waiver (CDW) is typically included, covering damage
-                    to the rental vehicle with a potential excess (e.g., up to
-                    $5,000). Optional protections include: Theft Waiver (TW):
-                    Covers theft or vandalism. Third-Party Liability: Mandatory
-                    in Ethiopia, with rates updated to 4,360 birr annually as of
-                    August 2025. Additional Coverage: Available through local
-                    providers like Ethiopian Insurance Corporation or
-                    international options like AXA.
-                    {"\n\n"}Tips: Review your rental agreement carefully,
-                    consider third-party insurance for savings (up to 50% less
-                    than rental desk rates), and take photos of the car at
-                    pickup and return to avoid disputes. Contact your rental
-                    company or local insurers for tailored plans.
+                    {car.insurance?.details || "No coverage details available"}
                   </Text>
                 </ScrollView>
               </View>
