@@ -13,9 +13,6 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Header, useTheme } from './ThemeProvider';
 
-// ————————————————————————————————————————————
-// 1. FULL MOCK MESSAGES (copy-paste this)
-// ————————————————————————————————————————————
 const mockMessages = {
   '1': [
     { id: 'm1', text: 'Hello! Thank you for booking with us.', timestamp: '10:30 AM', isOutgoing: false },
@@ -38,22 +35,16 @@ const mockMessages = {
   ],
 };
 
-// ————————————————————————————————————————————
-// 2. MAIN COMPONENT
-// ————————————————————————————————————————————
 export default function ChatView({ chat, onBack }) {
   const [messages, setMessages] = useState(mockMessages[chat?.id] ?? []);
   const [input, setInput] = useState('');
   const scrollRef = useRef(null);
   const { theme } = useTheme();
-
-  // ——— Auto-scroll to bottom (on load + new message) ———
   const scrollToBottom = () => {
     scrollRef.current?.scrollToEnd({ animated: true });
   };
 
   useEffect(() => {
-    // Scroll on first load
     const timer = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timer);
   }, []);
@@ -62,7 +53,6 @@ export default function ChatView({ chat, onBack }) {
     scrollToBottom();
   }, [messages]);
 
-  // ——— Send message ———
   const sendMessage = () => {
     if (!input.trim()) return;
 

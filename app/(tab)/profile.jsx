@@ -84,13 +84,19 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
       visible: !!user,
       items: [
         {
-          Icon: MaterialCommunityIcons, // Changed from lowercase 'icon' to uppercase 'Icon'
+          Icon: MaterialCommunityIcons,
           iconName: "account-details-outline",
           name: t("detail"),
           link: "/profile-detail",
         },
         {
-          Icon: MaterialCommunityIcons, // Changed from lowercase 'icon' to uppercase 'Icon'
+          Icon: MaterialCommunityIcons,
+          iconName: "history", // 🆕 Booking History Icon
+          name: t("booking_history") || "Booking History", // 🆕 New booking history
+          link: "/Booking/Mybooking", // 🆕 Navigate to bookings screen
+        },
+        {
+          Icon: MaterialCommunityIcons,
           iconName: "history",
           name: t("purchase_history"),
           link: "/purchase-history",
@@ -101,7 +107,7 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
       id: "orders",
       items: [
         {
-          Icon: SimpleLineIcons, // Changed from lowercase 'icon' to uppercase 'Icon'
+          Icon: SimpleLineIcons,
           iconName: "question",
           name: t("check_item"),
           link: "/check-item",
@@ -112,13 +118,13 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
       id: "info",
       items: [
         {
-          Icon: AntDesign, // Changed from lowercase 'icon' to uppercase 'Icon'
+          Icon: AntDesign,
           iconName: "message1",
           name: t("about_us"),
           link: "/about",
         },
         {
-          Icon: AntDesign, // Changed from lowercase 'icon' to uppercase 'Icon'
+          Icon: AntDesign,
           iconName: "phone",
           name: t("contact_us"),
           link: "/contact",
@@ -159,6 +165,7 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
       ]
     );
   };
+
   console.log("user:2ss ", user);
 
   return (
@@ -175,10 +182,6 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
               <Text style={styles.userName}>
                 {user?.user?.firstName + " " + user?.user?.lastName}
               </Text>
-              {/* <Text style={styles.lastLogin}>
-                Last Login:{" "}
-                {new Date(user?.user?.last_login).toLocaleDateString()}
-              </Text> */}
             </View>
           </View>
         </View>
@@ -220,34 +223,7 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
           <View style={styles.divider} />
           <TouchableOpacity
             style={styles.dangerButton}
-            onPress={async () => {
-              Alert.alert(
-                "Delete Account",
-                "Are you sure you want to delete your account?",
-                [
-                  {
-                    text: "Cancel",
-                    style: "cancel",
-                  },
-                  {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: async () => {
-                      try {
-                        setLoading(true);
-                        await api.post("api/v1/auth/users/delete/");
-                        await AsyncStorage.removeItem("data");
-                        dispatch(logout());
-                      } catch (error) {
-                        console.error(error);
-                      } finally {
-                        setLoading(false);
-                      }
-                    },
-                  },
-                ]
-              );
-            }}
+            onPress={handleDeleteAccount}
           >
             <Text style={styles.dangerButtonText}>{t("delete_account")}</Text>
           </TouchableOpacity>
@@ -525,20 +501,6 @@ const styles = StyleSheet.create({
     color: "#dc3545",
     textAlign: "center",
   },
-  loginButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginTop: 30,
-  },
-  loginButtonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    textAlign: "center",
-    fontWeight: "600",
-    backgroundColor: "#393381",
-  },
-
   continueShopping: {
     marginTop: 20,
     paddingVertical: 12,
@@ -553,7 +515,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-
   // Login styles
   loginContainer: {
     padding: 20,

@@ -291,43 +291,45 @@ export default function CarRentalDetail({ car }) {
 
   const handleContinue = () => {
     console.log("Continue button pressed, navigating to Checkout");
+
     const serializableCar = {
-      name: car.name,
-      owner: car.owner,
-      image: car.image,
-      location: car.location,
-      tripStart: car.tripStart,
-      tripEnd: car.tripEnd,
-      rating: car.rating,
-      trips: car.trips,
-      trim: car.trim,
-      year: car.year,
-      color: car.color,
-      licensePlate: car.licensePlate,
-      vin: car.vin,
-      mileage: car.mileage,
-      dailyRate: car.dailyRate,
-      longTermDiscount: car.longTermDiscount,
-      seatingCapacity: car.seatingCapacity,
-      ecoFriendly: car.ecoFriendly,
-      carType: car.carType,
-      cancellation: car.cancellation,
-      payment: car.payment,
-      miles: car.miles,
-      insurance: car.insurance,
-      features: car.features,
-      safetyFeatures: car.safetyFeatures,
-      connectivity: car.connectivity,
-      convenienceFeatures: car.convenienceFeatures,
-      peaceOfMindFeatures: car.peaceOfMindFeatures,
-      ratingCategories: car.ratingCategories,
-      reviews: car.reviews,
-      ratingCount: car.ratingCount,
-      host: car.host,
-      rules: car.rules,
-      transmission: car.transmission,
-      totalPrice, // Include calculated total price
-    };
+  name: car.name,
+  owner: car.owner,
+  images,  
+  location: car.location,
+  tripStart: tripStartDate.toISOString(),  
+  tripEnd: tripEndDate.toISOString(),     
+  rating: car.rating,
+  trips: car.trips,
+  trim: car.trim,
+  year: car.year,
+  color: car.color,
+  licensePlate: car.licensePlate,
+  vin: car.vin,
+  mileage: car.mileage,
+  dailyRate: car.dailyRate,
+  longTermDiscount: car.longTermDiscount,
+  seatingCapacity: car.seatingCapacity,
+  ecoFriendly: car.ecoFriendly,
+  carType: car.carType,
+  cancellation: car.cancellation,
+  payment: car.payment,
+  miles: car.miles,
+  insurance: car.insurance,
+  features: car.features,
+  safetyFeatures: car.safetyFeatures,
+  connectivity: car.connectivity,
+  convenienceFeatures: car.convenienceFeatures,
+  peaceOfMindFeatures: car.peaceOfMindFeatures,
+  ratingCategories: car.ratingCategories,
+  reviews: car.reviews,
+  ratingCount: car.ratingCount,
+  host: car.host,  // Note: If host.image causes issues later, process it like below
+  rules: car.rules,
+  transmission: car.transmission,
+  totalPrice,  // Keep for backward compatibility
+  price: totalPrice !== "N/A" ? parseFloat(totalPrice) : 0,  // ADDED: Number for checkout subtotal/total
+}; 
     console.log("Navigating with:", {
       car: serializableCar,
       pickupLocation,
@@ -337,7 +339,7 @@ export default function CarRentalDetail({ car }) {
     });
     try {
       router.push({
-        pathname: "/Checkout",
+        pathname: "/car/Checkout",
         params: {
           car: JSON.stringify(serializableCar),
           pickupLocation,

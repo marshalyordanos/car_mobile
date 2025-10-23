@@ -15,59 +15,57 @@ const ThemeContext = createContext();
 /* ────────────────────── LIGHT THEME ────────────────────── */
 const lightTheme = {
   background: '#ffffff',
-  foreground: '#000000',
+  foreground: '#000000',        // black text
+  mutedForeground: '#777777',   // secondary text
   card: '#ffffff',
   muted: '#f3f3f5',
   border: '#e5e5e5',
   inputBg: '#f3f3f5',
+  headerBg: '#ffffff',
+  primary: '#000000',
+
+  // Chat
   messageIn: '#ffffff',
-  messageOut: '#000000',
   messageInText: '#000000',
+  messageOut: '#000000',
   messageOutText: '#ffffff',
+
+  // Badges
   unreadBg: '#000000',
   unreadText: '#ffffff',
   iconRead: '#999999',
   iconUnread: '#ffffff',
-  headerBg: '#ffffff',
-  primary: '#000000',
-  mutedForeground: '#777777',
 };
 
 /* ────────────────────── DARK THEME (COOL & READABLE) ────────────────────── */
 const darkTheme = {
-  background: '#0d1117',        // GitHub dark
-  card: '#161b22',
-  headerBg: '#161b22',
-
-  // MAIN TEXT – ALWAYS LIGHT
-  foreground: '#e6edf3',        // bright blue-gray
+  background: '#0d1117',
+  foreground: '#e6edf3',        // MAIN TEXT — BRIGHT & READABLE
   mutedForeground: '#8b949e',   // secondary text
-
-  border: '#30363d',
+  card: '#161b22',
   muted: '#21262d',
+  border: '#30363d',
   inputBg: '#0d1117',
+  headerBg: '#161b22',
+  primary: '#238636',           // teal accent
 
-  // CHAT BUBBLES
+  // Chat
   messageIn: '#21262d',
   messageInText: '#e6edf3',
-  messageOut: '#238636',        // teal-green accent
+  messageOut: '#238636',
   messageOutText: '#ffffff',
 
-  // BADGES / UNREAD
+  // Badges
   unreadBg: '#238636',
   unreadText: '#ffffff',
   iconRead: '#8b949e',
   iconUnread: '#ffffff',
-
-  // ACCENT
-  primary: '#238636',
 };
 
 export const ThemeProvider = ({ children }) => {
   const system = useColorScheme();
   const [mode, setMode] = useState(system || 'light');
 
-  // Auto-sync with system theme
   useEffect(() => {
     const sub = Appearance.addChangeListener(({ colorScheme }) => {
       setMode(colorScheme || 'light');
@@ -104,7 +102,7 @@ export const Avatar = ({ name, size = 48 }) => {
         },
       ]}
     >
-      <Text style={[styles.avatarText, { color: '#fff' }]}>
+      <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>
         {name?.charAt(0).toUpperCase()}
       </Text>
     </View>
@@ -115,7 +113,7 @@ export const Badge = ({ value }) => {
   const { theme } = useTheme();
   return (
     <View style={[styles.badge, { backgroundColor: theme.unreadBg }]}>
-      <Text style={[styles.badgeText, { color: theme.unreadText }]}>
+      <Text style={{ color: theme.unreadText, fontSize: 12, fontWeight: 'bold' }}>
         {value}
       </Text>
     </View>
@@ -152,7 +150,7 @@ export const Header = ({ title, onBack, showToggle = true }) => {
           <Icon name="arrow-left" size={24} color={theme.foreground} />
         </TouchableOpacity>
       )}
-      <Text style={[styles.headerTitle, { color: theme.foreground }]}>
+      <Text style={{ color: theme.foreground, fontSize: 20, fontWeight: 'bold', flex: 1 }}>
         {title}
       </Text>
       {showToggle && <ThemeToggle />}
@@ -167,10 +165,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
   },
-  avatarText: {
-    fontWeight: '600',
-    fontSize: 18,
-  },
   badge: {
     minWidth: 20,
     height: 20,
@@ -179,25 +173,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 4,
   },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  toggleBtn: {
-    padding: 8,
-  },
+  toggleBtn: { padding: 8 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
   },
-  backBtn: {
-    marginRight: 12,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    flex: 1,
-  },
+  backBtn: { marginRight: 12 },
 });
