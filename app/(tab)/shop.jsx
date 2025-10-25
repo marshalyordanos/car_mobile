@@ -1,13 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
+import LottieView from "lottie-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import CarCard from "../../components/car/CarCard";
@@ -144,7 +138,16 @@ const Shop = () => {
 
   const renderFooter = () => {
     if (status !== "loadingMore") return null;
-    return <ActivityIndicator style={{ marginVertical: 20 }} />;
+    return (
+      <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <LottieView
+          source={require("../../assets/loading.json")}
+          autoPlay
+          loop
+          style={styles.lottie}
+        />
+      </View>
+    );
   };
 
   return (
@@ -158,46 +161,41 @@ const Shop = () => {
         <SearchHeader selectedLocation={selectedLocation} />
         <FilterPills onPillPress={handlePillPress} />
 
-        {status === "loading" && carList.length === 0 && (
-          <ActivityIndicator size="large" style={{ marginTop: 50 }} />
-        )}
-
         {status === "failed" && (
           <Text style={styles.errorText}>
             Error loading cars. Please try again.
           </Text>
         )}
-        {status === "succeeded" || carList.length > 0 ? (
-          <FlatList
-            data={carList}
-            keyExtractor={(item) => item?.id}
-            ListHeaderComponent={() => (
-              <View style={styles.resultsContainer}>
-                <Text style={styles.resultsTitle}>
-                  {totalCars} cars available
-                </Text>
-                <Text style={styles.resultsSubtitle}>
-                  These cars are located in and around Addis Ababa
-                </Text>
-              </View>
-            )}
-            renderItem={({ item }) => (
-              <View style={styles.cardWrapper}>
-                <CarCard car={item} onRent={() => console.log(item.name)} />
-              </View>
-            )}
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5} // to trigger the load when its close to the end
-            ListFooterComponent={renderFooter}
-            refreshControl={
-              <RefreshControl
-                refreshing={status === "loading"}
-                onRefresh={onRefresh}
-              />
-            }
-            showsVerticalScrollIndicator={false}
-          />
-        ) : null}
+        <FlatList
+          data={carList}
+          keyExtractor={(item) => item?.id}
+          ListHeaderComponent={() => (
+            <View style={styles.resultsContainer}>
+              <Text style={styles.resultsTitle}>
+                {totalCars} cars available
+              </Text>
+              <Text style={styles.resultsSubtitle}>
+                These cars are located in and around Addis Ababa
+              </Text>
+            </View>
+          )}
+          renderItem={({ item }) => (
+            <View style={styles.cardWrapper}>
+              <CarCard car={item} onRent={() => console.log(item.name)} />
+            </View>
+          )}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5} // to trigger the load when its close to the end
+          ListFooterComponent={renderFooter}
+          refreshControl={
+            <RefreshControl
+              refreshing={status === "loading"}
+              onRefresh={onRefresh}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        />
+
         <PriceRangeSheet ref={priceSheetRef} />
         <VehicleTypeSheet ref={vehicleTypeSheetRef} />
         <YearRangeSheet ref={yearSheetRef} />
@@ -254,5 +252,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1,
+  },
+  lottie: {
+    width: 150,
+    height: 150,
   },
 });

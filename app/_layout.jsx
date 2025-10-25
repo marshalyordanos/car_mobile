@@ -36,6 +36,8 @@ const RootScreen = () => {
             <Stack.Screen name="(tab)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="car" options={{ headerShown: false }} />
+            <Stack.Screen name="message" options={{ headerShown: false }} />
+
             <Stack.Screen
               name="location-search"
               options={{

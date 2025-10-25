@@ -1,4 +1,5 @@
 // components/inbox/ChatView.jsx
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -10,10 +11,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSelector } from "react-redux";
+import { Header } from "../../components/Inbox/ThemeProvider";
 import { selectTheme } from "../../redux/themeSlice";
-import { Header } from "./ThemeProvider";
 
 // ————————————————————————————————————————————
 // 1. FULL MOCK MESSAGES (copy-paste this)
@@ -98,11 +100,13 @@ const mockMessages = {
 // ————————————————————————————————————————————
 // 2. MAIN COMPONENT
 // ————————————————————————————————————————————
-export default function ChatView({ chat, onBack }) {
-  const [messages, setMessages] = useState(mockMessages[chat?.id] ?? []);
+export default function ChatView({ onBack }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
   const theme = useSelector(selectTheme);
+  const { booking_id: chat } = useLocalSearchParams();
+  const [messages, setMessages] = useState(mockMessages[chat] ?? []);
+  const insets = useSafeAreaInsets();
 
   // ——— Auto-scroll to bottom (on load + new message) ———
   const scrollToBottom = () => {
@@ -140,103 +144,127 @@ export default function ChatView({ chat, onBack }) {
   // ——— Safety: if no chat ———
   if (!chat) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>No chat selected</Text>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "white",
+        }}
+      >
+        <View
+          style={{
+            paddingTop: insets.top,
+            flex: 1,
+            backgroundColor: "white",
+          }}
+        >
+          {" "}
+          <Text>No chat selected</Text>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Header */}
-      <Header title={`${chat.carName} ${chat.carModel}`} onBack={onBack} />
+      <View
+        style={{
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
 
-      {/* Messages */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+          flex: 1,
+          backgroundColor: "white",
+        }}
       >
-        <ScrollView
-          ref={scrollRef}
-          contentContainerStyle={[
-            styles.messages,
-            { backgroundColor: theme.muted },
-          ]}
-          onContentSizeChange={scrollToBottom} // ← BEST auto-scroll
+        {/* Header */}
+        <Header title={`${chat} ${chat}`} onBack={onBack} />
+
+        {/* Messages */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
         >
-          {messages.map((msg) => (
-            <View
-              key={msg.id}
-              style={[
-                styles.messageWrapper,
-                msg.isOutgoing ? styles.right : styles.left,
-              ]}
-            >
+          <ScrollView
+            ref={scrollRef}
+            contentContainerStyle={[
+              styles.messages,
+              { backgroundColor: theme.muted },
+            ]}
+            onContentSizeChange={scrollToBottom} // ← BEST auto-scroll
+          >
+            {messages.map((msg) => (
               <View
+                key={msg.id}
                 style={[
-                  styles.bubble,
-                  msg.isOutgoing ? styles.outgoing : styles.incoming,
-                  {
-                    backgroundColor: msg.isOutgoing
-                      ? theme.messageOut
-                      : theme.messageIn,
-                    borderColor: theme.border,
-                  },
+                  styles.messageWrapper,
+                  msg.isOutgoing ? styles.right : styles.left,
                 ]}
               >
-                <Text
-                  style={{
-                    color: msg.isOutgoing
-                      ? theme.messageOutText
-                      : theme.messageInText,
-                    fontSize: 15,
-                  }}
+                <View
+                  style={[
+                    styles.bubble,
+                    msg.isOutgoing ? styles.outgoing : styles.incoming,
+                    {
+                      backgroundColor: msg.isOutgoing
+                        ? theme.messageOut
+                        : theme.messageIn,
+                      borderColor: theme.border,
+                    },
+                  ]}
                 >
-                  {msg.text}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 11,
-                    marginTop: 4,
-                    color: msg.isOutgoing ? "#ccc" : "#999",
-                    textAlign: msg.isOutgoing ? "right" : "left",
-                  }}
-                >
-                  {msg.timestamp}
-                </Text>
+                  <Text
+                    style={{
+                      color: msg.isOutgoing
+                        ? theme.messageOutText
+                        : theme.messageInText,
+                      fontSize: 15,
+                    }}
+                  >
+                    {msg.text}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      marginTop: 4,
+                      color: msg.isOutgoing ? "#ccc" : "#999",
+                      textAlign: msg.isOutgoing ? "right" : "left",
+                    }}
+                  >
+                    {msg.timestamp}
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </ScrollView>
+            ))}
+          </ScrollView>
 
-        {/* Input Bar */}
-        <View
-          style={[
-            styles.inputBar,
-            { borderTopColor: theme.border, backgroundColor: theme.card },
-          ]}
-        >
-          <TextInput
-            value={input}
-            onChangeText={setInput}
-            placeholder="Type a message..."
-            placeholderTextColor="#999"
+          {/* Input Bar */}
+          <View
             style={[
-              styles.input,
-              { backgroundColor: theme.inputBg, color: theme.foreground },
+              styles.inputBar,
+              { borderTopColor: theme.border, backgroundColor: theme.card },
             ]}
-            onSubmitEditing={sendMessage}
-            returnKeyType="send"
-          />
-          <TouchableOpacity onPress={sendMessage} disabled={!input.trim()}>
-            <Icon
-              name="send"
-              size={24}
-              color={input.trim() ? theme.primary : "#aaa"}
+          >
+            <TextInput
+              value={input}
+              onChangeText={setInput}
+              placeholder="Type a message..."
+              placeholderTextColor="#999"
+              style={[
+                styles.input,
+                { backgroundColor: theme.inputBg, color: theme.foreground },
+              ]}
+              onSubmitEditing={sendMessage}
+              returnKeyType="send"
             />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+            <TouchableOpacity onPress={sendMessage} disabled={!input.trim()}>
+              <Icon
+                name="send"
+                size={24}
+                color={input.trim() ? theme.primary : "#aaa"}
+              />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
     </View>
   );
 }

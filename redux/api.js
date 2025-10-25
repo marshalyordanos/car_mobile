@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { logout } from "./authReducer";
 
 const api = axios.create({
   // baseURL: "https://car-back-22tv.onrender.com/",
@@ -24,18 +25,22 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     console.log(
-      "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||",
-      api
+      "error.response.data",
+      error.response.data,
+      error.response.status
     );
-    // console.log(error.response.data);
-    // if (error.response && error.response.status === 401) {
-    //   if (error.response.data.code == "token_not_valid") {
-    //     await AsyncStorage.removeItem("data");
+    if (error.response && error.response.status === 401) {
+      if (error.response.data.message == "Invalid token") {
+        await AsyncStorage.removeItem("data");
+        console.log(
+          "|||||||||||||||||||||||||||||sdsaasxas|||||||||||||||||||||||||||||||||||||",
+          error.response.data
+        );
 
-    //     store.dispatch(logout());
-    //   }
-    //   // Dispatch the logout action
-    // }
+        store.dispatch(logout());
+      }
+      // Dispatch the logout action
+    }
     return Promise.reject(error);
   }
 );
