@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 import authReducer from "./authReducer";
+import bookingReducer from "./bookingSlice.js";
 import carsReducer from "./carsSlice";
 import categoryReducer from "./categoryReducer";
 import favoriteReducer from "./favoriteSlice.js";
