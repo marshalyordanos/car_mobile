@@ -15,13 +15,14 @@ const FormField = ({
   placeholder,
   handleChangeText,
   otherStyles,
-  showPassword, 
-  onTogglePassword, 
+  showPassword,
+  onTogglePassword,
   ...props
 }) => {
   const [internalShowPassword, setInternalShowPassword] = React.useState(false);
 
-  const isPasswordVisible = showPassword !== undefined ? showPassword : internalShowPassword;
+  const isPasswordVisible =
+    showPassword !== undefined ? showPassword : internalShowPassword;
   const togglePassword = onTogglePassword || setInternalShowPassword;
 
   return (
@@ -67,8 +68,7 @@ const FormField = ({
 export default FormField;
 
 const styles = StyleSheet.create({
-  con: {
-  },
+  con: {},
   txt: {
     fontSize: 16,
     lineHeight: 24,
