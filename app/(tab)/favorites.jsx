@@ -1,6 +1,6 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,24 +20,28 @@ const Favorites = () => {
   const fevorites = useSelector(selectFavorites);
   const favoriteCarIds = useSelector((state) => state.favorites.ids);
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // console.log(fevorites?.length);
-    if (fevorites && fevorites?.length == 0) {
+  useFocusEffect(
+    useCallback(() => {
+      // console.log(fevorites?.length);
+      // if (fevorites && fevorites?.length == 0) {
       fetchFavorites();
-    }
-  }, []);
+      // }
+    }, [])
+  );
 
   const fetchFavorites = async () => {
     try {
-      setLoading(true); // start loading
-      const res = await api.get("cars/favorite/");
+      setLoading(false); // start loading
+      const res = await api.get("users/wish-list");
 
       console.log("favorites: ", res.data);
-      dispatch(setFavorites(res.data.favorites)); // adjust based on your API response
+      dispatch(setFavorites(res.data.data?.wishlist)); // adjust based on your API response
+      setLoading(false); // start loading
     } catch (error) {
-      console.log(error);
+      console.error("error:", error);
+      setLoading(true); // start loading
     } finally {
       setLoading(false); // stop loadings
     }
@@ -67,7 +71,11 @@ const Favorites = () => {
               </Text>
               <TouchableOpacity
                 style={styles.browseButton}
-                onPress={() => router.push("/shop")}
+                onPress={() => {
+                  fetchFavorites();
+
+                  // router.push("/shop")
+                }}
               >
                 <Text style={styles.browseButtonText}>Browse Cars</Text>
               </TouchableOpacity>
@@ -90,7 +98,6 @@ const Favorites = () => {
 };
 
 export default Favorites;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

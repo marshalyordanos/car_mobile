@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // ../redux/store.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
@@ -11,25 +12,38 @@ import favoritesReducer from './favoritesSlice';
 import filterOptionsReducer from './filterOptionsSlice';
 import filtersReducer from './filtersSlice';
 
+=======
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { persistReducer, persistStore } from "redux-persist";
+import authReducer from "./authReducer";
+import carsReducer from "./carsSlice";
+import categoryReducer from "./categoryReducer";
+import favoriteReducer from "./favoriteSlice.js";
+import favoritesReducer from "./favoritesSlice";
+import filterOptionsReducer from "./filterOptionsSlice";
+import filtersReducer from "./filtersSlice";
+import themeReducer from "./themeSlice.js";
+>>>>>>> 0319186640acea037cf0e5054a5cb766d140ba76
 
 const storage = {
   getItem: async (key) => {
-    if (typeof window === 'undefined') {
-      console.warn('Running in Node.js, skipping AsyncStorage.getItem');
+    if (typeof window === "undefined") {
+      console.warn("Running in Node.js, skipping AsyncStorage.getItem");
       return null; // Return null in Node.js to avoid persistence
     }
     return await AsyncStorage.getItem(key);
   },
   setItem: async (key, value) => {
-    if (typeof window === 'undefined') {
-      console.warn('Running in Node.js, skipping AsyncStorage.setItem');
+    if (typeof window === "undefined") {
+      console.warn("Running in Node.js, skipping AsyncStorage.setItem");
       return; // Skip persistence in Node.js
     }
     await AsyncStorage.setItem(key, value);
   },
   removeItem: async (key) => {
-    if (typeof window === 'undefined') {
-      console.warn('Running in Node.js, skipping AsyncStorage.removeItem');
+    if (typeof window === "undefined") {
+      console.warn("Running in Node.js, skipping AsyncStorage.removeItem");
       return; // Skip persistence in Node.js
     }
     await AsyncStorage.removeItem(key);
@@ -37,6 +51,8 @@ const storage = {
 };
 
 const rootReducer = combineReducers({
+  theme: themeReducer,
+
   auth: authReducer,
   main_category: categoryReducer,
   cars: carsReducer,
