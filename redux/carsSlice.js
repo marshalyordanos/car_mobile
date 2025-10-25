@@ -6,12 +6,12 @@ export const fetchCars = createAsyncThunk(
   async (filters, { rejectWithValue }) => {
     try {
       const response = await api.get("cars", { params: filters });
-      console.log("response: ", response);
+      console.log("abebebe: ", response);
       return response.data;
     } catch (error) {
       console.log("response: ", response);
 
-      console.error("API call failed:", error.response?.data || error.message);
+      // console.error("API call failed:", error.response?.data || error.message);
       return rejectWithValue(error.response.data);
     }
   }

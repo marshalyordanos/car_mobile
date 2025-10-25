@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-// ../redux/store.js
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import { persistReducer, persistStore } from 'redux-persist';
-import authReducer from './authReducer';
-import bookingReducer from './bookingSlice';
-import carsReducer from './carsSlice';
-import categoryReducer from './categoryReducer';
-import favoriteReducer from './favoriteSlice.js';
-import favoritesReducer from './favoritesSlice';
-import filterOptionsReducer from './filterOptionsSlice';
-import filtersReducer from './filtersSlice';
-
-=======
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
@@ -24,7 +9,6 @@ import favoritesReducer from "./favoritesSlice";
 import filterOptionsReducer from "./filterOptionsSlice";
 import filtersReducer from "./filtersSlice";
 import themeReducer from "./themeSlice.js";
->>>>>>> 0319186640acea037cf0e5054a5cb766d140ba76
 
 const storage = {
   getItem: async (key) => {
@@ -60,13 +44,13 @@ const rootReducer = combineReducers({
   filters: filtersReducer,
   filterOptions: filterOptionsReducer,
   favorite: favoriteReducer,
-  booking: bookingReducer, 
+  booking: bookingReducer,
 });
 
 const persistConfig = {
-  key: 'root',
+  key: "root",
   storage,
-  whitelist: ['auth', 'favorites'], 
+  whitelist: ["auth", "favorites"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -76,7 +60,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
       },
     }),
 });
