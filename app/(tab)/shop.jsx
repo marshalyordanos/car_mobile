@@ -71,7 +71,7 @@ const Shop = () => {
       const apiQuery = buildApiQuery(1);
       dispatch(fetchCars(apiQuery));
     }
-  }, [dispatch, status, buildApiQuery]);
+  }, []);
   //
   const isInitialMount = useRef(true);
   useEffect(() => {

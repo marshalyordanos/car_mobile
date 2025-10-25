@@ -379,7 +379,7 @@ const Login = ({ status, setLoading, setShowLogin, lan, t }) => {
         error={errors.email}
         placeholder="Phone"
         keyboardType="email-address"
-        style={styles.formField}
+        // style={styles.formField}
       />
 
       <FormField
@@ -392,7 +392,7 @@ const Login = ({ status, setLoading, setShowLogin, lan, t }) => {
         error={errors.password}
         placeholder="Password"
         secureTextEntry
-        style={styles.formField}
+        // style={styles.formField}
       />
 
       {errors.general && (

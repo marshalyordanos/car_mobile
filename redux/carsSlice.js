@@ -5,14 +5,13 @@ export const fetchCars = createAsyncThunk(
   "cars/fetchCars",
   async (filters, { rejectWithValue }) => {
     try {
+      console.log("Dispatching fetchCars with filters:", filters);
       const response = await api.get("cars", { params: filters });
-      console.log("abebebe: ", response);
+      console.log("API success1234:", response.data);
       return response.data;
     } catch (error) {
-      console.log("responseerr: ", response);
-
-      // console.error("API call failed:", error.response?.data || error.message);
-      return rejectWithValue(error.response.data);
+      console.log("API error:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );

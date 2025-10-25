@@ -68,7 +68,9 @@ const FormField = ({
 export default FormField;
 
 const styles = StyleSheet.create({
-  con: {},
+  con: {
+    flex: 1,
+  },
   txt: {
     fontSize: 16,
     lineHeight: 24,
@@ -83,8 +85,12 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
+    borderWidth: 1,
   },
   textInput: {
+    // borderWidth: 2,
+
     flex: 1,
     backgroundColor: "#e7ebf0",
     borderRadius: 8,
