@@ -1,5 +1,6 @@
 // components/inbox/ChatList.jsx
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -9,6 +10,8 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSelector } from "react-redux";
+import api from "../../redux/api";
+import { selectCurrentUser } from "../../redux/authReducer";
 import { selectTheme } from "../../redux/themeSlice";
 import { Avatar, Badge } from "./ThemeProvider";
 
@@ -56,7 +59,26 @@ const mockChats = [
 export default function ChatList({}) {
   const theme = useSelector(selectTheme);
   const router = useRouter();
+  const userData = useSelector(selectCurrentUser);
 
+  const [chatList, setChatList] = useState();
+
+  const fetchChatList = async () => {
+    console.log("======= one  =============");
+    try {
+      const res = await api.get("messages/chats/user/" + userData?.user?.id);
+      console.log("fetchChatList:", res.data);
+    } catch (err) {
+      console.log("fetchChatList err:", err);
+    }
+  };
+  useFocusEffect(
+    useCallback(() => {
+      console.log("abebe");
+      fetchChatList();
+    }, [])
+  );
+  console.log();
   console.log("mockChats length:", mockChats.length); // DEBUG
 
   if (mockChats.length === 0) {

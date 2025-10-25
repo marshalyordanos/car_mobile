@@ -3,7 +3,7 @@ import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { StatusBar, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -54,7 +54,7 @@ const RootScreen = () => {
               options={{ headerShown: false }}
             />
           </Stack>
-          <StatusBar barStyle="dark-content" />
+          {/* <StatusBar barStyle="dark-content" /> */}
         </PersistGate>
       </Provider>
     </GestureHandlerRootView>

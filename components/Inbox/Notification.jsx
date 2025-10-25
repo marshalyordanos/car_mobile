@@ -81,6 +81,11 @@ export default function NotificationList() {
   // ——— List ———
   return (
     <FlatList
+      style={
+        {
+          // borderWidth: 2,
+        }
+      }
       data={mockNotifications}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
@@ -143,6 +148,7 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: "row",
     padding: 16,
+
     borderBottomWidth: 1,
   },
   unread: {

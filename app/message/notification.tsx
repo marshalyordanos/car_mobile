@@ -18,11 +18,12 @@ export default function InboxTab() {
       style={{
         flex: 1,
         backgroundColor: "white",
+        // borderWidth: 1,
       }}
     >
       <View
         style={{
-          paddingTop: insets.top,
+          //   paddingTop: insets.top,
           flex: 1,
           backgroundColor: "white",
         }}

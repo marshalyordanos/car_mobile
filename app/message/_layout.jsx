@@ -14,7 +14,35 @@ const AppLayout = () => {
   return (
     <Stack>
       <Stack.Screen name="[booking_id]" options={{ headerShown: false }} />
-      <Stack.Screen name="notification" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="notification"
+        options={{
+          title: "",
+
+          headerBackTitle: "",
+          headerShadowVisible: false,
+          headerStyle: {
+            backgroundColor: "white",
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                // borderWidth: 1,
+                flex: 1,
+                justifyContent: "space-between",
+              }}
+              onPress={router.back}
+            >
+              <Ionicons name="arrow-back" size={25} color={Colors.dark} />
+              <Text style={{ fontSize: 18 }}>Notification </Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
 
       <Stack.Screen
         name="forget"

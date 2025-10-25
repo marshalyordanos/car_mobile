@@ -1,5 +1,5 @@
 // components/inbox/ChatView.jsx
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -107,6 +107,7 @@ export default function ChatView({ onBack }) {
   const { booking_id: chat } = useLocalSearchParams();
   const [messages, setMessages] = useState(mockMessages[chat] ?? []);
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   // ——— Auto-scroll to bottom (on load + new message) ———
   const scrollToBottom = () => {
@@ -176,7 +177,12 @@ export default function ChatView({ onBack }) {
         }}
       >
         {/* Header */}
-        <Header title={`${chat} ${chat}`} onBack={onBack} />
+        <Header
+          title={`${chat} ${chat}`}
+          onBack={() => {
+            router.back();
+          }}
+        />
 
         {/* Messages */}
         <KeyboardAvoidingView
