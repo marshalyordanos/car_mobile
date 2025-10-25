@@ -69,21 +69,21 @@ export default function CarRentalDetail({ car }) {
 
   // Move availableCities to avoid TDZ error
   const availableCities = [
-    "Addis Ababa",
-    "Dire Dawa",
-    "Bahir Dar",
-    "Gondar",
-    "Mekele",
-    "Adama",
-    "Hawassa",
-    "Jimma",
-    "Dessie",
-    "Jijiga",
-    "Arba Minch",
-    "Debre Markos",
-    "Shashemene",
-    "Hosaena",
-    "Nekemte",
+   { name: "Addis Ababa", lat: 9.03, lng: 38.74 },
+    { name: "Dire Dawa", lat: 9.59, lng: 41.87 },
+    { name: "Bahir Dar", lat: 11.59, lng: 37.39 },
+    { name: "Gondar", lat: 12.6, lng: 37.47 },
+    { name: "Mekele", lat: 13.49, lng: 39.47 },
+    { name: "Adama", lat: 8.54, lng: 39.27 },
+    { name: "Hawassa", lat: 7.06, lng: 38.48 },
+    { name: "Jimma", lat: 7.67, lng: 36.83 },
+    { name: "Dessie", lat: 11.13, lng: 39.63 },
+    { name: "Jijiga", lat: 9.35, lng: 42.8 },
+    { name: "Arba Minch", lat: 6.03, lng: 37.55 },
+    { name: "Debre Markos", lat: 10.35, lng: 37.73 },
+    { name: "Shashemene", lat: 7.2, lng: 38.6 },
+    { name: "Hosaena", lat: 7.55, lng: 37.85 },
+    { name: "Nekemte", lat: 9.08, lng: 36.55 },
   ];
 
   const isValidDate = (date) => {
@@ -128,7 +128,6 @@ export default function CarRentalDetail({ car }) {
   const [dateError, setDateError] = useState("");
   const [totalPrice, setTotalPrice] = useState("N/A");
 
-  // Calculate total price based on daily rate and trip duration
   useEffect(() => {
     const calculateTotalPrice = () => {
       if (!car.dailyRate || !tripStartDate || !tripEndDate) return "N/A";
@@ -145,7 +144,6 @@ export default function CarRentalDetail({ car }) {
     setTotalPrice(calculateTotalPrice());
   }, [tripStartDate, tripEndDate, car.dailyRate, car.longTermDiscount]);
 
-  // Format price for display
   const formatPrice = (value) => {
     if (value === "N/A" || typeof value !== "string") return "N/A";
     return parseFloat(value).toLocaleString("en-US", {
@@ -154,7 +152,6 @@ export default function CarRentalDetail({ car }) {
     });
   };
 
-  // Enhanced image source normalization
   const normalizeImageSource = (img) => {
     console.log("Normalizing image source:", img);
     if (typeof img === "string" && img.trim()) {
@@ -289,64 +286,61 @@ export default function CarRentalDetail({ car }) {
     setIsInsuranceModalVisible(true);
   };
 
+  
   const handleContinue = () => {
-    console.log("Continue button pressed, navigating to Checkout");
+    if (!tripStartDate || !tripEndDate) {
+      setDateError("Please select valid trip dates");
+      return;
+    }
+    if (tripEndDate <= tripStartDate) {
+      setDateError("End date must be after start date");
+      return;
+    }
+    if (!pickupLocation || !returnLocation) {
+      setDateError("Please select valid pickup and return locations");
+      return;
+    }
 
+    // Prepare car object for serialization
     const serializableCar = {
-  name: car.name,
-  owner: car.owner,
-  images,  
-  location: car.location,
-  tripStart: tripStartDate.toISOString(),  
-  tripEnd: tripEndDate.toISOString(),     
-  rating: car.rating,
-  trips: car.trips,
-  trim: car.trim,
-  year: car.year,
-  color: car.color,
-  licensePlate: car.licensePlate,
-  vin: car.vin,
-  mileage: car.mileage,
-  dailyRate: car.dailyRate,
-  longTermDiscount: car.longTermDiscount,
-  seatingCapacity: car.seatingCapacity,
-  ecoFriendly: car.ecoFriendly,
-  carType: car.carType,
-  cancellation: car.cancellation,
-  payment: car.payment,
-  miles: car.miles,
-  insurance: car.insurance,
-  features: car.features,
-  safetyFeatures: car.safetyFeatures,
-  connectivity: car.connectivity,
-  convenienceFeatures: car.convenienceFeatures,
-  peaceOfMindFeatures: car.peaceOfMindFeatures,
-  ratingCategories: car.ratingCategories,
-  reviews: car.reviews,
-  ratingCount: car.ratingCount,
-  host: car.host,  // Note: If host.image causes issues later, process it like below
-  rules: car.rules,
-  transmission: car.transmission,
-  totalPrice,  // Keep for backward compatibility
-  price: totalPrice !== "N/A" ? parseFloat(totalPrice) : 0,  // ADDED: Number for checkout subtotal/total
-}; 
-    console.log("Navigating with:", {
+      id: car.id || car.vin || `temp-id-${Date.now()}`,
+      hostId: car.hostId || car.owner || "Unknown",
+      name: car.name || "Unknown Vehicle",
+      price: car.dailyRate || car.price || 0,
+      images: car.image || ["https://via.placeholder.com/150"],
+      rating: car.rating || 0,
+      trips: car.trips || 0,
+      year: car.year || "Unknown",
+    };
+
+    console.log("Navigating to Checkout with params:", {
       car: serializableCar,
-      pickupLocation,
-      returnLocation,
+      pickupLocation: pickupLocation.name,
+      pickupLat: pickupLocation.lat,
+      pickupLng: pickupLocation.lng,
+      returnLocation: returnLocation.name,
+      dropoffLat: returnLocation.lat,
+      dropoffLng: returnLocation.lng,
       tripStartDate: tripStartDate.toISOString(),
       tripEndDate: tripEndDate.toISOString(),
     });
+    
     try {
       router.push({
         pathname: "/car/Checkout",
-        params: {
-          car: JSON.stringify(serializableCar),
-          pickupLocation,
-          returnLocation,
-          tripStartDate: tripStartDate.toISOString(),
-          tripEndDate: tripEndDate.toISOString(),
-        },
+      params: {
+        car: JSON.stringify(serializableCar),
+        pickupLocation: pickupLocation.name,
+        pickupLat: pickupLocation.lat || 0,
+        pickupLng: pickupLocation.lng || 0,
+        returnLocation: returnLocation.name,
+        dropoffLat: returnLocation.lat || 0,
+        dropoffLng: returnLocation.lng || 0,
+        tripStartDate: tripStartDate.toISOString(),
+        tripEndDate: tripEndDate.toISOString(),
+     
+      },
+ 
       });
     } catch (error) {
       console.error("Navigation error:", error);
@@ -1567,4 +1561,4 @@ const styles = StyleSheet.create({
   },
   vehicleDetailLabel: { fontSize: 16, fontWeight: "500", color: "#000000" },
   vehicleDetailValue: { fontSize: 16, color: "#4B4B4B" },
-});
+}); 

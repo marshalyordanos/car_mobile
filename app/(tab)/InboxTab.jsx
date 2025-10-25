@@ -9,7 +9,7 @@ import NotificationList from '../../components/Inbox/Notification';
 import { Header, useTheme } from '../../components/Inbox/ThemeProvider';
 
 export default function InboxTab() {
-  const [view, setView] = useState('chats'); // 'chats' | 'notifications'
+  const [view, setView] = useState('chats'); 
   const [selectedChat, setSelectedChat] = useState(null);
   const { theme } = useTheme();
 
@@ -17,7 +17,6 @@ export default function InboxTab() {
     return <ChatView chat={selectedChat} onBack={() => setSelectedChat(null)} />;
   }
 
-  // ---------- MAIN INBOX ----------
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       <Header
@@ -25,11 +24,9 @@ export default function InboxTab() {
         onBack={view === 'notifications' ? () => setView('chats') : undefined}
         showToggle={true}
       >
-        {/* <-- Header children are ignored by our Header component.
-             We replace the default right-slot with a custom toggle button. */}
+       
       </Header>
 
-      {/* ----- Custom toggle button (outside Header) ----- */}
       <View style={styles.toggleBar}>
         <TouchableOpacity
           onPress={() => setView(view === 'chats' ? 'notifications' : 'chats')}

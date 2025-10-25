@@ -43,7 +43,6 @@ export default function TabLayout() {
             },
           }}
         >
-          {/* ---------- HOME ---------- */}
           <Tabs.Screen
             name="index"
             options={{
@@ -60,7 +59,6 @@ export default function TabLayout() {
             }}
           />
 
-          {/* ---------- SHOP ---------- */}
           <Tabs.Screen
             name="shop"
             options={{
@@ -77,7 +75,6 @@ export default function TabLayout() {
             }}
           />
 
-          {/* ---------- FAVORITES ---------- */}
           <Tabs.Screen
             name="favorites"
             options={{
@@ -94,7 +91,6 @@ export default function TabLayout() {
             }}
           />
 
-          {/* ---------- PROFILE ---------- */}
           <Tabs.Screen
             name="profile"
             options={{
@@ -111,7 +107,6 @@ export default function TabLayout() {
             }}
           />
 
-          {/* ---------- INBOX ---------- */}
           <Tabs.Screen
             name="InboxTab"
             options={{
@@ -138,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 2,
     minWidth: 50,
-    // borderWidth: 1,
+
   },
   tabLabel: {
     fontSize: 11,

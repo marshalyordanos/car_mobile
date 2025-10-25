@@ -1,20 +1,17 @@
+import { useState } from "react";
 import {
   Alert,
   Dimensions,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
-import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import images from "../../constants/images";
-import FormField from "../../components/FormField";
-import { Link } from "expo-router";
-import api from "../../redux/api";
 import AppLoader from "../../components/AppLoader";
+import FormField from "../../components/Auth/FormField";
+import api from "../../redux/api";
 const { height } = Dimensions.get("window");
 const minHeight = height * 0.85;
 

@@ -1,17 +1,22 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-    ArrowLeft,
-    Calendar,
-    CheckCircle,
-    MapPin
+  ArrowLeft,
+  Calendar,
+  Car,
+  CheckCircle,
+  FileText,
+  MapPin,
 } from 'lucide-react-native';
+import { useEffect } from 'react';
 import {
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { clearBooking, fetchBookingById } from '../../redux/bookingSlice';
 const styles = {
   container: {
     flex: 1,
@@ -82,7 +87,6 @@ const styles = {
     flex: 1,
   },
   statusBadge: {
-    backgroundColor: '#000',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -91,6 +95,31 @@ const styles = {
     fontSize: 14,
     fontWeight: '600',
     color: '#FFF',
+  },
+  badgePending: {
+    backgroundColor: '#F3F4F6',
+  },
+  badgeTextPending: {
+    color: '#374151',
+  },
+  badgeApproved: {
+    backgroundColor: '#000',
+  },
+  badgeActive: {
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  badgeTextActive: {
+    color: '#166534',
+  },
+  badgeCancelled: {
+    backgroundColor: '#FDE2E2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  badgeTextCancelled: {
+    color: '#B00020',
   },
   section: {
     backgroundColor: '#F9FAFB',
@@ -161,27 +190,100 @@ const styles = {
   },
 };
 
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+
 const BookingDetail = () => {
   const router = useRouter();
-  const { booking } = useLocalSearchParams();
-  
-  const parsedBooking = booking ? JSON.parse(decodeURIComponent(booking)) : null;
+  const { id } = useLocalSearchParams();
+  const dispatch = useDispatch();
+  const { booking, loading, error } = useSelector((state) => state.booking);
 
-  // 🆕 DEBUG: Log the data
-  console.log('🧑‍💻 Parsed Booking:', parsedBooking);
+  // Fetch booking data when component mounts
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchBookingById(id));
+    }
+    // Clean up booking state when component unmounts
+    return () => {
+      dispatch(clearBooking());
+    };
+  }, [id, dispatch]);
 
-  if (!parsedBooking) {
+  // Handle loading state
+  if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={{ flex: 1, textAlign: 'center', marginTop: 100 }}>Booking not found</Text>
+        <ActivityIndicator size="large" color="#000" style={{ flex: 1, justifyContent: 'center' }} />
       </View>
     );
   }
 
+  // Handle error state or booking not found
+  if (error || !booking) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ flex: 1, textAlign: 'center', marginTop: 100 }}>
+          {error ? `Error: ${error}` : 'Booking not found'}
+        </Text>
+      </View>
+    );
+  }
+
+  // Map status for display
+  const statusMap = {
+    confirmed: 'approved',
+    completed: 'active',
+    cancelled_by_guest: 'cancelled',
+    cancelled_by_host: 'cancelled',
+  };
+  const displayStatus = statusMap[booking.status.toLowerCase()] || booking.status.toLowerCase();
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'pending':
+        return (
+          <View style={[styles.statusBadge, styles.badgePending]}>
+            <Text style={[styles.statusText, styles.badgeTextPending]}>Pending</Text>
+          </View>
+        );
+      case 'approved':
+        return (
+          <View style={[styles.statusBadge, styles.badgeApproved]}>
+            <Text style={styles.statusText}>Approved</Text>
+          </View>
+        );
+      case 'active':
+        return (
+          <View style={[styles.statusBadge, styles.badgeActive]}>
+            <Text style={[styles.statusText, styles.badgeTextActive]}>Active</Text>
+          </View>
+        );
+      case 'cancelled':
+        return (
+          <View style={[styles.statusBadge, styles.badgeCancelled]}>
+            <Text style={[styles.statusText, styles.badgeTextCancelled]}>Cancelled</Text>
+          </View>
+        );
+      default:
+        return (
+          <View style={[styles.statusBadge, styles.badgePending]}>
+            <Text style={[styles.statusText, styles.badgeTextPending]}>{status}</Text>
+          </View>
+        );
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* 🆕 HEADER */}
+        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -193,72 +295,221 @@ const BookingDetail = () => {
         </View>
 
         <View style={styles.content}>
-          {/* 🆕 CAR INFO */}
+          {/* Car Info */}
           <View style={styles.carCard}>
             <Text style={styles.carTitle}>
-              {parsedBooking.data?.make?.name || 'Car'} {parsedBooking.data?.model?.name || parsedBooking.data?.carName}
+              {booking.car?.make?.name || 'Unknown Make'} {booking.car?.model?.name || 'Unknown Model'}
             </Text>
             <Text style={styles.carSubtitle}>
-              {parsedBooking.data?.hostId ? 'Hosted by Owner' : parsedBooking.renterName || 'Rental Company'}
+              Hosted by {booking.host?.firstName} {booking.host?.lastName}
             </Text>
           </View>
 
-          {/* 🆕 RENTER & STATUS */}
+          {/* Renter & Status */}
           <View style={styles.renterInfo}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.renterName}>Booking</Text>
+              <Text style={styles.renterName}>
+                Booked by {booking.guest?.firstName} {booking.guest?.lastName}
+              </Text>
             </View>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>Confirmed</Text>
+            {getStatusBadge(displayStatus)}
+          </View>
+
+          {/* Booking Info */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Booking Info</Text>
+            <View style={styles.detailRow}>
+              <FileText color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Booking ID: {booking.id}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <FileText color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Created: {booking.createdAt ? formatDate(booking.createdAt) : 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <FileText color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Updated: {booking.updatedAt ? formatDate(booking.updatedAt) : 'N/A'}
+              </Text>
             </View>
           </View>
 
-          {/* 🆕 DATES */}
+          {/* Trip Dates */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Trip Dates</Text>
             <View style={styles.detailRow}>
               <Calendar color="#0284C7" size={24} />
               <Text style={styles.detailLabel}>
-                {parsedBooking.startDate ? 
-                  new Date(parsedBooking.startDate).toLocaleDateString() : 
-                  'Date TBD'
-                } - {
-                  parsedBooking.endDate ? 
-                  new Date(parsedBooking.endDate).toLocaleDateString() : 
-                  'Date TBD'
-                }
+                {booking.startDate ? formatDate(booking.startDate) : 'Date TBD'} -{' '}
+                {booking.endDate ? formatDate(booking.endDate) : 'Date TBD'}
               </Text>
             </View>
           </View>
 
-          {/* 🆕 PICKUP LOCATION */}
+          {/* Pickup Location */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Pickup</Text>
             <View style={styles.detailRow}>
               <MapPin color="#0284C7" size={24} />
-              <Text style={styles.detailLabel}>{parsedBooking.pickupName || 'Location TBD'}</Text>
+              <Text style={styles.detailLabel}>
+                {booking.pickupLocation?.split('+*+')[2] || 'Location TBD'}
+              </Text>
             </View>
           </View>
 
-          {/* 🆕 DROPOFF LOCATION */}
-          {parsedBooking.dropoffName && (
+          {/* Dropoff Location */}
+          {booking.dropoffLocation && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Dropoff</Text>
               <View style={styles.detailRow}>
                 <MapPin color="#0284C7" size={24} />
-                <Text style={styles.detailLabel}>{parsedBooking.dropoffName}</Text>
+                <Text style={styles.detailLabel}>
+                  {booking.dropoffLocation?.split('+*+')[2] || 'Location TBD'}
+                </Text>
               </View>
             </View>
           )}
 
-          {/* 🆕 TOTAL PRICE */}
-          <View style={styles.priceCard}>
-            <Text style={styles.priceTitle}>Total Price</Text>
-            <Text style={styles.priceValue}>${parsedBooking.totalPrice || parsedBooking.price || 0}</Text>
+          {/* Car Details */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Car Details</Text>
+            <View style={styles.detailRow}>
+              <Car color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Year: {booking.car?.year || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Car color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Color: {booking.car?.color || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Car color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Transmission: {booking.car?.transmission || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Car color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Car Type: {booking.car?.carType || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Car color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Eco-Friendly: {booking.car?.ecoFriendly || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Car color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                License Plate: {booking.car?.licensePlate || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Car color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                VIN: {booking.car?.vin || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Car color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Seating Capacity: {booking.car?.seatingCapacity || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Car color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Mileage Limit: {booking.car?.mileageLimit || 'N/A'} miles/day
+              </Text>
+            </View>
           </View>
 
-          {/* 🆕 WITH DRIVER */}
-          {parsedBooking.withDriver && (
+          {/* Inspections */}
+          {booking.inspections?.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Inspections</Text>
+              {booking.inspections.map((inspection, index) => (
+                <View key={inspection.id} style={{ marginBottom: index < booking.inspections.length - 1 ? 24 : 0 }}>
+                  <Text style={[styles.sectionTitle, { fontSize: 16, marginBottom: 12 }]}>
+                    {inspection.type} Inspection
+                  </Text>
+                  <View style={styles.detailRow}>
+                    <FileText color="#0284C7" size={24} />
+                    <Text style={styles.detailLabel}>
+                      Fuel Level: {inspection.fuelLevel || 'N/A'}
+                    </Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <FileText color="#0284C7" size={24} />
+                    <Text style={styles.detailLabel}>
+                      Mileage: {inspection.mileage || 'N/A'}
+                    </Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <FileText color="#0284C7" size={24} />
+                    <Text style={styles.detailLabel}>
+                      Approved: {inspection.approved ? 'Yes' : 'No'}
+                    </Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <FileText color="#0284C7" size={24} />
+                    <Text style={styles.detailLabel}>
+                      Submitted: {inspection.createdAt ? formatDate(inspection.createdAt) : 'N/A'}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Payment Details */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Payment Details</Text>
+            <View style={styles.detailRow}>
+              <FileText color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Total Amount: {booking.payment?.currency || 'USD'} {booking.payment?.amount || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <FileText color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Platform Fee: {booking.payment?.currency || 'USD'} {booking.payment?.platformFee || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <FileText color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Host Earnings: {booking.payment?.currency || 'USD'} {booking.payment?.hostEarnings || 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <FileText color="#0284C7" size={24} />
+              <Text style={styles.detailLabel}>
+                Payment Status: {booking.payment?.status || 'N/A'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Total Price */}
+          <View style={styles.priceCard}>
+            <Text style={styles.priceTitle}>Total Price</Text>
+            <Text style={styles.priceValue}>
+              {booking.payment?.currency || 'USD'} {booking.totalPrice || 0}
+            </Text>
+          </View>
+
+          {/* Driver Inclusion */}
+          {booking.withDriver && (
             <View style={[styles.section, { backgroundColor: '#F0FDF4', borderWidth: 1, borderColor: '#BBF7D0' }]}>
               <View style={styles.detailRow}>
                 <CheckCircle color="#166534" size={24} />
@@ -271,16 +522,18 @@ const BookingDetail = () => {
         </View>
       </ScrollView>
 
-      {/* 🆕 ACTION BUTTONS */}
+      {/* Action Buttons */}
       <View style={{ paddingHorizontal: 20, paddingBottom: 40 }}>
         <TouchableOpacity
           style={[styles.actionButton, styles.primaryButton]}
           onPress={() => {
-            console.log('Pay/View receipt');
+            console.log(booking.payment?.status === 'PENDING' ? 'Initiate Payment' : 'View Receipt');
           }}
           activeOpacity={0.95}
         >
-          <Text style={styles.buttonText}>View Receipt</Text>
+          <Text style={styles.buttonText}>
+            {booking.payment?.status === 'PENDING' ? 'Pay Now' : 'View Receipt'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -288,7 +541,7 @@ const BookingDetail = () => {
           onPress={() => router.back()}
           activeOpacity={0.95}
         >
-          <Text style={styles.buttonTextSecondary}>Back to Bookings</Text>
+          <Text style={styles.buttonTextSecondary}>Make a complaint</Text>
         </TouchableOpacity>
       </View>
     </View>

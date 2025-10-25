@@ -2,14 +2,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { logout } from "./authReducer";
-import { store } from "./store"; // <-- your Redux store
+import { store } from "./store";
 
 const api = axios.create({
   baseURL: "https://car-back-22tv.onrender.com/",
   headers: { "Content-Type": "application/json" },
 });
 
-/* ---------- REQUEST: add token ---------- */
 api.interceptors.request.use(
   async (config) => {
     try {

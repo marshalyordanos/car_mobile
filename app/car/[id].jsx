@@ -20,7 +20,6 @@ export default function DetailPage() {
     const fetchCar = async () => {
       try {
         console.log("fetchCar started");
-        // Validate id early
         if (!id || typeof id !== "string") {
           throw new Error("Invalid or missing car ID");
         }
@@ -40,7 +39,6 @@ export default function DetailPage() {
         }
         const apiCar = carData.data;
 
-        // Fetch reviews
         const reviewsResponse = await api.get(`/reviews/car/${id}`, {
           cancelToken: source.token,
         });
@@ -48,7 +46,6 @@ export default function DetailPage() {
         console.log("Reviews response:", reviewsData);
         const reviews = Array.isArray(reviewsData.data) ? reviewsData.data : [];
 
-        // Compute car name
         let carName = name || "";
         if (!carName || carName === (apiCar.year || "").toString()) {
           let makeName = apiCar.carType || apiCar.makeId || "Vehicle";
@@ -81,21 +78,20 @@ export default function DetailPage() {
           carName = `Vehicle ${apiCar.year || ""}`.trim();
         }
 
-        // Map reviews
         const mappedReviews = Array.isArray(reviews)
           ? reviews.map((review) => ({
-              id: review.id || null, // Include review ID for uniqueness
+              id: review.id || null, 
               revieweeId: review.revieweeId || null,
               reviewerId: review.reviewerId || null,
               type: review.type || "unknown",
               carId: review.carId || id,
               rating: Number(review.rating) || 0,
               comment: review.comment || "No comment provided",
-              createdAt: review.createdAt || null, // Include timestamp for sorting/display
+              createdAt: review.createdAt || null, 
             }))
           : [];
 
-        // Map car data
+       
         const mappedCar = {
           name: carName || "Unknown Vehicle",
           owner: apiCar.hostId || "Unknown",
