@@ -17,7 +17,7 @@ api.interceptors.response.use(
     // error.title = error.response?.data?.title;
     // error.description = error.response?.data?.detail;
     return Promise.reject(error);
-  }
+  } //
 );
 
 api.interceptors.response.use(
