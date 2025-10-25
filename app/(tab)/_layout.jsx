@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const TabIcon = ({ iconName, color, name, focused }) => (
   <View style={styles.tabContainer}>
     <Icon
-      name={focused ? iconName : `${iconName}-outline`}
+      name={focused ? iconName :`${iconName}-outline`}
       size={22}
       color={color}
     />

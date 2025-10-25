@@ -1,8 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -11,32 +12,84 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Button } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useSelector } from "react-redux";
+import api from "../../redux/api";
+import { selectCurrentUser } from "../../redux/authReducer";
 
-export default function CheckoutScreen() {
-  const { car, pickupLocation, returnLocation, tripStartDate, tripEndDate } =
-    useLocalSearchParams();
-  const parsedCar = car
-    ? JSON.parse(car)
-    : {
-        name: "Toyota Camry",
-        year: 2020,
-        rating: "4.8",
-        trips: 120,
-        price: 4500,
-        images: [{ uri: "https://via.placeholder.com/96x64" }],
-      };
+export default function Checkout() {
+  const {
+    car,
+    pickupLocation,
+    pickupLat,
+    pickupLng,
+    returnLocation,
+    dropoffLat,
+    dropoffLng,
+    tripStartDate,
+    tripEndDate,
+  } = useLocalSearchParams();
+
+  const user = useSelector(selectCurrentUser);
+
+  if (
+    !car ||
+    !pickupLocation ||
+    !pickupLat ||
+    !pickupLng ||
+    !returnLocation ||
+    !dropoffLat ||
+    !dropoffLng ||
+    !tripStartDate ||
+    !tripEndDate
+  ) {
+    Alert.alert("Error", "Missing required booking details. Please go back and try again.", [
+      { text: "OK", onPress: () => router.back() },
+    ]);
+    return null;
+  }
+
+  let parsedCar;
+  try {
+    parsedCar = JSON.parse(car);
+    parsedCar.images = parsedCar.images?.map((url) => ({ uri: url })) || [{ uri: "https://via.placeholder.com/96x64" }];
+    parsedCar.id = parsedCar.id || parsedCar.vin || `temp-id-${Date.now()}`; // Fallback for id
+    parsedCar.hostId = parsedCar.hostId || parsedCar.owner || "Unknown"; // Fallback for hostId
+    if (
+      !parsedCar.id ||
+      !parsedCar.name ||
+      !parsedCar.year ||
+      !parsedCar.rating ||
+      !parsedCar.trips ||
+      !parsedCar.price ||
+      !parsedCar.images ||
+      !parsedCar.hostId
+    ) {
+      throw new Error("Invalid car data after transformation");
+    }
+  } catch (error) {
+    Alert.alert("Error", "Invalid car details. Please go back and try again.", [
+      { text: "OK", onPress: () => router.back() },
+    ]);
+    return null;
+  }
+
   const isValidDate = (date) => {
     const parsed = new Date(date);
     return !isNaN(parsed.getTime());
   };
-  const startDate = isValidDate(tripStartDate)
-    ? new Date(tripStartDate)
-    : new Date();
-  const endDate = isValidDate(tripEndDate)
-    ? new Date(tripEndDate)
-    : new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+
+  if (!isValidDate(tripStartDate) || !isValidDate(tripEndDate)) {
+    Alert.alert("Error", "Invalid trip dates. Please go back and try again.", [
+      { text: "OK", onPress: () => router.back() },
+    ]);
+    return null;
+  }
+
+  const startDate = new Date(tripStartDate);
+  const endDate = new Date(tripEndDate);
+
+  const [loading, setLoading] = useState(false);
   const [countryCode, setCountryCode] = useState("+251");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
@@ -44,25 +97,31 @@ export default function CheckoutScreen() {
   const [lastName, setLastName] = useState("");
   const [ageRange, setAgeRange] = useState("");
   const [promotions, setPromotions] = useState(true);
-  const [terms, setTerms] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState("Chapa: Not Configured");
-  const [isPaymentConfigured, setIsPaymentConfigured] = useState(false);
+  const [terms, setTerms] = useState(false);
   const [declineProtection, setDeclineProtection] = useState(true);
   const [enhancedRoadside, setEnhancedRoadside] = useState(false);
   const [supplementalLiability, setSupplementalLiability] = useState(false);
+  const [driverOption, setDriverOption] = useState(false); // Default to false instead of JSON.parse(withDriver)
 
-  // Convert USD to ETB (approximate rate: 1 USD = 110 ETB)
   const protectionPrices = {
-    enhancedRoadside: 2.99 * 110, // US$2.99/day -> ETB 328.9/day
-    supplementalLiability: 17.02 * 110, // US$17.02/day -> ETB 1872.2/day
+    enhancedRoadside: 290,
+    supplementalLiability: 1872,
   };
 
-  // Calculate total days for the trip
   const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
   const protectionCost =
     (enhancedRoadside ? protectionPrices.enhancedRoadside * days : 0) +
-    (supplementalLiability ? protectionPrices.supplementalLiability * days : 0);
-  const totalPrice = parsedCar.price + protectionCost;
+    (supplementalLiability ? protectionPrices.supplementalLiability * days : 0) +
+    (driverOption ? 500 * days : 0);
+  const totalPrice = (isNaN(parsedCar.price) ? 0 : parsedCar.price * days) + protectionCost;
+
+  const formatPrice = (value) => {
+    if (!value || isNaN(value)) return "0.00";
+    return parseFloat(value).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   const formatDate = (date) => {
     if (!isValidDate(date)) {
@@ -79,6 +138,85 @@ export default function CheckoutScreen() {
     });
   };
 
+  useEffect(() => {
+    if (user) {
+      setEmail(user.email || "");
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+      setPhoneNumber(user.phone?.replace(/^\+\d{1,3}/, "") || "");
+    }
+  }, [user]);
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!phoneNumber) newErrors.phoneNumber = "Mobile number is required";
+    if (!email) newErrors.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(email))
+      newErrors.email = "Email is invalid";
+    if (!firstName) newErrors.firstName = "First name is required";
+    if (!lastName) newErrors.lastName = "Last name is required";
+    if (!ageRange) newErrors.ageRange = "Age range is required";
+    if (!terms) newErrors.terms = "Terms must be accepted";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleBookTrip = async () => {
+    if (!validateForm()) return;
+
+    if (!user) {
+      Alert.alert("Login Required", "Please login to book", [
+        { text: "Cancel" },
+        { text: "Login", onPress: () => router.push("/sign-in") },
+      ]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const backendBookingData = {
+        carId: parsedCar.id,
+        guestId: user?.id || "default-guest-id", // Use user.id from Redux
+        hostId: parsedCar.hostId,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        withDriver: driverOption,
+        pickupLat: isNaN(parseFloat(pickupLat)) ? 0 : parseFloat(pickupLat),
+        pickupLng: isNaN(parseFloat(pickupLng)) ? 0 : parseFloat(pickupLng),
+        pickupName: pickupLocation,
+        dropoffLat: isNaN(parseFloat(dropoffLat)) ? 0 : parseFloat(dropoffLat),
+        dropoffLng: isNaN(parseFloat(dropoffLng)) ? 0 : parseFloat(dropoffLng),
+        dropoffName: returnLocation,
+      };
+
+      console.log("SENDING TO BACKEND:", JSON.stringify(backendBookingData, null, 2));
+
+      const response = await api.post("/bookings", backendBookingData);
+
+      console.log("Booking success:", response.data);
+
+      Alert.alert(
+        "Booking Confirmed!",
+        `Your trip is booked successfully!\nBooking ID: ${response.data.id || "12345"}`,
+        [
+          {
+            text: "View My Bookings",
+            onPress: () => router.push("/my-bookings"),
+          },
+          { text: "Done", onPress: () => router.push("/profile") },
+        ]
+      );
+    } catch (error) {
+      console.error("Booking error:", error.response?.data);
+      Alert.alert(
+        "Booking Failed",
+        error.response?.data?.message || "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const CustomCheckbox = ({ value, onValueChange, tintColors }) => (
     <TouchableOpacity
       style={[
@@ -91,61 +229,6 @@ export default function CheckoutScreen() {
       {value && <MaterialIcons name="check" size={16} color="#FFF" />}
     </TouchableOpacity>
   );
-
-  const handleConfigurePayment = () => {
-    console.log("Configuring Chapa payment...");
-    setPaymentMethod("Chapa: **** **** **** 5678");
-    setIsPaymentConfigured(true);
-    alert("Chapa payment configured successfully!");
-  };
-
-  const handleContinue = () => {
-    if (!isPaymentConfigured) {
-      alert("Please configure your Chapa payment method before continuing.");
-      return;
-    }
-    console.log("Checkout Continue pressed", {
-      car: parsedCar,
-      pickupLocation,
-      returnLocation,
-      tripStartDate: formatDate(startDate),
-      tripEndDate: formatDate(endDate),
-      phoneNumber: phoneNumber
-        ? `${countryCode}${phoneNumber}`
-        : "Not provided",
-      email: email || "Not provided",
-      firstName: firstName || "Not provided",
-      lastName: lastName || "Not provided",
-      ageRange: ageRange || "Not selected",
-      promotions,
-      terms,
-      paymentMethod,
-      protectionCost,
-      totalPrice,
-      enhancedRoadside,
-      supplementalLiability,
-    });
-    router.push({
-      pathname: "/order",
-      params: {
-        car: JSON.stringify(parsedCar),
-        pickupLocation,
-        returnLocation,
-        tripStartDate: startDate.toISOString(),
-        tripEndDate: endDate.toISOString(),
-        phoneNumber: phoneNumber ? `${countryCode}${phoneNumber}` : "",
-        email: email || "",
-        firstName: firstName || "",
-        lastName: lastName || "",
-        ageRange: ageRange || "",
-        paymentMethod,
-        protectionCost: protectionCost.toString(),
-        totalPrice: totalPrice.toString(),
-        enhancedRoadside: enhancedRoadside.toString(),
-        supplementalLiability: supplementalLiability.toString(),
-      },
-    });
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -183,9 +266,7 @@ export default function CheckoutScreen() {
             </View>
             <Image
               source={{
-                uri:
-                  parsedCar.images?.[0]?.uri ||
-                  "https://via.placeholder.com/96x64",
+                uri: parsedCar.images[0]?.uri,
               }}
               style={styles.vehicleImage}
             />
@@ -196,74 +277,89 @@ export default function CheckoutScreen() {
           <Text style={styles.sectionTitle}>Primary driver</Text>
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => router.push("/login")}>
+            <TouchableOpacity onPress={() => router.push("/sign-in")}>
               <Text style={styles.loginLink}>Log in</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.inputContainer}>
             <View style={styles.phoneInput}>
-              <Picker
-                selectedValue={countryCode}
-                onValueChange={setCountryCode}
-                style={styles.picker}
-              >
-                <Picker.Item label="+251" value="+251" />
-                <Picker.Item label="+44" value="+44" />
-                <Picker.Item label="+1" value="+1" />
-                <Picker.Item label="+33" value="+33" />
-              </Picker>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={countryCode}
+                  onValueChange={setCountryCode}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
+                  dropdownIconColor="#000"
+                >
+                  <Picker.Item label="+251" value="+251" />
+                  <Picker.Item label="+44" value="+44" />
+                  <Picker.Item label="+1" value="+1" />
+                  <Picker.Item label="+33" value="+33" />
+                </Picker>
+              </View>
               <TextInput
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
                 placeholder="Mobile number"
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  errors.phoneNumber && styles.inputError,
+                ]}
                 placeholderTextColor="#666"
                 keyboardType="phone-pad"
               />
+              {errors.phoneNumber && (
+                <Text style={styles.errorText}>{errors.phoneNumber}</Text>
+              )}
             </View>
             <Text style={styles.infoText}>
               By providing a phone number, you consent to receive automated text
               messages with trip or account updates.
             </Text>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>Email *</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Enter email"
-                style={styles.textInput}
+                style={[styles.textInput, errors.email && styles.inputError]}
                 placeholderTextColor="#666"
                 keyboardType="email-address"
               />
+              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
             </View>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>First name</Text>
+              <Text style={styles.label}>First name *</Text>
               <TextInput
                 value={firstName}
                 onChangeText={setFirstName}
                 placeholder="Enter first name"
-                style={styles.textInput}
+                style={[styles.textInput, errors.firstName && styles.inputError]}
                 placeholderTextColor="#666"
               />
               <Text style={styles.subLabel}>Driver's license first name</Text>
+              {errors.firstName && (
+                <Text style={styles.errorText}>{errors.firstName}</Text>
+              )}
             </View>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Last name</Text>
+              <Text style={styles.label}>Last name *</Text>
               <TextInput
                 value={lastName}
                 onChangeText={setLastName}
                 placeholder="Enter last name"
-                style={styles.textInput}
+                style={[styles.textInput, errors.lastName && styles.inputError]}
                 placeholderTextColor="#666"
               />
               <Text style={styles.subLabel}>Driver's license last name</Text>
+              {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
             </View>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Select your age</Text>
+              <Text style={styles.label}>Select your age *</Text>
               <Picker
                 selectedValue={ageRange}
                 onValueChange={setAgeRange}
-                style={styles.pickerFull}
+                style={[styles.pickerFull, errors.ageRange && styles.inputError]}
               >
                 <Picker.Item label="Select age range" value="" />
                 <Picker.Item label="18-24" value="18-24" />
@@ -272,6 +368,7 @@ export default function CheckoutScreen() {
                 <Picker.Item label="45-54" value="45-54" />
                 <Picker.Item label="55+" value="55+" />
               </Picker>
+              {errors.ageRange && <Text style={styles.errorText}>{errors.ageRange}</Text>}
             </View>
             <View style={styles.infoBox}>
               <MaterialIcons name="info" size={20} color="#000" />
@@ -319,7 +416,7 @@ export default function CheckoutScreen() {
                 <Text style={styles.optionDescription}>
                   Drive worry-free. Enhanced roadside assistance covers common
                   issues not included in our basic roadside assistance—helping
-                  you avoid unexpected costs. ?
+                  you avoid unexpected costs.
                 </Text>
                 <View style={styles.optionDetails}>
                   <Text style={styles.optionDetail}>
@@ -351,7 +448,7 @@ export default function CheckoutScreen() {
                 <Text style={styles.optionTitle}>Liability insurance</Text>
                 <Text style={styles.optionDescription}>
                   Add optional supplemental liability insurance (SLI) from
-                  Mobilita Insurance Company. ?
+                  Mobilita Insurance Company.
                 </Text>
                 <View style={styles.optionDetails}>
                   <Text style={styles.optionDetail}>
@@ -372,19 +469,35 @@ export default function CheckoutScreen() {
               </View>
             </View>
           </View>
+          <View style={styles.protectionContainer}>
+            <View style={styles.protectionOption}>
+              <CustomCheckbox
+                value={driverOption}
+                onValueChange={setDriverOption}
+                tintColors={{ true: "#000", false: "#666" }}
+              />
+              <View>
+                <Text style={styles.optionTitle}>Add professional driver</Text>
+                <Text style={styles.optionDescription}>
+                  Include an experienced driver for your entire trip
+                </Text>
+                <Text style={styles.optionPrice}>ETB 500/day</Text>
+              </View>
+            </View>
+          </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Trip total</Text>
           <View style={styles.totalContainer}>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Subtotal</Text>
-              <Text style={styles.totalValue}>ETB {parsedCar.price}</Text>
+              <Text style={styles.totalLabel}>Subtotal ({days} days)</Text>
+              <Text style={styles.totalValue}>ETB {formatPrice(parsedCar.price * days)}</Text>
             </View>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Protection Cost</Text>
               <Text style={styles.totalValue}>
-                ETB {protectionCost.toFixed(2)}
+                ETB {formatPrice(protectionCost)}
               </Text>
             </View>
             <View style={styles.totalRow}>
@@ -394,36 +507,9 @@ export default function CheckoutScreen() {
             <View style={[styles.totalRow, styles.totalRowBold]}>
               <Text style={styles.totalLabelBold}>Total</Text>
               <Text style={styles.totalValueBold}>
-                ETB {totalPrice.toFixed(2)}
+                ETB {formatPrice(totalPrice)}
               </Text>
             </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment</Text>
-          <View style={styles.optionRow}>
-            <View style={styles.optionContent}>
-              <MaterialIcons name="credit-card" size={20} color="#000" />
-              <View>
-                <Text style={styles.optionTitle}>Payment method</Text>
-                <Text
-                  style={[
-                    styles.optionDescription,
-                    !isPaymentConfigured && styles.errorText,
-                  ]}
-                >
-                  {paymentMethod}
-                </Text>
-              </View>
-            </View>
-            <Button
-              title="Configure Chapa"
-              type="outline"
-              buttonStyle={styles.addButton}
-              titleStyle={styles.addButtonText}
-              onPress={handleConfigurePayment}
-            />
           </View>
         </View>
 
@@ -464,6 +550,7 @@ export default function CheckoutScreen() {
               acknowledge the{" "}
               <Text style={styles.linkText}>privacy policy</Text>
             </Text>
+            {errors.terms && <Text style={styles.errorText}>{errors.terms}</Text>}
           </View>
         </View>
       </ScrollView>
@@ -472,20 +559,22 @@ export default function CheckoutScreen() {
         <View style={styles.bottomBarContent}>
           <View>
             <Text style={styles.totalText}>
-              ETB {totalPrice.toFixed(2)} total
+              ETB {formatPrice(totalPrice)} total
             </Text>
             <Text style={styles.taxesText}>Taxes and fees included</Text>
           </View>
-          <Button
-            title="Continue"
-            buttonStyle={[
+          <TouchableOpacity
+            style={[
               styles.continueButton,
-              (!terms || !isPaymentConfigured) && styles.disabledButton,
+              (!terms || loading || Object.keys(errors).length > 0) && styles.disabledButton,
             ]}
-            titleStyle={styles.continueButtonText}
-            disabled={!terms || !isPaymentConfigured}
-            onPress={handleContinue}
-          />
+            disabled={!terms || loading || Object.keys(errors).length > 0}
+            onPress={handleBookTrip}
+          >
+            <Text style={styles.continueButtonText}>
+              {loading ? "Booking..." : "Book Now"}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -579,6 +668,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
+  pickerContainer: {
+    marginRight: 8,
+  },
   picker: {
     width: 80,
     backgroundColor: "#F5F5F5",
@@ -591,6 +683,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: "#000",
   },
+  pickerItem: {
+    color: "#000",
+  },
   textInput: {
     flex: 1,
     backgroundColor: "#F5F5F5",
@@ -601,6 +696,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#D1D5DB",
     color: "#000",
+  },
+  inputError: {
+    borderColor: "#DC2626",
   },
   infoText: {
     fontSize: 12,
@@ -634,40 +732,6 @@ const styles = StyleSheet.create({
     color: "#000",
     marginLeft: 12,
     flex: 1,
-  },
-  optionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  optionContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  optionTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#000",
-    marginLeft: 12,
-  },
-  optionDescription: {
-    fontSize: 12,
-    color: "#666",
-    marginLeft: 12,
-  },
-  errorText: {
-    color: "#FF4444",
-  },
-  addButton: {
-    borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  addButtonText: {
-    color: "#000",
-    fontSize: 14,
   },
   totalContainer: {
     marginTop: 8,
@@ -739,6 +803,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 2,
   },
   checkboxLabel: {
     fontSize: 14,
@@ -805,6 +870,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+    marginTop: 2,
   },
   radioInner: {
     width: 12,
@@ -816,6 +882,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
     flex: 1,
+  },
+  optionTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#000",
+  },
+  optionDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 4,
   },
   optionDetails: {
     marginTop: 8,
@@ -830,5 +906,10 @@ const styles = StyleSheet.create({
     color: "#000",
     marginTop: 8,
     marginLeft: 12,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 12,
+    marginTop: 4,
   },
 });

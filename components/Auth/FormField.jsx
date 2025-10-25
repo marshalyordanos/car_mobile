@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Image,
   StyleSheet,
@@ -7,17 +7,23 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-// import { TouchableOpacity } from "react-native-gesture-handler";
-import icons from "../constants/icons";
+import icons from "../../constants/icons";
+
 const FormField = ({
   title,
   value,
   placeholder,
   handleChangeText,
   otherStyles,
+  showPassword, 
+  onTogglePassword, 
   ...props
 }) => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [internalShowPassword, setInternalShowPassword] = React.useState(false);
+
+  const isPasswordVisible = showPassword !== undefined ? showPassword : internalShowPassword;
+  const togglePassword = onTogglePassword || setInternalShowPassword;
+
   return (
     <View style={[styles.con, otherStyles]}>
       <Text style={styles.txt}>{title}</Text>
@@ -28,22 +34,28 @@ const FormField = ({
           placeholder={placeholder}
           placeholderTextColor="grays"
           onChangeText={handleChangeText}
-          secureTextEntry={title === "Password" && !showPassword}
+          secureTextEntry={
+            (title === "Password" ||
+              title === "Confirm Password" ||
+              title === "የይለፍ ቃል" ||
+              title === "የይለፍ ቃል አረጋግጥ") &&
+            !isPasswordVisible
+          }
+          {...props}
         />
         {(title === "Password" ||
           title === "Confirm Password" ||
-          title == "የይለፍ ቃል አረጋግጥ" ||
-          title === "የይለፍ ቃል") && (
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          title === "የይለፍ ቃል" ||
+          title === "የይለፍ ቃል አረጋግጥ") && (
+          <TouchableOpacity onPress={() => togglePassword(!isPasswordVisible)}>
             <Image
               style={{
                 width: 24,
                 height: 24,
                 color: "grey",
-                // backgroundColor: "red",
               }}
               resizeMode="contain"
-              source={!showPassword ? icons.eye : icons.eyeHide}
+              source={!isPasswordVisible ? icons.eye : icons.eyeHide}
             />
           </TouchableOpacity>
         )}
@@ -56,7 +68,6 @@ export default FormField;
 
 const styles = StyleSheet.create({
   con: {
-    // borderWidth: 2,
   },
   txt: {
     fontSize: 16,
@@ -64,18 +75,13 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   field_con: {
-    // width: "100%",
     height: 60,
     paddingHorizontal: 16,
-    // backgroundColor: "whitesmoke",
-    // borderWidth: 1,
-    marginRight: 0,
-    display: "flex",
-    flexDirection: "row",
     backgroundColor: "#e7ebf0",
     borderRadius: 10,
     borderColor: "gray",
-
+    display: "flex",
+    flexDirection: "row",
     alignItems: "center",
   },
   textInput: {

@@ -1,0 +1,196 @@
+import { StyleSheet } from "react-native";
+import Colors from "../../constants/Colors";
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8f9fa",
+  },
+  scrollView: {
+    backgroundColor: "#f8f9fa",
+  },
+  login_con: {
+    margin: 15,
+    minHeight:600,
+    paddingHorizontal: 16,
+  },
+  login_main_text: {
+    fontSize: 28,
+    marginTop: 10,
+    fontWeight: "600",
+    color: Colors.dark,
+  },
+  subtitle: {
+    marginTop: 10,
+    color: Colors.gray,
+    fontSize: 14,
+    textAlign: "center",
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: Colors.dark,
+  },
+  phoneInputContainer: {
+    backgroundColor: "#e7ebf0",
+    borderRadius: 8,
+    width: "100%",
+    height: 52,
+  },
+  phoneInputText: {
+    backgroundColor: "#e7ebf0",
+    borderRadius: 8,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    height: 50,
+  },
+  flagButton: {
+    width: 60,
+    height: 60,
+  },
+  passwordContainer: {
+    position: "relative",
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 10,
+    top: 40,
+    zIndex: 1,
+  },
+  pickerContainer: {
+    backgroundColor: "#e7ebf0",
+    borderRadius: 8,
+    height: 52,
+    justifyContent: "center",
+  },
+  picker: {
+    height: 50,
+    color: Colors.dark,
+  },
+  login_button: {
+    backgroundColor: "black",
+    padding: 14,
+    borderRadius: 10,
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    flex: 2,
+  },
+  disabledButton: {
+    backgroundColor: "#9ca3af",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    textAlign: "center",
+  },
+  resetButton: {
+    backgroundColor: Colors.gray,
+    padding: 10,
+    borderRadius: 10,
+    justifyContent: "center",
+    flex: 1,
+  },
+  resetButtonText: {
+    color: "white",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 40,
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  checkbox: {
+    marginRight: 10,
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    color: Colors.dark,
+  },
+  linkText: {
+    fontSize: 16,
+    color: Colors.primary,
+    textDecorationLine: "underline",
+  },
+  filePreview: {
+    position: "relative",
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "#e0e0e0",
+  },
+  fileImage: {
+    width: "100%",
+    height: 150,
+  },
+  filePlaceholder: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "black",
+  },
+  fileName: {
+    color: "white",
+    marginLeft: 10,
+    flexShrink: 1,
+    fontSize: 14,
+  },
+  removeFileButton: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 15,
+    padding: 3,
+  },
+  filePickerButton: {
+    height: 60,
+    backgroundColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+  },
+  errorContainer: {
+    backgroundColor: "#fde2e2",
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 20,
+    position: "relative",
+  },
+  errorText: {
+    color: "#b00020",
+    fontSize: 13,
+    marginBottom: 3,
+    fontWeight: "500",
+  },
+  closeButton: {
+    position: "absolute",
+    right: 5,
+    top: 5,
+    backgroundColor: "black",
+    borderRadius: 100,
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  registerPage_link: {
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingTop: 20,
+    alignItems: "center",
+    gap: 8,
+  },
+  signUpText: {
+    fontSize: 16,
+    color: Colors.dark,
+  },
+});

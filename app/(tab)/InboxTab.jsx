@@ -10,12 +10,21 @@ import { Header } from "../../components/Inbox/ThemeProvider";
 import { selectTheme } from "../../redux/themeSlice";
 
 export default function InboxTab() {
+<<<<<<< HEAD
+  const [view, setView] = useState('chats'); 
+  const [selectedChat, setSelectedChat] = useState(null);
+  const { theme } = useTheme();
+
+  if (selectedChat) {
+    return <ChatView chat={selectedChat} onBack={() => setSelectedChat(null)} />;
+  }
+=======
   const [view, setView] = useState("chats"); // 'chats' | 'notifications'
   const theme = useSelector(selectTheme);
   const insets = useSafeAreaInsets();
   const router = useRouter();
+>>>>>>> 0319186640acea037cf0e5054a5cb766d140ba76
 
-  // ---------- MAIN INBOX ----------
   return (
     <View
       style={{
@@ -30,6 +39,15 @@ export default function InboxTab() {
           backgroundColor: "white",
         }}
       >
+<<<<<<< HEAD
+       
+      </Header>
+
+      <View style={styles.toggleBar}>
+        <TouchableOpacity
+          onPress={() => setView(view === 'chats' ? 'notifications' : 'chats')}
+          style={styles.toggleBtn}
+=======
         <Header
           title={view === "chats" ? "Inbox" : "Notifications"}
           onBack={view === "notifications" ? () => setView("chats") : undefined}
@@ -39,6 +57,7 @@ export default function InboxTab() {
               pathname: `/message/notification`,
             });
           }}
+>>>>>>> 0319186640acea037cf0e5054a5cb766d140ba76
         >
           <>
             <ActivityIndicator size={"small"} />
