@@ -15,6 +15,9 @@ import { useSelector } from "react-redux";
 import { selectTheme } from "../../redux/themeSlice";
 import { Header } from "./ThemeProvider";
 
+// ————————————————————————————————————————————
+// 1. FULL MOCK MESSAGES (copy-paste this)
+// ————————————————————————————————————————————
 const mockMessages = {
   1: [
     {
@@ -92,22 +95,22 @@ const mockMessages = {
   ],
 };
 
+// ————————————————————————————————————————————
+// 2. MAIN COMPONENT
+// ————————————————————————————————————————————
 export default function ChatView({ chat, onBack }) {
   const [messages, setMessages] = useState(mockMessages[chat?.id] ?? []);
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
-<<<<<<< HEAD
-  const { theme } = useTheme();
-=======
   const theme = useSelector(selectTheme);
 
   // ——— Auto-scroll to bottom (on load + new message) ———
->>>>>>> 0319186640acea037cf0e5054a5cb766d140ba76
   const scrollToBottom = () => {
     scrollRef.current?.scrollToEnd({ animated: true });
   };
 
   useEffect(() => {
+    // Scroll on first load
     const timer = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timer);
   }, []);
@@ -116,6 +119,7 @@ export default function ChatView({ chat, onBack }) {
     scrollToBottom();
   }, [messages]);
 
+  // ——— Send message ———
   const sendMessage = () => {
     if (!input.trim()) return;
 

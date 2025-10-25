@@ -2,15 +2,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { logout } from "./authReducer";
-<<<<<<< HEAD
-import { store } from "./store";
-
-const api = axios.create({
-  baseURL: "https://car-back-22tv.onrender.com/",
-  headers: { "Content-Type": "application/json" },
-});
-
-=======
 
 const api = axios.create({
   // baseURL: "https://car-back-22tv.onrender.com/",
@@ -55,25 +46,16 @@ api.interceptors.response.use(
   }
 );
 
->>>>>>> 0319186640acea037cf0e5054a5cb766d140ba76
 api.interceptors.request.use(
   async (config) => {
     try {
       const raw = await AsyncStorage.getItem("data");
       if (!raw) return config;
 
-<<<<<<< HEAD
-      const data = JSON.parse(raw);
-      const token = data?.tokens?.accessToken;   // <-- exact path you store
-
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-=======
       console.log("Request URL:", fullUrl, JSON.stringify(d, null, 2));
       if (d) {
         console.log("==============", d?.tokens.accessToken);
         config.headers.Authorization = `Bearer ${d?.tokens?.accessToken}`;
->>>>>>> 0319186640acea037cf0e5054a5cb766d140ba76
       }
 
       // OPTIONAL: nice debug log
