@@ -5,11 +5,15 @@ import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import api from "@/redux/api";
+import { setcancellationPolicies } from "@/redux/authReducer";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
 
 const TabIcon = ({ iconName, color, name, focused }) => (
   <View style={styles.tabContainer}>
     <Icon
-      name={focused ? iconName :`${iconName}-outline`}
+      name={focused ? iconName : `${iconName}-outline`}
       size={22}
       color={color}
     />
@@ -20,6 +24,21 @@ const TabIcon = ({ iconName, color, name, focused }) => (
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+
+  const fetchCancllectionPolicy = async () => {
+    try {
+      const res = await api.get("cancellation-policies");
+      console.log("cancellation-policiesl:", res.data);
+      dispatch(setcancellationPolicies(res.data?.data));
+    } catch (error) {
+      console.log("cancellation-policies:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCancllectionPolicy();
+  }, []);
 
   return (
     <BottomSheetModalProvider>

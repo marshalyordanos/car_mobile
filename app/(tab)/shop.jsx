@@ -27,8 +27,16 @@ const Shop = () => {
   } = useSelector((state) => state.cars);
   const totalCars = pagination?.total || 0;
   const activeFilters = useSelector((state) => state.filters, shallowEqual);
-  const { selectedLocation } = useLocalSearchParams();
-  console.log("selectedLocation:", selectedLocation);
+  const { selectedLocation, startDate, endDate, pickupTime, returnTime } =
+    useLocalSearchParams();
+  console.log(
+    "selectedLocation:",
+    selectedLocation,
+    startDate,
+    endDate,
+    pickupTime,
+    returnTime
+  );
 
   const buildApiQuery = useCallback(
     (page = 1) => {
@@ -85,6 +93,8 @@ const Shop = () => {
   }, [activeFilters, dispatch, buildApiQuery]);
 
   const handleLoadMore = () => {
+    // dispatch(fetchCars(apiQuery));
+
     if (canLoadMore && status !== "loadingMore") {
       const nextPage = (pagination?.page || 1) + 1;
       const apiQuery = buildApiQuery(nextPage);
@@ -92,7 +102,9 @@ const Shop = () => {
     }
   };
   const onRefresh = () => {
-    dispatch(clearCars());
+    dispatch(fetchCars());
+
+    // dispatch(clearCars());
   };
 
   // const { t, i18n } = useTranslation();

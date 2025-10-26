@@ -29,11 +29,15 @@ export const authSlice = createSlice({
     map: "new",
     lan: "am",
     farmer_id: null,
+    cancellationPolicies: [],
   },
   reducers: {
     setCredential: (state, action) => {
       const { user } = action.payload;
       state.user = user;
+    },
+    setcancellationPolicies: (state, action) => {
+      state.cancellationPolicies = action.payload;
     },
     login: (state, action) => {
       // console.log(action.payload);
@@ -74,9 +78,13 @@ export const {
   saveMap,
   setId,
   changeLanguageHandler,
+  setcancellationPolicies,
 } = authSlice.actions;
 
 export default authSlice.reducer;
 export const selectCurrentUser = (state) => state.auth.user;
+export const selectCancellationPolicies = (state) =>
+  state.auth.cancellationPolicies;
+
 export const selectMap = (state) => state.auth.map;
 export const selectFarmerId = (state) => state.auth.farmer_id;

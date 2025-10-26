@@ -12,6 +12,7 @@ import {
 const placeholderImage = require("../../assets/images/car1.jpeg");
 const CarCard = ({ car }) => {
   const router = useRouter();
+  console.log("carsasd:22", car);
 
   const dispatch = useDispatch();
   const favorites = useSelector(selectFavorites);
@@ -62,7 +63,7 @@ const CarCard = ({ car }) => {
         // console.log(`/car/${carId}`,carName)
         router.push({
           pathname: `/car/${carId}`,
-          params: { name: carName },
+          params: { name: carName, photos: JSON.stringify(car?.photos) },
         });
         // router.push("/car/Checkout");
       }}

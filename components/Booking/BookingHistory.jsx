@@ -1,55 +1,45 @@
-import {
-    Calendar,
-    History,
-    MapPin,
-    MessageCircle,
-} from 'lucide-react-native';
-import {
-    FlatList,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { Calendar, History, MapPin, MessageCircle } from "lucide-react-native";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-} from 'react-native-reanimated';
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 const mockBookings = [
   {
-    id: '5',
-    carName: 'Porsche 911',
-    carModel: '2023',
-    renterName: 'Sports Car Rentals',
-    status: 'completed',
-    pickupDate: 'Dec 1, 2024',
-    returnDate: 'Dec 5, 2024',
-    pickupLocation: '555 Speed Way, Racing District',
+    id: "5",
+    carName: "Porsche 911",
+    carModel: "2023",
+    renterName: "Sports Car Rentals",
+    status: "completed",
+    pickupDate: "Dec 1, 2024",
+    returnDate: "Dec 5, 2024",
+    pickupLocation: "555 Speed Way, Racing District",
     price: 800,
     isPaid: true,
   },
   {
-    id: '6',
-    carName: 'Range Rover',
-    carModel: '2024',
-    renterName: 'Premium Auto Rentals',
-    status: 'completed',
-    pickupDate: 'Nov 20, 2024',
-    returnDate: 'Nov 25, 2024',
-    pickupLocation: '123 Main St, Downtown',
+    id: "6",
+    carName: "Range Rover",
+    carModel: "2024",
+    renterName: "Premium Auto Rentals",
+    status: "completed",
+    pickupDate: "Nov 20, 2024",
+    returnDate: "Nov 25, 2024",
+    pickupLocation: "123 Main St, Downtown",
     price: 700,
     isPaid: true,
   },
   {
-    id: '7',
-    carName: 'Honda Civic',
-    carModel: '2023',
-    renterName: 'Budget Car Hire',
-    status: 'cancelled',
-    pickupDate: 'Nov 10, 2024',
-    returnDate: 'Nov 15, 2024',
-    pickupLocation: '789 Budget Ave, Economy Zone',
+    id: "7",
+    carName: "Honda Civic",
+    carModel: "2023",
+    renterName: "Budget Car Hire",
+    status: "cancelled",
+    pickupDate: "Nov 10, 2024",
+    returnDate: "Nov 15, 2024",
+    pickupLocation: "789 Budget Ave, Economy Zone",
     price: 250,
     isPaid: false,
   },
@@ -61,22 +51,22 @@ const styles = {
     paddingBottom: 100,
   },
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: "#E5E7EB",
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
   cardInfo: {
@@ -84,94 +74,94 @@ const styles = {
   },
   carTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
+    fontWeight: "700",
+    color: "#000",
     marginBottom: 4,
   },
   renterName: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
   },
   badgeCompleted: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: "#F9FAFB",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 20,
   },
   badgeTextCompleted: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#6B7280',
+    fontWeight: "500",
+    color: "#6B7280",
   },
   badgeCancelled: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: "#FEF2F2",
     borderWidth: 1,
-    borderColor: '#FECACA',
+    borderColor: "#FECACA",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 20,
   },
   badgeTextCancelled: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#DC2626',
+    fontWeight: "600",
+    color: "#DC2626",
   },
   detailsContainer: {
     marginBottom: 20,
   },
   detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   detailText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
     marginLeft: 8,
     flex: 1,
   },
   priceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: "#F3F4F6",
     marginBottom: 20,
   },
   priceLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
   },
   priceValue: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
+    fontWeight: "700",
+    color: "#000",
   },
   actionButton: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
     height: 44,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: "#D1D5DB",
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   messageButtonFull: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
     height: 44,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: "#D1D5DB",
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
+    fontWeight: "600",
+    color: "#6B7280",
     marginLeft: 4,
   },
   iconMargin: {
@@ -179,8 +169,8 @@ const styles = {
   },
   emptyState: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 48,
     paddingVertical: 80,
   },
@@ -189,19 +179,19 @@ const styles = {
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#6B7280',
+    fontWeight: "600",
+    color: "#6B7280",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#9CA3AF',
-    textAlign: 'center',
+    color: "#9CA3AF",
+    textAlign: "center",
   },
 };
 
-const BookingCard = ({ booking, onOpenChat }) => {
+const BookingCard = ({ booking, onOpenChat, handleBookingPress }) => {
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -218,13 +208,13 @@ const BookingCard = ({ booking, onOpenChat }) => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'completed':
+      case "completed":
         return (
           <View style={styles.badgeCompleted}>
             <Text style={styles.badgeTextCompleted}>Completed</Text>
           </View>
         );
-      case 'cancelled':
+      case "cancelled":
         return (
           <View style={styles.badgeCancelled}>
             <Text style={styles.badgeTextCancelled}>Cancelled</Text>
@@ -237,7 +227,7 @@ const BookingCard = ({ booking, onOpenChat }) => {
 
   return (
     <Animated.View style={[styles.card, animatedStyle]}>
-      <View style={styles.cardHeader}>
+      <TouchableOpacity onPress={handleBookingPress} style={styles.cardHeader}>
         <View style={styles.cardInfo}>
           <Text style={styles.carTitle}>
             {booking.carName} {booking.carModel}
@@ -245,7 +235,7 @@ const BookingCard = ({ booking, onOpenChat }) => {
           <Text style={styles.renterName}>{booking.renterName}</Text>
         </View>
         {getStatusBadge(booking.status)}
-      </View>
+      </TouchableOpacity>
 
       <View style={styles.detailsContainer}>
         <View style={styles.detailRow}>
@@ -280,14 +270,15 @@ const BookingCard = ({ booking, onOpenChat }) => {
   );
 };
 
-const BookingHistory = ({ onOpenChat }) => {
+const BookingHistory = ({ onOpenChat, handleBookingPress }) => {
   const handleOpenChat = (booking) => {
-    console.log('Open chat:', booking);
+    console.log("Open chat:", booking);
     // Your chat logic here
   };
 
   const historyBookings = mockBookings.filter(
-    (booking) => booking.status === 'completed' || booking.status === 'cancelled'
+    (booking) =>
+      booking.status === "completed" || booking.status === "cancelled"
   );
 
   return (
@@ -296,6 +287,7 @@ const BookingHistory = ({ onOpenChat }) => {
       renderItem={({ item }) => (
         <BookingCard
           booking={item}
+          handleBookingPress={handleBookingPress}
           onOpenChat={handleOpenChat}
         />
       )}

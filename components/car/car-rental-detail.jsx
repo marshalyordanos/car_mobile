@@ -8,7 +8,6 @@ import {
   Image,
   Modal,
   Platform,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -16,6 +15,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
+import { selectCancellationPolicies } from "../../redux/authReducer";
+import { SafeAreaView } from "react-native-safe-area-context";
+import RNModal from "react-native-modal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import LottieView from "lottie-react-native";
+
 const isWeb = Platform.OS === "web";
 
 class ErrorBoundary extends React.Component {
@@ -55,21 +61,20 @@ const HelpIcon = () => (
   <MaterialIcons name="help-outline" style={styles.icon} />
 );
 
-export default function CarRentalDetail({ car }) {
-  console.log("Received car prop (raw):", JSON.stringify(car, null, 2));
-
+export default function CarRentalDetail({ car, name, photos, loading }) {
   const { width } = Dimensions.get("window");
 
-  if (!car) {
-    console.error("Car prop is missing or undefined:", JSON.stringify(car));
-    return (
-      <Text style={styles.errorText}>Car data is missing or incomplete</Text>
-    );
-  }
+  // if (!car) {
+  //   console.error("Car prop is missing or undefined:", JSON.stringify(car));
+  //   return (
+  //     <Text style={styles.errorText}>Car data is missing or incomplete</Text>
+  //   );
+  // }
+  const cancelletionPolicy = useSelector(selectCancellationPolicies);
 
   // Move availableCities to avoid TDZ error
   const availableCities = [
-   { name: "Addis Ababa", lat: 9.03, lng: 38.74 },
+    { name: "Addis Ababa", lat: 9.03, lng: 38.74 },
     { name: "Dire Dawa", lat: 9.59, lng: 41.87 },
     { name: "Bahir Dar", lat: 11.59, lng: 37.39 },
     { name: "Gondar", lat: 12.6, lng: 37.47 },
@@ -94,55 +99,50 @@ export default function CarRentalDetail({ car }) {
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [pickupLocation, setPickupLocation] = useState(
-    car.location || "Not specified"
+    car?.location || "Not specified"
   );
   const [returnLocation, setReturnLocation] = useState(
-    car.location || "Not specified"
+    car?.location || "Not specified"
   );
-  const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
-  const [tempPickupLocation, setTempPickupLocation] = useState(
-    car?.location && availableCities.includes(car.location)
-      ? car.location
-      : availableCities[0]
-  );
+  // const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+  // const [tempPickupLocation, setTempPickupLocation] = useState(
+  //   car?.location && availableCities.includes(car.location)
+  //     ? car.location
+  //     : availableCities[0]
+  // );
   const [tempReturnLocation, setTempReturnLocation] = useState(
-    car?.location && availableCities.includes(car.location)
-      ? car.location
+    car?.location && availableCities.includes(car?.location)
+      ? car?.location
       : availableCities[0]
   );
   const [isInsuranceModalVisible, setIsInsuranceModalVisible] = useState(false);
   const tripStartDateDefault = new Date();
   const tripEndDateDefault = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const [tripStartDate, setTripStartDate] = useState(
-    car?.tripStart && isValidDate(car.tripStart)
-      ? new Date(car.tripStart)
-      : tripStartDateDefault
-  );
+  const [tripStartDate, setTripStartDate] = useState(new Date());
   const [tripEndDate, setTripEndDate] = useState(
-    car?.tripEnd && isValidDate(car.tripEnd)
-      ? new Date(car.tripEnd)
-      : tripEndDateDefault
+    new Date(Date.now() + 4 * 60 * 600 * 1000)
   );
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState(null); // 'start', 'end', or null
   const [dateError, setDateError] = useState("");
   const [totalPrice, setTotalPrice] = useState("N/A");
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const calculateTotalPrice = () => {
-      if (!car.dailyRate || !tripStartDate || !tripEndDate) return "N/A";
+      if (!car?.dailyRate || !tripStartDate || !tripEndDate) return "N/A";
       const days = Math.ceil(
         (tripEndDate - tripStartDate) / (1000 * 60 * 60 * 24)
       );
       if (days <= 0) return "N/A";
-      let total = days * car.dailyRate;
-      if (car.longTermDiscount && days >= 7) {
-        total *= 1 - car.longTermDiscount / 100;
+      let total = days * car?.dailyRate;
+      if (car?.longTermDiscount && days >= 7) {
+        total *= 1 - car?.longTermDiscount / 100;
       }
       return total.toFixed(2);
     };
     setTotalPrice(calculateTotalPrice());
-  }, [tripStartDate, tripEndDate, car.dailyRate, car.longTermDiscount]);
+  }, [tripStartDate, tripEndDate, car]);
 
   const formatPrice = (value) => {
     if (value === "N/A" || typeof value !== "string") return "N/A";
@@ -151,41 +151,6 @@ export default function CarRentalDetail({ car }) {
       maximumFractionDigits: 2,
     });
   };
-
-  const normalizeImageSource = (img) => {
-    console.log("Normalizing image source:", img);
-    if (typeof img === "string" && img.trim()) {
-      return { uri: img };
-    } else if (
-      img &&
-      (typeof img === "string" || (typeof img === "object" && img.default))
-    ) {
-      return { uri: typeof img === "string" ? img : img.default };
-    } else if (
-      img &&
-      typeof img === "object" &&
-      img.uri &&
-      typeof img.uri === "string" &&
-      img.uri.trim()
-    ) {
-      return { uri: img.uri };
-    }
-    console.warn("Invalid image source, returning null:", img);
-    return null;
-  };
-
-  let images = [];
-  if (Array.isArray(car.image)) {
-    images = car.image
-      .map((img) => normalizeImageSource(img))
-      .filter((img) => img !== null && img.uri);
-  } else if (car.image) {
-    const normalized = normalizeImageSource(car.image);
-    images = normalized ? [normalized] : [];
-  } else {
-    console.warn("No valid image or images found in car prop");
-  }
-  console.log("Processed images array:", JSON.stringify(images, null, 2));
 
   const renderRatingBar = (category) => (
     <View key={category} style={styles.ratingRow}>
@@ -243,93 +208,40 @@ export default function CarRentalDetail({ car }) {
     setCurrentImageIndex(index);
   };
 
-  const handleEditDates = (mode = "start") => {
-    console.log(`Edit button pressed for ${mode} date selection`);
-    setDatePickerMode(mode);
-    setDateError("");
-    setIsDateModalVisible(true);
-  };
-
-  const handleEditLocation = () => {
-    console.log("Edit button pressed for location selection");
-    setTempPickupLocation(pickupLocation);
-    setTempReturnLocation(returnLocation);
-    setIsLocationModalVisible(true);
-  };
-
-  const handleConfirmLocation = () => {
-    console.log("Confirm button pressed:", {
-      pickup: tempPickupLocation,
-      return: tempReturnLocation,
-    });
-    setPickupLocation(tempPickupLocation);
-    setReturnLocation(tempReturnLocation);
-    setIsLocationModalVisible(false);
-  };
-
-  const handleConfirmDates = () => {
-    if (tripEndDate <= tripStartDate) {
-      setDateError("End date must be after start date");
-      return;
-    }
-    console.log("Confirm dates:", {
-      start: tripStartDate.toISOString(),
-      end: tripEndDate.toISOString(),
-    });
-    setIsDateModalVisible(false);
-    setDatePickerMode(null);
-    setDateError("");
-  };
-
   const handleInsuranceModal = () => {
     console.log("Insurance help icon pressed");
     setIsInsuranceModalVisible(true);
   };
 
-  
   const handleContinue = () => {
-    if (!tripStartDate || !tripEndDate) {
-      setDateError("Please select valid trip dates");
-      return;
-    }
-    if (tripEndDate <= tripStartDate) {
-      setDateError("End date must be after start date");
-      return;
-    }
-    if (!pickupLocation || !returnLocation) {
-      setDateError("Please select valid pickup and return locations");
-      return;
-    }
-
-    // Prepare car object for serialization
-    const serializableCar = {
-      id: car.id || car.vin || `temp-id-${Date.now()}`,
-      hostId: car.hostId || car.owner || "Unknown",
-      name: car.name || "Unknown Vehicle",
-      price: car.dailyRate || car.price || 0,
-      images: car.image || ["https://via.placeholder.com/150"],
-      rating: car.rating || 0,
-      trips: car.trips || 0,
-      year: car.year || "Unknown",
-    };
-
-    console.log("Navigating to Checkout with params:", {
-      car: serializableCar,
-      pickupLocation: pickupLocation.name,
-      pickupLat: pickupLocation.lat,
-      pickupLng: pickupLocation.lng,
-      returnLocation: returnLocation.name,
-      dropoffLat: returnLocation.lat,
-      dropoffLng: returnLocation.lng,
-      tripStartDate: tripStartDate.toISOString(),
-      tripEndDate: tripEndDate.toISOString(),
-    });
-    
-    try {
-      router.push({
-        pathname: "/car/Checkout",
+    // if (!tripStartDate || !tripEndDate) {
+    //   setDateError("Please select valid trip dates");
+    //   return;
+    // }
+    // if (tripEndDate <= tripStartDate) {
+    //   setDateError("End date must be after start date");
+    //   return;
+    // }
+    // if (!pickupLocation || !returnLocation) {
+    //   setDateError("Please select valid pickup and return locations");
+    //   return;
+    // }
+    // // Prepare car object for serialization
+    // const serializableCar = {
+    //   id: car.id || car.vin || `temp-id-${Date.now()}`,
+    //   hostId: car.hostId || car.owner || "Unknown",
+    //   name: car.name || "Unknown Vehicle",
+    //   price: car.dailyRate || car.price || 0,
+    //   images: car?.image || ["https://via.placeholder.com/150"],
+    //   rating: car.rating || 0,
+    //   trips: car.trips || 0,
+    //   year: car.year || "Unknown",
+    // };
+    // try {
+    router.push({
+      pathname: "/car/Checkout",
       params: {
-        car: JSON.stringify(serializableCar),
+        car: JSON.stringify(car),
         pickupLocation: pickupLocation.name,
         pickupLat: pickupLocation.lat || 0,
         pickupLng: pickupLocation.lng || 0,
@@ -338,69 +250,11 @@ export default function CarRentalDetail({ car }) {
         dropoffLng: returnLocation.lng || 0,
         tripStartDate: tripStartDate.toISOString(),
         tripEndDate: tripEndDate.toISOString(),
-     
       },
- 
-      });
-    } catch (error) {
-      console.error("Navigation error:", error);
-    }
-  };
-
-  const onDateChange = (event, selectedDate) => {
-    if (event.type === "dismissed") {
-      console.log(`${datePickerMode} date picker dismissed`);
-      setIsDateModalVisible(false);
-      setDatePickerMode(null);
-      setDateError("");
-      return;
-    }
-    const currentDate =
-      selectedDate && isValidDate(selectedDate)
-        ? new Date(selectedDate)
-        : datePickerMode === "start"
-        ? tripStartDate
-        : tripEndDate;
-    console.log(
-      `Date changed: ${datePickerMode} -> ${currentDate.toISOString()}`
-    );
-    if (datePickerMode === "start") {
-      setTripStartDate(currentDate);
-      setDatePickerMode("end");
-      if (currentDate >= tripEndDate) {
-        const newEndDate = new Date(
-          currentDate.getTime() + 24 * 60 * 60 * 1000
-        );
-        console.log(`Adjusting end date to: ${newEndDate.toISOString()}`);
-        setTripEndDate(newEndDate);
-      }
-    } else {
-      setTripEndDate(currentDate);
-      setDatePickerMode(null);
-    }
-    setDateError("");
-  };
-
-  const onWebDateChange = (event, mode) => {
-    const selectedDate = new Date(event.target.value);
-    if (isValidDate(selectedDate)) {
-      console.log(`Web date changed: ${mode} -> ${selectedDate.toISOString()}`);
-      if (mode === "start") {
-        setTripStartDate(selectedDate);
-        if (selectedDate >= tripEndDate) {
-          const newEndDate = new Date(
-            selectedDate.getTime() + 24 * 60 * 60 * 1000
-          );
-          console.log(`Adjusting end date to: ${newEndDate.toISOString()}`);
-          setTripEndDate(newEndDate);
-        }
-      } else {
-        setTripEndDate(selectedDate);
-      }
-      setDateError("");
-    } else {
-      setDateError("Invalid date selected");
-    }
+    });
+    // } catch (error) {
+    //   console.error("Navigation error:", error);
+    // }
   };
 
   const formatDate = (date) => {
@@ -415,204 +269,284 @@ export default function CarRentalDetail({ car }) {
     });
   };
 
-  const formatDateForInput = (date) => {
-    if (!isValidDate(date)) return "";
-    return date.toISOString().split("T")[0];
-  };
-
   return (
     <ErrorBoundary>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => {
-                console.log("Back button pressed");
-                router.back();
-              }}
-              accessibilityLabel="Go back"
-            >
-              <ArrowLeftIcon />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{car.name || "Unknown Car"}</Text>
-            <View style={styles.headerActions}>
-              <TouchableOpacity style={styles.headerAction}>
-                <ShareIcon />
+      <View style={[styles.container, { flex: 1, backgroundColor: "white" }]}>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
+          <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+          <ScrollView
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Header */}
+            <View style={styles.header}>
+              <TouchableOpacity
+                onPress={() => {
+                  console.log("Back button pressed");
+                  router.back();
+                }}
+                accessibilityLabel="Go back"
+              >
+                <ArrowLeftIcon />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.headerAction}>
-                <HeartIcon />
-              </TouchableOpacity>
+              <Text style={styles.headerTitle}>{name}</Text>
+              <View style={styles.headerActions}>
+                <TouchableOpacity style={styles.headerAction}>
+                  <ShareIcon />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.headerAction}>
+                  <HeartIcon />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
 
-          {/* Car Image */}
-          <View style={styles.imageContainer}>
-            <ScrollView
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-            >
-              {images.length > 0 ? (
-                images.map((image, index) => (
-                  <Image
-                    key={image.uri || `image-${index}`}
-                    source={image}
-                    style={[styles.carImage, { width }]}
-                    resizeMode="cover"
-                  />
-                ))
-              ) : (
-                <Text style={styles.noImageText}>
-                  No valid images available
-                </Text>
+            {/* Car Image */}
+            <View style={styles.imageContainer}>
+              <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+              >
+                {photos.length > 0 ? (
+                  photos.map((image, index) => (
+                    <Image
+                      key={`image-${index}`}
+                      source={{ uri: image }}
+                      style={[styles.carImage, { width }]}
+                      resizeMode="cover"
+                    />
+                  ))
+                ) : (
+                  <Text style={styles.noImageText}>
+                    No valid images available
+                  </Text>
+                )}
+              </ScrollView>
+              {photos.length > 0 && (
+                <View style={styles.imageCounter}>
+                  <Text style={styles.imageCounterText}>
+                    {currentImageIndex + 1}/{photos.length}
+                  </Text>
+                </View>
               )}
-            </ScrollView>
-            {images.length > 0 && (
-              <View style={styles.imageCounter}>
-                <Text style={styles.imageCounterText}>
-                  {currentImageIndex + 1}/{images.length}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {/* Car Info */}
-          <View style={styles.section}>
-            <Text style={styles.ownerText}>{car.owner || "Unknown"}'s</Text>
-            <Text style={styles.carTitle}>
-              {car.name || "Unknown"} {car.year || ""}
-            </Text>
-            <Text style={styles.carSubtitle}>{car.trim || "N/A"}</Text>
-            <View style={styles.ratingContainer}>
-              <Text style={styles.ratingScore}>{car.rating || "N/A"}</Text>
-              <StarIcon filled={true} />
-              <Text style={styles.ratingCount}>({car.trips || 0} trips)</Text>
             </View>
-          </View>
+            {loading ? (
+              <View style={{ justifyContent: "center", alignItems: "center" }}>
+                <LottieView
+                  source={require("../../assets/loading.json")}
+                  autoPlay
+                  loop
+                  style={styles.lottie}
+                />
+              </View>
+            ) : (
+              <View>
+                {/* Car Info */}
+                <View style={styles.section}>
+                  <Text style={styles.ownerText}>
+                    {car?.host?.firstName + " " + car?.host?.lastName ||
+                      "Unknown"}
+                    's
+                  </Text>
+                  <Text style={styles.carTitle}>
+                    {car?.make?.name + " " + car?.model?.name || "Unknown"}
+                    {car?.year || ""}
+                  </Text>
+                  <Text style={styles.carSubtitle}>{car.description}</Text>
 
-          {/* Vehicle Details */}
-          <View style={styles.section}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-            >
-              <MaterialIcons name="directions-car" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Vehicle Details</Text>
-            </View>
-            <View style={styles.vehicleDetails}>
-              <View style={styles.vehicleDetailRow}>
-                <Text style={styles.vehicleDetailLabel}>Type</Text>
-                <Text style={styles.vehicleDetailValue}>
-                  {car.carType || "Not specified"}
-                </Text>
-              </View>
-              <View style={styles.vehicleDetailRow}>
-                <Text style={styles.vehicleDetailLabel}>Color</Text>
-                <Text style={styles.vehicleDetailValue}>
-                  {car.color || "Not specified"}
-                </Text>
-              </View>
-              <View style={styles.vehicleDetailRow}>
-                <Text style={styles.vehicleDetailLabel}>License Plate</Text>
-                <Text style={styles.vehicleDetailValue}>
-                  {car.licensePlate || "Not specified"}
-                </Text>
-              </View>
-              <View style={styles.vehicleDetailRow}>
-                <Text style={styles.vehicleDetailLabel}>VIN</Text>
-                <Text style={styles.vehicleDetailValue}>
-                  {car.vin || "Not specified"}
-                </Text>
-              </View>
-              <View style={styles.vehicleDetailRow}>
+                  <View style={styles.ratingContainer}>
+                    <Text style={styles.ratingScore}>{car.average_rating}</Text>
+                    <StarIcon filled={true} />
+                    {/* <Text style={styles.ratingCount}>({car.trips || 0} )</Text> */}
+                  </View>
+                </View>
+
+                {/* Vehicle Details */}
+                <View style={styles.section}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                      // borderWidth: 2,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <MaterialIcons
+                      name="directions-car"
+                      style={styles.sectionIcon}
+                    />
+                    <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>
+                      Vehicle Details
+                    </Text>
+                  </View>
+                  <View style={styles.vehicleDetails}>
+                    <View style={styles.vehicleDetailRow}>
+                      <Text style={styles.vehicleDetailLabel}>Type</Text>
+                      <Text style={styles.vehicleDetailValue}>
+                        {car.carType || "Not specified"}
+                      </Text>
+                    </View>
+                    <View style={styles.vehicleDetailRow}>
+                      <Text style={styles.vehicleDetailLabel}>Color</Text>
+                      <Text style={styles.vehicleDetailValue}>
+                        {car.color || "Not specified"}
+                      </Text>
+                    </View>
+                    <View style={styles.vehicleDetailRow}>
+                      <Text style={styles.vehicleDetailLabel}>
+                        License Plate
+                      </Text>
+                      <Text style={styles.vehicleDetailValue}>
+                        {car.licensePlate || "Not specified"}
+                      </Text>
+                    </View>
+                    <View style={styles.vehicleDetailRow}>
+                      <Text style={styles.vehicleDetailLabel}>VIN</Text>
+                      <Text style={styles.vehicleDetailValue}>
+                        {car.vin || "Not specified"}
+                      </Text>
+                    </View>
+                    {/* <View style={styles.vehicleDetailRow}>
                 <Text style={styles.vehicleDetailLabel}>Daily Rate</Text>
                 <Text style={styles.vehicleDetailValue}>
                   {car.dailyRate
                     ? `ETB ${formatPrice(car.dailyRate.toString())}`
                     : "Not specified"}
                 </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Your Trip */}
-          <View style={styles.section}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-            >
-              <MaterialIcons name="calendar-today" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Your Trip</Text>
-            </View>
-            <View style={styles.tripRow}>
-              <View style={styles.tripInfo}>
-                <MaterialIcons name="calendar-today" style={styles.tripIcon} />
-                <View>
-                  <Text style={styles.tripLabel}>Trip dates</Text>
-                  <Text style={styles.tripDetail}>
-                    {formatDate(tripStartDate)}
-                  </Text>
-                  <Text style={styles.tripDetail}>
-                    {formatDate(tripEndDate)}
-                  </Text>
+              </View> */}
+                  </View>
                 </View>
-              </View>
-              <TouchableOpacity
-                onPress={() => handleEditDates("start")}
-                accessibilityLabel="Edit trip dates"
-              >
-                <EditIcon />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.tripRow}>
-              <View style={styles.tripInfo}>
-                <MaterialIcons name="location-pin" style={styles.tripIcon} />
-                <View>
-                  <Text style={styles.tripLabel}>Pickup & return city</Text>
-                  <Text style={styles.tripDetail}>
-                    {pickupLocation}{" "}
-                    {pickupLocation === returnLocation
-                      ? ""
-                      : `/ ${returnLocation}`}
-                  </Text>
+
+                {/* Your Trip */}
+                <View style={styles.section}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 13,
+                    }}
+                  >
+                    <MaterialIcons
+                      name="calendar-today"
+                      style={styles.sectionIcon}
+                    />
+                    <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>
+                      Your Trip
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.push({
+                        pathname: "/DatePickerScreen",
+                        params: {
+                          url: "/car/" + car?.id,
+                          par: JSON.stringify({ photos: photos, name }),
+                        },
+                      });
+                    }}
+                    accessibilityLabel="Edit trip dates"
+                  >
+                    <View style={styles.tripRow}>
+                      <View style={styles.tripInfo}>
+                        <MaterialIcons
+                          name="calendar-today"
+                          style={styles.tripIcon}
+                        />
+                        <View>
+                          <Text style={styles.tripLabel}>Trip dates</Text>
+                          <Text style={styles.tripDetail}>
+                            {formatDate(tripStartDate)}
+                          </Text>
+                          <Text style={styles.tripDetail}>
+                            {formatDate(tripEndDate)}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <EditIcon />
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => router.push(`/location-search`)}
+                    accessibilityLabel="Edit pickup and return city"
+                  >
+                    <View style={styles.tripRow}>
+                      <View style={styles.tripInfo}>
+                        <MaterialIcons
+                          name="location-pin"
+                          style={styles.tripIcon}
+                        />
+                        <View>
+                          <Text style={styles.tripLabel}>
+                            Pickup & return city
+                          </Text>
+                          <Text style={styles.tripDetail}>
+                            {pickupLocation}
+                            {pickupLocation === car?.location
+                              ? ""
+                              : `/ ${returnLocation}`}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <EditIcon />
+                    </View>
+                  </TouchableOpacity>
                 </View>
-              </View>
-              <TouchableOpacity
-                onPress={handleEditLocation}
-                accessibilityLabel="Edit pickup and return city"
-              >
-                <EditIcon />
-              </TouchableOpacity>
-            </View>
-          </View>
 
-          {/* Cancellation Policy */}
-          <View style={styles.section}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-            >
-              <MaterialIcons name="cancel" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Cancellation Policy</Text>
-            </View>
-            <View style={styles.policyItem}>
-              <View>
-                <Text style={styles.policyTitle}>
-                  {car.cancellation?.title || "Not specified"}
-                </Text>
-                <Text style={styles.policyDesc}>
-                  {car.cancellation?.desc || "No details available"}
-                </Text>
-              </View>
-            </View>
-          </View>
+                {/* Cancellation Policy */}
+                <View style={styles.section}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <MaterialIcons name="cancel" style={[styles.sectionIcon]} />
+                    <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>
+                      Cancellation Policy
+                    </Text>
+                  </View>
+                  {cancelletionPolicy?.map((val, index) => {
+                    const daysBefore = val?.daysBeforeTrip || 0;
+                    const refund = val?.refundPercent || 0;
 
-          {/* Payment Options */}
-          <View style={styles.section}>
+                    const cancelDate = new Date();
+                    cancelDate.setDate(new Date().getDate() + daysBefore);
+
+                    const title =
+                      refund === 100
+                        ? "Free cancellation"
+                        : `Cancel ${daysBefore} day(s) before trip`;
+
+                    const description =
+                      refund === 100
+                        ? `Full refund if canceled before ${formatDate(
+                            cancelDate
+                          )}`
+                        : `${refund}% refund if canceled before ${formatDate(
+                            cancelDate
+                          )}`;
+
+                    return (
+                      <View key={index} style={styles.policyItem2}>
+                        <View>
+                          <Text style={styles.policyTitle2}>{title}</Text>
+                          <Text style={styles.policyDesc2}>{description}</Text>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+
+                {/* Payment Options */}
+                {/* <View style={styles.section}>
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
@@ -629,112 +563,176 @@ export default function CarRentalDetail({ car }) {
                 </Text>
               </View>
             </View>
-          </View>
+          </View> */}
 
-          {/* Miles Included */}
-          <View style={styles.section}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-            >
-              <MaterialIcons name="speed" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Miles</Text>
-            </View>
-            <View style={styles.policyItem}>
-              <View>
+                {/* Miles Included */}
+                <View style={styles.section}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>
+                      Miles
+                    </Text>
+                  </View>
+                  <View style={styles.policyItem}>
+                    {/* <View>
                 <Text style={styles.policyTitle}>
                   {car.miles?.title || "Not specified"}
                 </Text>
                 <Text style={styles.policyDesc}>
                   {car.miles?.desc || "No details available"}
                 </Text>
-              </View>
-            </View>
-            <View style={styles.vehicleDetailRow}>
-              <Text style={styles.vehicleDetailLabel}>Current Mileage</Text>
-              <Text style={styles.vehicleDetailValue}>
-                {car.mileage ? `${car.mileage} miles` : "Not specified"}
-              </Text>
-            </View>
-          </View>
+              </View> */}
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: 20,
+                      alignItems: "center",
+                    }}
+                  >
+                    <MaterialIcons
+                      size={60}
+                      name="speed"
+                      style={styles.sectionIcon}
+                    />
 
-          {/* Insurance & Protection */}
-          <View style={styles.section}>
-            <View style={styles.insuranceHeader}>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-              >
-                <MaterialIcons name="security" style={styles.sectionIcon} />
-                <Text style={styles.sectionTitle}>Insurance & Protection</Text>
-              </View>
-              <TouchableOpacity
-                onPress={handleInsuranceModal}
-                accessibilityLabel="View insurance details"
-              >
-                <HelpIcon />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.insuranceInfo}>
-              <View>
-                <Text style={styles.insuranceProvider}>
-                  {car.insurance?.provider || "Not specified"}
-                </Text>
-                <Text style={styles.insuranceText}>
-                  {car.insurance?.details || "No coverage details available"}
-                </Text>
-              </View>
-            </View>
-          </View>
+                    <View>
+                      <Text style={styles.vehicleDetailLabel}>
+                        Current Mileage
+                      </Text>
+                      <Text style={styles.vehicleDetailValue}>
+                        {car.mileage ? `${car.mileage} miles` : "Not specified"}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
 
-          {/* Deluxe Class */}
-          <View style={styles.section}>
-            <View style={styles.deluxeHeader}>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-              >
-                <MaterialIcons name="verified" style={styles.sectionIcon} />
-                <Text style={styles.sectionTitle}>Deluxe Class</Text>
-              </View>
-              <TouchableOpacity accessibilityLabel="View deluxe class details">
-                <HelpIcon />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.deluxeDescription}>
-              This exclusive car has additional safety checks for guests under
-              30.
-            </Text>
-          </View>
+                {/* Insurance & Protection */}
+                <View style={styles.section}>
+                  <View style={styles.insuranceHeader}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <Text style={styles.sectionTitle}>
+                        Insurance & Protection
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={handleInsuranceModal}
+                      accessibilityLabel="View insurance details"
+                    >
+                      <HelpIcon />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.insuranceInfo}>
+                    <MaterialIcons name="security" style={styles.sectionIcon} />
 
-          {/* Vehicle Features */}
-          <View style={styles.section}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-            >
-              <MaterialIcons name="build" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Vehicle Features</Text>
-            </View>
-            <View style={styles.featuresGrid}>
-              {car.features?.map((feature) =>
-                renderFeatureChip(feature.icon, feature.text)
-              ) || <Text style={styles.noDataText}>No features available</Text>}
-            </View>
-            <View style={styles.featureChipSingle}>
-              <MaterialIcons name="settings" style={styles.featureIcon} />
-              <Text style={styles.featureText}>
-                {car.transmission || "Not specified"}
-              </Text>
-            </View>
-            <View style={styles.featureChipSingle}>
-              <MaterialIcons name="people" style={styles.featureIcon} />
-              <Text style={styles.featureText}>
-                {car.seatingCapacity
-                  ? `${car.seatingCapacity} seats`
-                  : "Not specified"}
-              </Text>
-            </View>
-          </View>
+                    {car?.insurancePlans?.map((insurance) => (
+                      <View>
+                        <Text style={styles.insuranceProvider}>
+                          {insurance?.provider || "Not specified"}
+                        </Text>
+                        {/* <Text style={styles.insuranceText}>
+                    {car?.insurancePlans[0]?.details ||
+                      "No coverage details available"}
+                  </Text> */}
+                      </View>
+                    ))}
+                  </View>
+                </View>
 
-          {/* Safety */}
-          <View style={styles.section}>
+                {/* Deluxe Class */}
+                {car?.safety?.length > 0 && (
+                  <View style={styles.section}>
+                    <View style={styles.deluxeHeader}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <MaterialIcons
+                          name="verified"
+                          style={styles.sectionIcon}
+                        />
+                        <Text
+                          style={[styles.sectionTitle, { marginBottom: 0 }]}
+                        >
+                          Deluxe Class
+                        </Text>
+                      </View>
+                      <TouchableOpacity accessibilityLabel="View deluxe class details">
+                        <HelpIcon />
+                      </TouchableOpacity>
+                    </View>
+                    {car?.safety?.map((title, i) => (
+                      <View key={i} style={styles.policyItem2}>
+                        <View>
+                          <Text style={styles.policyTitle2}>{title}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* Vehicle Features */}
+                {
+                  <View style={styles.section}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <MaterialIcons name="build" style={styles.sectionIcon} />
+                      <Text style={styles.sectionTitle}>Vehicle Features</Text>
+                    </View>
+                    {car?.features?.length > 0 && (
+                      <View style={styles.featuresGrid}>
+                        {car.features?.map((feature) =>
+                          renderFeatureChip(feature.icon, feature)
+                        ) || (
+                          <Text style={styles.noDataText}>
+                            No features available
+                          </Text>
+                        )}
+                      </View>
+                    )}
+                    <View
+                      style={[styles.featureChipSingle, { marginBottom: 10 }]}
+                    >
+                      <MaterialIcons
+                        name="settings"
+                        style={styles.featureIcon}
+                      />
+                      <Text style={styles.featureText}>
+                        {car.transmission || "Not specified"}
+                      </Text>
+                    </View>
+                    <View style={styles.featureChipSingle}>
+                      <MaterialIcons name="people" style={styles.featureIcon} />
+                      <Text style={styles.featureText}>
+                        {car.seatingCapacity
+                          ? `${car.seatingCapacity} seats`
+                          : "Not specified"}
+                      </Text>
+                    </View>
+                  </View>
+                }
+
+                {/* Safety */}
+                {/* <View style={styles.section}>
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
@@ -757,10 +755,10 @@ export default function CarRentalDetail({ car }) {
                   : "Eco-Friendly: Not specified"}
               </Text>
             </View>
-          </View>
+          </View> */}
 
-          {/* Device Connectivity */}
-          <View style={styles.section}>
+                {/* Device Connectivity */}
+                {/* <View style={styles.section}>
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
@@ -778,10 +776,10 @@ export default function CarRentalDetail({ car }) {
                 </Text>
               )}
             </View>
-          </View>
+          </View> */}
 
-          {/* Included in the Price */}
-          <View style={styles.section}>
+                {/* Included in the Price */}
+                {/* <View style={styles.section}>
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
@@ -828,384 +826,211 @@ export default function CarRentalDetail({ car }) {
                 </Text>
               </View>
             </View>
-          </View>
+          </View> */}
 
-          {/* Ratings and Reviews */}
-          <View style={styles.section}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-            >
-              <MaterialIcons name="star" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Ratings and Reviews</Text>
-            </View>
-            <View style={styles.overallRating}>
-              <Text style={styles.overallRatingScore}>
-                {car.rating || "N/A"}
-              </Text>
-              <StarIcon filled={true} />
-              <Text style={styles.overallRatingCount}>
-                ({car.ratingCount || 0} ratings)
-              </Text>
-            </View>
-            <View style={styles.ratingsBreakdown}>
-              {car.ratingCategories?.map((category) =>
-                renderRatingBar(category)
-              ) || <Text style={styles.noDataText}>No ratings available</Text>}
-            </View>
-            <Text style={styles.ratingsNote}>
-              Based on {car.ratingCount ? car.ratingCount - 1 : 0} guest ratings
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.reviewsScroll}
-            >
-              {car.reviews?.length > 0 ? (
-                car.reviews.map((review) => renderReviewCard(review))
-              ) : (
-                <Text style={styles.noDataText}>No reviews available</Text>
-              )}
-            </ScrollView>
-            <TouchableOpacity>
-              <Text style={styles.seeAllReviews}>SEE ALL REVIEWS</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Hosted By */}
-          <View style={styles.section}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-            >
-              <MaterialIcons name="person" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Hosted By</Text>
-            </View>
-            <View style={styles.hostContainer}>
-              <View style={styles.hostImageContainer}>
-                <Image
-                  source={
-                    normalizeImageSource(car.host?.image) || {
-                      uri: "https://via.placeholder.com/60",
-                    }
-                  }
-                  style={styles.hostImage}
-                />
-                <View style={styles.hostRating}>
-                  <Text style={styles.hostRatingText}>
-                    {car.host?.rating || "N/A"}
-                  </Text>
-                  <StarIcon filled={true} />
-                </View>
-              </View>
-              <View>
-                <Text style={styles.hostName}>
-                  {car.host?.name || "Unknown"}
-                </Text>
-                <Text style={styles.hostInfo}>
-                  {car.host?.info || "No info available"}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Rules of the Road */}
-          <View style={styles.section}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-            >
-              <MaterialIcons name="rule" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Rules of the Road</Text>
-            </View>
-            <View style={styles.rulesList}>
-              {car.rules?.map((rule) => (
-                <View key={rule.title} style={styles.ruleItem}>
-                  <View>
-                    <Text style={styles.ruleTitle}>{rule.title}</Text>
-                    <Text style={styles.ruleDesc}>{rule.desc}</Text>
-                  </View>
-                </View>
-              )) || <Text style={styles.noDataText}>No rules available</Text>}
-              <Text style={styles.vehicleDetailValue}>
-                {car.seatingCapacity
-                  ? `${car.seatingCapacity} seats`
-                  : "Not specified"}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.bottomPadding} />
-        </ScrollView>
-
-        {/* Date Selection Modal */}
-        <Modal
-          visible={isDateModalVisible}
-          animationType="slide"
-          transparent={false} // Changed to false for white background
-          onRequestClose={() => {
-            console.log("Date modal closed via onRequestClose");
-            setIsDateModalVisible(false);
-            setDatePickerMode(null);
-            setDateError("");
-          }}
-        >
-          <ErrorBoundary>
-            <View style={[styles.modalOverlay, { backgroundColor: "#FFFFFF" }]}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Select Trip Dates</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      console.log("Close date modal");
-                      setIsDateModalVisible(false);
-                      setDatePickerMode(null);
-                      setDateError("");
+                {/* Ratings and Reviews */}
+                <View style={styles.section}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
                     }}
-                    accessibilityLabel="Close date selection modal"
                   >
-                    <MaterialIcons name="close" style={styles.modalCloseIcon} />
+                    <MaterialIcons name="star" style={styles.sectionIcon} />
+                    <Text style={styles.sectionTitle}>Ratings and Reviews</Text>
+                  </View>
+                  <View style={styles.overallRating}>
+                    <Text style={styles.overallRatingScore}>
+                      {car.rating || "N/A"}
+                    </Text>
+                    <StarIcon filled={true} />
+                    <Text style={styles.overallRatingCount}>
+                      ({car.ratingCount || 0} ratings)
+                    </Text>
+                  </View>
+                  <View style={styles.ratingsBreakdown}>
+                    {car.ratingCategories?.map((category) =>
+                      renderRatingBar(category)
+                    ) || (
+                      <Text style={styles.noDataText}>
+                        No ratings available
+                      </Text>
+                    )}
+                  </View>
+                  <Text style={styles.ratingsNote}>
+                    Based on {car.ratingCount ? car.ratingCount - 1 : 0} guest
+                    ratings
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.reviewsScroll}
+                  >
+                    {car.reviews?.length > 0 ? (
+                      car.reviews.map((review) => renderReviewCard(review))
+                    ) : (
+                      <Text style={styles.noDataText}>
+                        No reviews available
+                      </Text>
+                    )}
+                  </ScrollView>
+                  <TouchableOpacity>
+                    <Text style={styles.seeAllReviews}>SEE ALL REVIEWS</Text>
                   </TouchableOpacity>
                 </View>
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSubtitle}>Trip Dates</Text>
-                  {dateError ? (
-                    <Text style={styles.errorText}>{dateError}</Text>
-                  ) : null}
-                  {isWeb ? (
-                    <View style={styles.webDateContainer}>
-                      <View style={styles.webDateField}>
-                        <Text style={styles.webDateLabel}>Start Date</Text>
-                        <input
-                          type="date"
-                          value={formatDateForInput(tripStartDate)}
-                          onChange={(e) => onWebDateChange(e, "start")}
-                          min={formatDateForInput(new Date())}
-                          style={styles.webDateInput}
-                        />
-                      </View>
-                      <View style={styles.webDateField}>
-                        <Text style={styles.webDateLabel}>End Date</Text>
-                        <input
-                          type="date"
-                          value={formatDateForInput(tripEndDate)}
-                          onChange={(e) => onWebDateChange(e, "end")}
-                          min={formatDateForInput(
-                            new Date(
-                              tripStartDate.getTime() + 24 * 60 * 60 * 1000
-                            )
-                          )}
-                          style={styles.webDateInput}
-                        />
+
+                {/* Hosted By */}
+                <View style={styles.section}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <MaterialIcons name="person" style={styles.sectionIcon} />
+                    <Text style={styles.sectionTitle}>Hosted By</Text>
+                  </View>
+                  <View style={styles.hostContainer}>
+                    <View style={styles.hostImageContainer}>
+                      <Image
+                        source={
+                          car?.host
+                            ? { uri: car?.host?.profilePhoto }
+                            : {
+                                uri: "https://via.placeholder.com/60",
+                              }
+                        }
+                        style={styles.hostImage}
+                      />
+                      <View style={styles.hostRating}>
+                        <Text style={styles.hostRatingText}>
+                          {car.average_rating || "N/A"}
+                        </Text>
+                        <StarIcon filled={true} />
                       </View>
                     </View>
-                  ) : (
-                    <>
-                      <View style={styles.dateSummary}>
-                        <Text style={styles.dateSummaryText}>
-                          Start: {formatDate(tripStartDate)}
-                        </Text>
-                        <Text style={styles.dateSummaryText}>
-                          End: {formatDate(tripEndDate)}
-                        </Text>
-                        <View style={styles.dateEditButtons}>
-                          <TouchableOpacity
-                            style={styles.editDateButton}
-                            onPress={() => setDatePickerMode("start")}
-                            accessibilityLabel="Edit start date"
-                          >
-                            <Text style={styles.editDateButtonText}>
-                              Edit Start Date
-                            </Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            style={styles.editDateButton}
-                            onPress={() => setDatePickerMode("end")}
-                            accessibilityLabel="Edit end date"
-                          >
-                            <Text style={styles.editDateButtonText}>
-                              Edit End Date
-                            </Text>
-                          </TouchableOpacity>
+                    <View>
+                      <Text style={styles.hostName}>
+                        {car.host?.name || "Unknown"}
+                      </Text>
+                      <Text style={styles.hostInfo}>
+                        {car.host?.info || "No info available"}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Rules of the Road */}
+                <View style={styles.section}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <MaterialIcons name="rule" style={styles.sectionIcon} />
+                    <Text style={styles.sectionTitle}>Rules of the Road</Text>
+                  </View>
+                  <View style={styles.rulesList}>
+                    {car.rules?.map((rule) => (
+                      <View key={rule.title} style={styles.ruleItem}>
+                        <View>
+                          <Text style={styles.ruleTitle}>{rule.title}</Text>
+                          <Text style={styles.ruleDesc}>{rule.desc}</Text>
                         </View>
                       </View>
-                      {DateTimePicker && datePickerMode && (
-                        <DateTimePicker
-                          value={
-                            datePickerMode === "start"
-                              ? tripStartDate
-                              : tripEndDate
-                          }
-                          mode="date"
-                          display="spinner"
-                          onChange={onDateChange}
-                          minimumDate={
-                            datePickerMode === "start"
-                              ? new Date()
-                              : new Date(
-                                  tripStartDate.getTime() + 24 * 60 * 60 * 1000
-                                )
-                          }
-                          style={styles.datePicker}
-                        />
-                      )}
-                    </>
-                  )}
-                  <TouchableOpacity
-                    style={[
-                      styles.confirmButton,
-                      dateError && styles.disabledButton,
-                    ]}
-                    onPress={handleConfirmDates}
-                    disabled={!!dateError}
-                    accessibilityLabel="Confirm trip dates"
-                  >
-                    <Text style={styles.confirmButtonText}>Confirm Dates</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </ErrorBoundary>
-        </Modal>
-
-        {/* Location Selection Modal */}
-        <Modal
-          visible={isLocationModalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => {
-            console.log("Location modal closed via onRequestClose");
-            setIsLocationModalVisible(false);
-          }}
-        >
-          <ErrorBoundary>
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>
-                    Select Pickup and Return Cities
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      console.log("Close location modal");
-                      setIsLocationModalVisible(false);
-                    }}
-                    accessibilityLabel="Close location selection modal"
-                  >
-                    <MaterialIcons name="close" style={styles.modalCloseIcon} />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSubtitle}>Pickup City</Text>
-                  <View style={styles.pickerContainer}>
-                    <Picker
-                      selectedValue={tempPickupLocation}
-                      onValueChange={(itemValue) => {
-                        console.log("Selected pickup city:", itemValue);
-                        setTempPickupLocation(itemValue);
-                      }}
-                      style={styles.picker}
-                    >
-                      {availableCities.map((city) => (
-                        <Picker.Item
-                          key={`pickup-${city}`}
-                          label={city}
-                          value={city}
-                        />
-                      ))}
-                    </Picker>
+                    )) || (
+                      <Text style={styles.noDataText}>No rules available</Text>
+                    )}
+                    <Text style={styles.vehicleDetailValue}>
+                      {car.seatingCapacity
+                        ? `${car.seatingCapacity} seats`
+                        : "Not specified"}
+                    </Text>
                   </View>
                 </View>
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSubtitle}>Return City</Text>
-                  <View style={styles.pickerContainer}>
-                    <Picker
-                      selectedValue={tempReturnLocation}
-                      onValueChange={(itemValue) => {
-                        console.log("Selected return city:", itemValue);
-                        setTempReturnLocation(itemValue);
-                      }}
-                      style={styles.picker}
-                    >
-                      {availableCities.map((city) => (
-                        <Picker.Item
-                          key={`return-${city}`}
-                          label={city}
-                          value={city}
-                        />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-                <TouchableOpacity
-                  style={styles.confirmButton}
-                  onPress={handleConfirmLocation}
-                  accessibilityLabel="Confirm pickup and return cities"
-                >
-                  <Text style={styles.confirmButtonText}>Confirm</Text>
-                </TouchableOpacity>
               </View>
-            </View>
-          </ErrorBoundary>
-        </Modal>
-
-        {/* Insurance & Protection Modal */}
-        <Modal
-          visible={isInsuranceModalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => {
-            console.log("Insurance modal closed via onRequestClose");
-            setIsInsuranceModalVisible(false);
-          }}
-        >
-          <ErrorBoundary>
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Insurance & Protection</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      console.log("Close insurance modal");
-                      setIsInsuranceModalVisible(false);
-                    }}
-                    accessibilityLabel="Close insurance modal"
-                  >
-                    <MaterialIcons name="close" style={styles.modalCloseIcon} />
-                  </TouchableOpacity>
-                </View>
-                <ScrollView style={styles.insuranceContent}>
-                  <Text style={styles.insuranceText}>
-                    {car.insurance?.details || "No coverage details available"}
-                  </Text>
-                </ScrollView>
-              </View>
-            </View>
-          </ErrorBoundary>
-        </Modal>
-
-        <View style={styles.bottomBar}>
-          <View>
-            <Text style={styles.totalPrice}>
-              ETB {formatPrice(totalPrice)} total
-            </Text>
-            {totalPrice === "N/A" && (
-              <Text style={styles.errorText}>
-                Price unavailable. Please check car details or dates.
-              </Text>
             )}
-          </View>
-          <TouchableOpacity
-            style={[
-              styles.continueButton,
-              totalPrice === "N/A" && styles.disabledButton,
-            ]}
-            onPress={handleContinue}
-            disabled={totalPrice === "N/A"}
-            accessibilityLabel="Continue to checkout"
+            <View style={styles.bottomPadding} />
+          </ScrollView>
+
+          {/* Date Selection Modal */}
+
+          {/* Location Selection Modal */}
+
+          {/* Insurance & Protection Modal */}
+          <RNModal
+            isVisible={isInsuranceModalVisible}
+            style={{ margin: 0 }}
+            statusBarTranslucent={true}
           >
-            <MaterialIcons name="arrow-forward" style={styles.buttonIcon} />
-            <Text style={styles.continueButtonText}>Continue</Text>
-          </TouchableOpacity>
+            <ErrorBoundary>
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>
+                      Insurance & Protection
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        console.log("Close insurance modal");
+                        setIsInsuranceModalVisible(false);
+                      }}
+                      accessibilityLabel="Close insurance modal"
+                    >
+                      <MaterialIcons
+                        name="close"
+                        style={styles.modalCloseIcon}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView style={styles.insuranceContent}>
+                    <Text style={styles.insuranceText}>
+                      {car?.insurance?.details ||
+                        "No coverage details available"}
+                    </Text>
+                  </ScrollView>
+                </View>
+              </View>
+            </ErrorBoundary>
+          </RNModal>
+
+          <View style={[styles.bottomBar, { paddingBottom: insets.bottom }]}>
+            <View>
+              {!loading && (
+                <Text style={[styles.totalPrice, { fontSize: 17 }]}>
+                  {formatPrice(totalPrice)} ETB
+                </Text>
+              )}
+              {(totalPrice === "N/A" || loading) && (
+                <View
+                  style={{
+                    width: 140,
+                    height: 35,
+                    backgroundColor: "#e6e6e6",
+                    borderRadius: 5,
+                  }}
+                ></View>
+              )}
+            </View>
+            <TouchableOpacity
+              style={[
+                styles.continueButton,
+                totalPrice === "N/A" && styles.disabledButton,
+              ]}
+              onPress={handleContinue}
+              disabled={totalPrice === "N/A" || loading}
+              accessibilityLabel="Continue to checkout"
+            >
+              <MaterialIcons name="arrow-forward" style={styles.buttonIcon} />
+              <Text style={styles.continueButtonText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </SafeAreaView>
+      </View>
     </ErrorBoundary>
   );
 }
@@ -1351,6 +1176,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
   },
+
   featureItemDesc: {
     color: "#4B4B4B",
     fontSize: 14,
@@ -1480,7 +1306,7 @@ const styles = StyleSheet.create({
   continueButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "600" },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Changed to white for date modal in render
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // Changed to white for date modal in render
     justifyContent: "flex-end",
     alignItems: "center",
   },
@@ -1491,12 +1317,15 @@ const styles = StyleSheet.create({
     padding: 24,
     width: "100%",
     maxHeight: "80%",
+    minHeight: "40%",
+
+    // borderWidth: 4,
   },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
+    // marginBottom: 24,
   },
   modalTitle: { fontSize: 20, fontWeight: "700", color: "#000000" },
   modalCloseIcon: { fontSize: 28, color: "#000000" },
@@ -1561,4 +1390,23 @@ const styles = StyleSheet.create({
   },
   vehicleDetailLabel: { fontSize: 16, fontWeight: "500", color: "#000000" },
   vehicleDetailValue: { fontSize: 16, color: "#4B4B4B" },
-}); 
+  policyItem2: {
+    marginVertical: 8,
+    padding: 12,
+    backgroundColor: "#f7f7f7",
+    borderRadius: 8,
+  },
+  policyTitle2: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  policyDesc2: {
+    fontSize: 14,
+    color: "#555",
+  },
+  lottie: {
+    width: 150,
+    height: 150,
+  },
+});

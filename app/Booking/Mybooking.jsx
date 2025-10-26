@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router'; // 🆕 ADD THIS
-import { useState } from 'react';
+import { useRouter } from "expo-router"; // 🆕 ADD THIS
+import { useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -7,95 +7,108 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import BookingHistory from '../../components/Booking/BookingHistory';
-import BookingList from '../../components/Booking/BookingList';
+} from "react-native";
+import BookingHistory from "../../components/Booking/BookingHistory";
+import BookingList from "../../components/Booking/BookingList";
 
 const MyBooking = () => {
-  const [activeTab, setActiveTab] = useState('active');
-  const router = useRouter(); 
+  const [activeTab, setActiveTab] = useState("active");
+  const router = useRouter();
 
   const handleOpenChat = (booking) => {
-    console.log('Open chat:', booking);
+    console.log("Open chat:", booking);
   };
 
-  
   const handleBookingPress = (booking) => {
     router.push({
-      pathname: '/BookingDetail',
-      params: { 
-        booking: JSON.stringify(booking) 
+      pathname: "/BookingDetail",
+      params: {
+        booking: JSON.stringify(booking),
       },
     });
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
       <StatusBar barStyle="dark-content" />
-      
-      <View style={{
-        paddingHorizontal: 24,
-        paddingVertical: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-      }}>
-        <Text style={{
-          fontSize: 24,
-          fontWeight: '700',
-          color: '#000',
-        }}>My Bookings</Text>
+
+      <View
+        style={{
+          paddingHorizontal: 24,
+          paddingVertical: 20,
+          borderBottomWidth: 1,
+          borderBottomColor: "#E5E7EB",
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 24,
+            fontWeight: "700",
+            color: "#000",
+          }}
+        >
+          My Bookings
+        </Text>
       </View>
 
-      <View style={{
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-        backgroundColor: '#FFF',
-      }}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          style={{ flexDirection: 'row' }}
+      <View
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: "#E5E7EB",
+          backgroundColor: "#FFF",
+        }}
+      >
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ flexDirection: "row" }}
           contentContainerStyle={{ paddingHorizontal: 24 }}
         >
           <TouchableOpacity
             style={[
-              { 
+              {
                 flex: 0,
-                paddingVertical: 16, 
-                paddingHorizontal: 24, 
-                borderBottomWidth: 3, 
-                borderBottomColor: activeTab === 'active' ? '#000' : 'transparent',
+                paddingVertical: 16,
+                paddingHorizontal: 24,
+                borderBottomWidth: 3,
+                borderBottomColor:
+                  activeTab === "active" ? "#000" : "transparent",
                 marginRight: 16,
-              }
+              },
             ]}
-            onPress={() => setActiveTab('active')}
+            onPress={() => setActiveTab("active")}
           >
-            <Text style={{
-              fontSize: 16,
-              fontWeight: activeTab === 'active' ? '700' : '500',
-              color: activeTab === 'active' ? '#000' : '#6B7280',
-            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: activeTab === "active" ? "700" : "500",
+                color: activeTab === "active" ? "#000" : "#6B7280",
+              }}
+            >
               Active
             </Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[
-              { 
+              {
                 flex: 0,
-                paddingVertical: 16, 
-                paddingHorizontal: 24, 
-                borderBottomWidth: 3, 
-                borderBottomColor: activeTab === 'history' ? '#000' : 'transparent',
-              }
+                paddingVertical: 16,
+                paddingHorizontal: 24,
+                borderBottomWidth: 3,
+                borderBottomColor:
+                  activeTab === "history" ? "#000" : "transparent",
+              },
             ]}
-            onPress={() => setActiveTab('history')}
+            onPress={() => setActiveTab("history")}
           >
-            <Text style={{
-              fontSize: 16,
-              fontWeight: activeTab === 'history' ? '700' : '500',
-              color: activeTab === 'history' ? '#000' : '#6B7280',
-            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: activeTab === "history" ? "700" : "500",
+                color: activeTab === "history" ? "#000" : "#6B7280",
+              }}
+            >
               History
             </Text>
           </TouchableOpacity>
@@ -103,13 +116,16 @@ const MyBooking = () => {
       </View>
 
       <View style={{ flex: 1 }}>
-        {activeTab === 'active' ? (
-          <BookingList 
+        {activeTab === "active" ? (
+          <BookingList
             onOpenChat={handleOpenChat}
-            onBookingPress={handleBookingPress} 
+            onBookingPress={handleBookingPress}
           />
         ) : (
-          <BookingHistory onOpenChat={handleOpenChat} />
+          <BookingHistory
+            handleBookingPress={handleBookingPress}
+            onOpenChat={handleOpenChat}
+          />
         )}
       </View>
     </SafeAreaView>

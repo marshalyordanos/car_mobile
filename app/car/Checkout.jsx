@@ -32,27 +32,12 @@ export default function Checkout() {
 
   const user = useSelector(selectCurrentUser);
 
-  if (
-    !car ||
-    !pickupLocation ||
-    !pickupLat ||
-    !pickupLng ||
-    !returnLocation ||
-    !dropoffLat ||
-    !dropoffLng ||
-    !tripStartDate ||
-    !tripEndDate
-  ) {
-    Alert.alert("Error", "Missing required booking details. Please go back and try again.", [
-      { text: "OK", onPress: () => router.back() },
-    ]);
-    return null;
-  }
-
   let parsedCar;
   try {
     parsedCar = JSON.parse(car);
-    parsedCar.images = parsedCar.images?.map((url) => ({ uri: url })) || [{ uri: "https://via.placeholder.com/96x64" }];
+    parsedCar.images = parsedCar.images?.map((url) => ({ uri: url })) || [
+      { uri: "https://via.placeholder.com/96x64" },
+    ];
     parsedCar.id = parsedCar.id || parsedCar.vin || `temp-id-${Date.now()}`; // Fallback for id
     parsedCar.hostId = parsedCar.hostId || parsedCar.owner || "Unknown"; // Fallback for hostId
     if (
@@ -111,9 +96,12 @@ export default function Checkout() {
   const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
   const protectionCost =
     (enhancedRoadside ? protectionPrices.enhancedRoadside * days : 0) +
-    (supplementalLiability ? protectionPrices.supplementalLiability * days : 0) +
+    (supplementalLiability
+      ? protectionPrices.supplementalLiability * days
+      : 0) +
     (driverOption ? 500 * days : 0);
-  const totalPrice = (isNaN(parsedCar.price) ? 0 : parsedCar.price * days) + protectionCost;
+  const totalPrice =
+    (isNaN(parsedCar.price) ? 0 : parsedCar.price * days) + protectionCost;
 
   const formatPrice = (value) => {
     if (!value || isNaN(value)) return "0.00";
@@ -189,7 +177,10 @@ export default function Checkout() {
         dropoffName: returnLocation,
       };
 
-      console.log("SENDING TO BACKEND:", JSON.stringify(backendBookingData, null, 2));
+      console.log(
+        "SENDING TO BACKEND:",
+        JSON.stringify(backendBookingData, null, 2)
+      );
 
       const response = await api.post("/bookings", backendBookingData);
 
@@ -197,7 +188,9 @@ export default function Checkout() {
 
       Alert.alert(
         "Booking Confirmed!",
-        `Your trip is booked successfully!\nBooking ID: ${response.data.id || "12345"}`,
+        `Your trip is booked successfully!\nBooking ID: ${
+          response.data.id || "12345"
+        }`,
         [
           {
             text: "View My Bookings",
@@ -210,7 +203,8 @@ export default function Checkout() {
       console.error("Booking error:", error.response?.data);
       Alert.alert(
         "Booking Failed",
-        error.response?.data?.message || "Something went wrong. Please try again."
+        error.response?.data?.message ||
+          "Something went wrong. Please try again."
       );
     } finally {
       setLoading(false);
@@ -326,7 +320,9 @@ export default function Checkout() {
                 placeholderTextColor="#666"
                 keyboardType="email-address"
               />
-              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+              {errors.email && (
+                <Text style={styles.errorText}>{errors.email}</Text>
+              )}
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>First name *</Text>
@@ -334,7 +330,10 @@ export default function Checkout() {
                 value={firstName}
                 onChangeText={setFirstName}
                 placeholder="Enter first name"
-                style={[styles.textInput, errors.firstName && styles.inputError]}
+                style={[
+                  styles.textInput,
+                  errors.firstName && styles.inputError,
+                ]}
                 placeholderTextColor="#666"
               />
               <Text style={styles.subLabel}>Driver's license first name</Text>
@@ -352,14 +351,19 @@ export default function Checkout() {
                 placeholderTextColor="#666"
               />
               <Text style={styles.subLabel}>Driver's license last name</Text>
-              {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
+              {errors.lastName && (
+                <Text style={styles.errorText}>{errors.lastName}</Text>
+              )}
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Select your age *</Text>
               <Picker
                 selectedValue={ageRange}
                 onValueChange={setAgeRange}
-                style={[styles.pickerFull, errors.ageRange && styles.inputError]}
+                style={[
+                  styles.pickerFull,
+                  errors.ageRange && styles.inputError,
+                ]}
               >
                 <Picker.Item label="Select age range" value="" />
                 <Picker.Item label="18-24" value="18-24" />
@@ -368,7 +372,9 @@ export default function Checkout() {
                 <Picker.Item label="45-54" value="45-54" />
                 <Picker.Item label="55+" value="55+" />
               </Picker>
-              {errors.ageRange && <Text style={styles.errorText}>{errors.ageRange}</Text>}
+              {errors.ageRange && (
+                <Text style={styles.errorText}>{errors.ageRange}</Text>
+              )}
             </View>
             <View style={styles.infoBox}>
               <MaterialIcons name="info" size={20} color="#000" />
@@ -492,7 +498,9 @@ export default function Checkout() {
           <View style={styles.totalContainer}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Subtotal ({days} days)</Text>
-              <Text style={styles.totalValue}>ETB {formatPrice(parsedCar.price * days)}</Text>
+              <Text style={styles.totalValue}>
+                ETB {formatPrice(parsedCar.price * days)}
+              </Text>
             </View>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Protection Cost</Text>
@@ -550,7 +558,9 @@ export default function Checkout() {
               acknowledge the{" "}
               <Text style={styles.linkText}>privacy policy</Text>
             </Text>
-            {errors.terms && <Text style={styles.errorText}>{errors.terms}</Text>}
+            {errors.terms && (
+              <Text style={styles.errorText}>{errors.terms}</Text>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -566,7 +576,8 @@ export default function Checkout() {
           <TouchableOpacity
             style={[
               styles.continueButton,
-              (!terms || loading || Object.keys(errors).length > 0) && styles.disabledButton,
+              (!terms || loading || Object.keys(errors).length > 0) &&
+                styles.disabledButton,
             ]}
             disabled={!terms || loading || Object.keys(errors).length > 0}
             onPress={handleBookTrip}

@@ -63,7 +63,14 @@ const SearchHeader = ({ selectedLocation }) => {
             </TouchableOpacity>
 
             <Text style={styles.modalTitle}>When</Text>
-            <TouchableOpacity onPress={() => router.push("/DatePickerScreen")}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/DatePickerScreen",
+                  params: { url: "/shop" },
+                })
+              }
+            >
               <View style={styles.input}>
                 <Text style={styles.inputText}>Add dates or months</Text>
               </View>
