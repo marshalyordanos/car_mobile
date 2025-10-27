@@ -43,7 +43,7 @@ const mockBookings = [
       photos: [
         "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/wrchdbn5du8tihbdqsdg.jpg",
         "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/pcqfd5ywwsk323flohu1.jpg",
-        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/zh07futzwtywa7edhtus.jpg"
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/zh07futzwtywa7edhtus.jpg",
       ],
       emailVerified: false,
       phoneVerified: false,
@@ -52,7 +52,7 @@ const mockBookings = [
         name: "BMW",
         isActive: true,
         createdAt: "2025-09-27T22:15:50.710Z",
-        updatedAt: "2025-09-27T22:15:50.710Z"
+        updatedAt: "2025-09-27T22:15:50.710Z",
       },
       model: {
         id: "cmg2tyjbo0001lifbbkxbdhwj",
@@ -60,8 +60,8 @@ const mockBookings = [
         name: "QWR BMW",
         isActive: true,
         createdAt: "2025-09-27T22:16:19.873Z",
-        updatedAt: "2025-09-27T22:16:19.873Z"
-      }
+        updatedAt: "2025-09-27T22:16:19.873Z",
+      },
     },
     guest: {
       id: "cmgo4lb4y0000li1l6hpejd9x",
@@ -69,14 +69,15 @@ const mockBookings = [
       lastName: "Yordanos212",
       email: "ado1ni51222@gmail.com",
       phone: "0987654300",
-      profilePhoto: "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1761199740/users/profilePhotos/jo5dz4vsvij4gnulafvp.jpg",
+      profilePhoto:
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1761199740/users/profilePhotos/jo5dz4vsvij4gnulafvp.jpg",
       isVerified: false,
       createdAt: "2025-10-12T19:57:08.387Z",
       updatedAt: "2025-10-23T06:09:00.897Z",
       roleId: "cmgjg99p60000liypbpn7fjxi",
       isSuperAdmin: false,
       isStaff: false,
-      isActive: true
+      isActive: true,
     },
     host: {
       id: "cmg2t1x0w0004liat1dpp598x",
@@ -84,14 +85,15 @@ const mockBookings = [
       lastName: "Yordanos",
       email: "ado1ni52@gmail.com",
       phone: "0987654321",
-      profilePhoto: "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1759009857/users/profilePhotos/njozv4ida9wtzyeuampt.png",
+      profilePhoto:
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1759009857/users/profilePhotos/njozv4ida9wtzyeuampt.png",
       isVerified: false,
       createdAt: "2025-09-27T21:50:58.160Z",
       updatedAt: "2025-10-21T04:02:05.651Z",
       roleId: "cmg2t1k3r0000limptekl0yei",
       isSuperAdmin: false,
       isStaff: false,
-      isActive: false
+      isActive: false,
     },
     payment: {
       id: "cmgy6qfgi0003lisxr3jy27x8",
@@ -108,7 +110,7 @@ const mockBookings = [
       type: "GUEST_TO_PLATFORM",
       transactionId: null,
       createdAt: "2025-10-19T20:54:48.259Z",
-      updatedAt: "2025-10-19T20:54:48.259Z"
+      updatedAt: "2025-10-19T20:54:48.259Z",
     },
     dispute: null,
     inspections: [
@@ -123,7 +125,7 @@ const mockBookings = [
         approved: true,
         approvedById: null,
         createdAt: "2025-10-20T16:45:09.512Z",
-        updatedAt: "2025-10-20T17:22:13.117Z"
+        updatedAt: "2025-10-20T17:22:13.117Z",
       },
       {
         id: "cmh225iwv0004gb3cyqp3w7vg",
@@ -136,9 +138,9 @@ const mockBookings = [
         approved: true,
         approvedById: null,
         createdAt: "2025-10-22T13:57:39.200Z",
-        updatedAt: "2025-10-22T14:04:44.019Z"
-      }
-    ]
+        updatedAt: "2025-10-22T14:04:44.019Z",
+      },
+    ],
   },
   {
     id: "cmgy85viy0001lijgjsa0zaxc",
@@ -184,7 +186,7 @@ const mockBookings = [
       photos: [
         "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/wrchdbn5du8tihbdqsdg.jpg",
         "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/pcqfd5ywwsk323flohu1.jpg",
-        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/zh07futzwtywa7edhtus.jpg"
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/zh07futzwtywa7edhtus.jpg",
       ],
       emailVerified: false,
       phoneVerified: false,
@@ -193,7 +195,7 @@ const mockBookings = [
         name: "BMW",
         isActive: true,
         createdAt: "2025-09-27T22:15:50.710Z",
-        updatedAt: "2025-09-27T22:15:50.710Z"
+        updatedAt: "2025-09-27T22:15:50.710Z",
       },
       model: {
         id: "cmg2tyjbo0001lifbbkxbdhwj",
@@ -201,8 +203,8 @@ const mockBookings = [
         name: "QWR BMW",
         isActive: true,
         createdAt: "2025-09-27T22:16:19.873Z",
-        updatedAt: "2025-09-27T22:16:19.873Z"
-      }
+        updatedAt: "2025-09-27T22:16:19.873Z",
+      },
     },
     guest: {
       id: "cmgo4lb4y0000li1l6hpejd9x",
@@ -210,14 +212,15 @@ const mockBookings = [
       lastName: "Yordanos212",
       email: "ado1ni51222@gmail.com",
       phone: "0987654300",
-      profilePhoto: "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1761199740/users/profilePhotos/jo5dz4vsvij4gnulafvp.jpg",
+      profilePhoto:
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1761199740/users/profilePhotos/jo5dz4vsvij4gnulafvp.jpg",
       isVerified: false,
       createdAt: "2025-10-12T19:57:08.387Z",
       updatedAt: "2025-10-23T06:09:00.897Z",
       roleId: "cmgjg99p60000liypbpn7fjxi",
       isSuperAdmin: false,
       isStaff: false,
-      isActive: true
+      isActive: true,
     },
     host: {
       id: "cmg2t1x0w0004liat1dpp598x",
@@ -225,14 +228,15 @@ const mockBookings = [
       lastName: "Yordanos",
       email: "ado1ni52@gmail.com",
       phone: "0987654321",
-      profilePhoto: "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1759009857/users/profilePhotos/njozv4ida9wtzyeuampt.png",
+      profilePhoto:
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1759009857/users/profilePhotos/njozv4ida9wtzyeuampt.png",
       isVerified: false,
       createdAt: "2025-09-27T21:50:58.160Z",
       updatedAt: "2025-10-21T04:02:05.651Z",
       roleId: "cmg2t1k3r0000limptekl0yei",
       isSuperAdmin: false,
       isStaff: false,
-      isActive: false
+      isActive: false,
     },
     payment: {
       id: "cmgy85vrp0003lijgbuy3cv5d",
@@ -249,10 +253,10 @@ const mockBookings = [
       type: "GUEST_TO_PLATFORM",
       transactionId: null,
       createdAt: "2025-10-19T21:34:48.853Z",
-      updatedAt: "2025-10-19T21:36:56.928Z"
+      updatedAt: "2025-10-19T21:36:56.928Z",
     },
     dispute: null,
-    inspections: []
+    inspections: [],
   },
   {
     id: "cmh0lk3tk0003az3s2ka82poo",
@@ -298,7 +302,7 @@ const mockBookings = [
       photos: [
         "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/wrchdbn5du8tihbdqsdg.jpg",
         "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/pcqfd5ywwsk323flohu1.jpg",
-        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/zh07futzwtywa7edhtus.jpg"
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/zh07futzwtywa7edhtus.jpg",
       ],
       emailVerified: false,
       phoneVerified: false,
@@ -307,7 +311,7 @@ const mockBookings = [
         name: "BMW",
         isActive: true,
         createdAt: "2025-09-27T22:15:50.710Z",
-        updatedAt: "2025-09-27T22:15:50.710Z"
+        updatedAt: "2025-09-27T22:15:50.710Z",
       },
       model: {
         id: "cmg2tyjbo0001lifbbkxbdhwj",
@@ -315,8 +319,8 @@ const mockBookings = [
         name: "QWR BMW",
         isActive: true,
         createdAt: "2025-09-27T22:16:19.873Z",
-        updatedAt: "2025-09-27T22:16:19.873Z"
-      }
+        updatedAt: "2025-09-27T22:16:19.873Z",
+      },
     },
     guest: {
       id: "cmgo4lb4y0000li1l6hpejd9x",
@@ -324,14 +328,15 @@ const mockBookings = [
       lastName: "Yordanos212",
       email: "ado1ni51222@gmail.com",
       phone: "0987654300",
-      profilePhoto: "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1761199740/users/profilePhotos/jo5dz4vsvij4gnulafvp.jpg",
+      profilePhoto:
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1761199740/users/profilePhotos/jo5dz4vsvij4gnulafvp.jpg",
       isVerified: false,
       createdAt: "2025-10-12T19:57:08.387Z",
       updatedAt: "2025-10-23T06:09:00.897Z",
       roleId: "cmgjg99p60000liypbpn7fjxi",
       isSuperAdmin: false,
       isStaff: false,
-      isActive: true
+      isActive: true,
     },
     host: {
       id: "cmg2t1x0w0004liat1dpp598x",
@@ -339,14 +344,15 @@ const mockBookings = [
       lastName: "Yordanos",
       email: "ado1ni52@gmail.com",
       phone: "0987654321",
-      profilePhoto: "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1759009857/users/profilePhotos/njozv4ida9wtzyeuampt.png",
+      profilePhoto:
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1759009857/users/profilePhotos/njozv4ida9wtzyeuampt.png",
       isVerified: false,
       createdAt: "2025-09-27T21:50:58.160Z",
       updatedAt: "2025-10-21T04:02:05.651Z",
       roleId: "cmg2t1k3r0000limptekl0yei",
       isSuperAdmin: false,
       isStaff: false,
-      isActive: false
+      isActive: false,
     },
     payment: {
       id: "cmh0lk42d0005az3sxi4e2vdg",
@@ -363,10 +369,10 @@ const mockBookings = [
       type: "GUEST_TO_PLATFORM",
       transactionId: null,
       createdAt: "2025-10-21T13:25:20.149Z",
-      updatedAt: "2025-10-21T13:26:43.047Z"
+      updatedAt: "2025-10-21T13:26:43.047Z",
     },
     dispute: null,
-    inspections: []
+    inspections: [],
   },
   {
     id: "cmh0lmi5l0009az3ssrmq5i4j",
@@ -412,7 +418,7 @@ const mockBookings = [
       photos: [
         "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/wrchdbn5du8tihbdqsdg.jpg",
         "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/pcqfd5ywwsk323flohu1.jpg",
-        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/zh07futzwtywa7edhtus.jpg"
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1760710248/users/profilePhotos/zh07futzwtywa7edhtus.jpg",
       ],
       emailVerified: false,
       phoneVerified: false,
@@ -421,7 +427,7 @@ const mockBookings = [
         name: "BMW",
         isActive: true,
         createdAt: "2025-09-27T22:15:50.710Z",
-        updatedAt: "2025-09-27T22:15:50.710Z"
+        updatedAt: "2025-09-27T22:15:50.710Z",
       },
       model: {
         id: "cmg2tyjbo0001lifbbkxbdhwj",
@@ -429,8 +435,8 @@ const mockBookings = [
         name: "QWR BMW",
         isActive: true,
         createdAt: "2025-09-27T22:16:19.873Z",
-        updatedAt: "2025-09-27T22:16:19.873Z"
-      }
+        updatedAt: "2025-09-27T22:16:19.873Z",
+      },
     },
     guest: {
       id: "cmgo4lb4y0000li1l6hpejd9x",
@@ -438,14 +444,15 @@ const mockBookings = [
       lastName: "Yordanos212",
       email: "ado1ni51222@gmail.com",
       phone: "0987654300",
-      profilePhoto: "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1761199740/users/profilePhotos/jo5dz4vsvij4gnulafvp.jpg",
+      profilePhoto:
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1761199740/users/profilePhotos/jo5dz4vsvij4gnulafvp.jpg",
       isVerified: false,
       createdAt: "2025-10-12T19:57:08.387Z",
       updatedAt: "2025-10-23T06:09:00.897Z",
       roleId: "cmgjg99p60000liypbpn7fjxi",
       isSuperAdmin: false,
       isStaff: false,
-      isActive: true
+      isActive: true,
     },
     host: {
       id: "cmg2t1x0w0004liat1dpp598x",
@@ -453,14 +460,15 @@ const mockBookings = [
       lastName: "Yordanos",
       email: "ado1ni52@gmail.com",
       phone: "0987654321",
-      profilePhoto: "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1759009857/users/profilePhotos/njozv4ida9wtzyeuampt.png",
+      profilePhoto:
+        "https://res.cloudinary.com/dpzqvtwrc/image/upload/v1759009857/users/profilePhotos/njozv4ida9wtzyeuampt.png",
       isVerified: false,
       createdAt: "2025-09-27T21:50:58.160Z",
       updatedAt: "2025-10-21T04:02:05.651Z",
       roleId: "cmg2t1k3r0000limptekl0yei",
       isSuperAdmin: false,
       isStaff: false,
-      isActive: false
+      isActive: false,
     },
     payment: {
       id: "cmh0lmieb000baz3srrbra5vy",
@@ -477,7 +485,7 @@ const mockBookings = [
       type: "GUEST_TO_PLATFORM",
       transactionId: null,
       createdAt: "2025-10-21T13:27:12.035Z",
-      updatedAt: "2025-10-21T13:27:12.035Z"
+      updatedAt: "2025-10-21T13:27:12.035Z",
     },
     dispute: null,
     inspections: [
@@ -492,11 +500,10 @@ const mockBookings = [
         approved: false,
         approvedById: null,
         createdAt: "2025-10-21T13:57:10.038Z",
-        updatedAt: "2025-10-21T14:09:25.231Z"
-      }
-    ]
-  }
+        updatedAt: "2025-10-21T14:09:25.231Z",
+      },
+    ],
+  },
 ];
 
 export { mockBookings };
-

@@ -3,10 +3,21 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import AgePickerModal from "./modals/AgePickerModal";
+import RNModal from "react-native-modal";
+import { useSelector } from "react-redux";
+import { selectTheme } from "../../redux/themeSlice";
+import {
+  isoToDate,
+  isoToDisplayWithOutYear,
+  isoToTime,
+  makeIso,
+} from "../../utils/date";
 
-const SearchHeader = ({ selectedLocation }) => {
+const SearchHeader = ({ selectedLocation, startDate, endDate }) => {
+  const theme = useSelector(selectTheme);
+
   const [modalVisible, setModalVisible] = useState(false);
-  const [location, setLocation] = useState("Addis Ababa, Ethiopia");
+  const [location, setLocation] = useState("Addis Ababa");
   const [driverAge, setDriverAge] = useState("25");
   const [isAgePickerVisible, setAgePickerVisible] = useState(false);
   const router = useRouter();
@@ -45,38 +56,47 @@ const SearchHeader = ({ selectedLocation }) => {
         </View>
       </View>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+      <RNModal
+        isVisible={modalVisible}
+        style={{
+          margin: 0,
+          justifyContent: "flex-start",
+          backgroundColor: "rgba(0,0,0,0.5)",
+        }}
+        backdropOpacity={0.2}
+        statusBarTranslucent={true}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Where</Text>
-            <TouchableOpacity
-              onPress={() => {
-                router.push(`/location-search`);
-              }}
-            >
-              <Text style={styles.input}>{location}</Text>
-            </TouchableOpacity>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Where</Text>
+          <TouchableOpacity
+            onPress={() => {
+              router.push(`/location-search`);
+            }}
+          >
+            <Text style={styles.input}>{location}</Text>
+          </TouchableOpacity>
 
-            <Text style={styles.modalTitle}>When</Text>
-            <TouchableOpacity
-              onPress={() =>
-                router.push({
-                  pathname: "/DatePickerScreen",
-                  params: { url: "/shop" },
-                })
-              }
-            >
-              <View style={styles.input}>
-                <Text style={styles.inputText}>Add dates or months</Text>
-              </View>
-            </TouchableOpacity>
+          <Text style={styles.modalTitle}>When</Text>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/DatePickerScreen",
+                params: {
+                  url: "/shop",
+                  start: isoToDate(startDate),
+                  end: isoToDate(endDate),
+                },
+              })
+            }
+          >
+            <View style={styles.input}>
+              <Text style={styles.inputText}>{`${isoToDisplayWithOutYear(
+                startDate
+              )} - ${isoToDisplayWithOutYear(endDate)}`}</Text>
+            </View>
+          </TouchableOpacity>
 
-            {/* <Text style={styles.modalTitle}>Driver Age</Text>
+          {/* <Text style={styles.modalTitle}>Driver Age</Text>
             <TouchableOpacity
               style={styles.inputButton}
               onPress={() => setAgePickerVisible(true)}
@@ -85,22 +105,23 @@ const SearchHeader = ({ selectedLocation }) => {
               <Icon name="chevron-down-outline" size={20} color="#6b7280" />
             </TouchableOpacity> */}
 
-            <TouchableOpacity
-              style={styles.searchModalButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.searchModalButtonText}>Search</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={[
+              styles.searchModalButton,
+              { backgroundColor: theme.secondary },
+            ]}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={[styles.searchModalButtonText]}>Search</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
+      </RNModal>
       <AgePickerModal
         isVisible={isAgePickerVisible}
         onClose={() => setAgePickerVisible(false)}
@@ -157,18 +178,21 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "white",
     padding: 20,
-    paddingTop: 30,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    margin: 12,
+    borderRadius: 14,
+    marginTop: 60,
+    // paddingTop: 30,
+    // borderBottomLeftRadius: 20,
+    // borderBottomRightRadius: 20,
   },
-  modalTitle: { fontSize: 16, fontWeight: "500", color: "gray", marginTop: 15 },
+  modalTitle: { fontSize: 14, fontWeight: "500", color: "gray", marginTop: 15 },
   input: {
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
-    fontSize: 18,
     paddingVertical: 8,
     marginTop: 5,
-    color: "#9ca3af",
+    fontSize: 15,
+    color: "#242424",
   },
   inputButton: {
     flexDirection: "row",
@@ -180,12 +204,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   inputText: {
-    fontSize: 18,
-    color: "#9ca3af",
+    fontSize: 15,
+    color: "#242424",
   },
   searchModalButton: {
     backgroundColor: "#111827",
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
     alignItems: "center",
     marginTop: 30,

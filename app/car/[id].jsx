@@ -7,12 +7,13 @@ import api from "../../redux/api";
 
 export default function DetailPage() {
   const navigation = useNavigation();
-  const { id, name, photos } = useLocalSearchParams();
+  const { id, name, photos, startDate, endDate, selectedLocation } =
+    useLocalSearchParams();
   const [car, setCar] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log("Search params:", { id, name });
+  console.log("Search parasdlsaams:", { id, name, photos });
 
   useEffect(() => {
     const source = axios.CancelToken.source();
@@ -24,150 +25,13 @@ export default function DetailPage() {
           throw new Error("Invalid or missing car ID");
         }
 
+        setLoading(true);
+
         console.log("Fetching car with id:", id);
-        const carResponse = await api.get(`/cars/${id}`);
+        const params = { startDate, endDate };
+        const carResponse = await api.get(`/cars/${id}`, { params: params });
         const carData = carResponse.data.data || {};
-        console.log("Car response:", carData);
-        // if (
-        //   !carData.success ||
-        //   !carData.data ||
-        //   typeof carData.data !== "object"
-        // ) {
-        //   throw new Error(carData.message || "Invalid car data structure");
-        // }
-        // const apiCar = carData.data;
-
-        // const reviewsResponse = await api.get(`/reviews/car/${id}`);
-        // const reviewsData = reviewsResponse.data || {};
-        // console.log("Reviews response:", reviewsData);
-        // const reviews = Array.isArray(reviewsData.data) ? reviewsData.data : [];
-
-        // let carName = name || "";
-        // if (!carName || carName === (apiCar.year || "").toString()) {
-        //   let makeName = apiCar.carType || apiCar.makeId || "Vehicle";
-        //   let modelName = apiCar.description || apiCar.modelId || "";
-        //   try {
-        //     const [makeResponse, modelResponse] = await Promise.all([
-        //       api
-        //         .get(`/makes/${apiCar.makeId}`, { cancelToken: source.token })
-        //         .catch(() => ({ data: { success: false } })),
-        //       api
-        //         .get(`/models/${apiCar.modelId}`, { cancelToken: source.token })
-        //         .catch(() => ({ data: { success: false } })),
-        //     ]);
-        //     console.log("Make response:", makeResponse.data);
-        //     console.log("Model response:", modelResponse.data);
-
-        //     if (makeResponse.data.success && makeResponse.data.data?.name) {
-        //       makeName = makeResponse.data.data.name;
-        //     }
-        //     if (modelResponse.data.success && modelResponse.data.data?.name) {
-        //       modelName = modelResponse.data.data.name;
-        //     }
-        //   } catch (err) {
-        //     console.warn("Failed to fetch make/model names:", err.message);
-        //   }
-        //   carName = `${makeName} ${modelName} ${apiCar.year || ""}`.trim();
-        // }
-
-        // if (!carName || carName === (apiCar.year || "").toString()) {
-        //   carName = `Vehicle ${apiCar.year || ""}`.trim();
-        // }
-
-        // const mappedReviews = Array.isArray(reviews)
-        //   ? reviews.map((review) => ({
-        //       id: review.id || null,
-        //       revieweeId: review.revieweeId || null,
-        //       reviewerId: review.reviewerId || null,
-        //       type: review.type || "unknown",
-        //       carId: review.carId || id,
-        //       rating: Number(review.rating) || 0,
-        //       comment: review.comment || "No comment provided",
-        //       createdAt: review.createdAt || null,
-        //     }))
-        //   : [];
-
-        // const mappedCar = {
-        //   name: carName || "Unknown Vehicle",
-        //   owner: apiCar.hostId || "Unknown",
-        //   image:
-        //     Array.isArray(apiCar.photos) && apiCar.photos.length > 0
-        //       ? apiCar.photos
-        //       : ["https://via.placeholder.com/150"],
-        //   location: apiCar.location?.city || apiCar.location || "Not specified",
-        //   tripStart: null,
-        //   tripEnd: null,
-        //   rating: Number(apiCar.average_rating) || 0,
-        //   trips: Number(apiCar.trips) || 0,
-        //   trim: apiCar.description || "N/A",
-        //   year: apiCar.year || "Unknown",
-        //   color: apiCar.color || "Not specified",
-        //   licensePlate: apiCar.licensePlate || "Not specified",
-        //   vin: apiCar.vin || "Not specified",
-        //   mileage: Number(apiCar.mileage) || 0,
-        //   dailyRate: Number(apiCar.dailyRate || apiCar.rentalPricePerDay) || 0,
-        //   longTermDiscount: Number(apiCar.longTermDiscount) || 0,
-        //   seatingCapacity: apiCar.seatingCapacity || "Not specified",
-        //   ecoFriendly: apiCar.ecoFriendly || "Not specified",
-        //   carType: apiCar.carType || "Not specified",
-        //   cancellation: {
-        //     title: "Not specified",
-        //     desc: "No details available",
-        //   },
-        //   payment: { title: "Not specified", desc: "No details available" },
-        //   miles: {
-        //     title: `${Number(apiCar.mileageLimit) || 0} miles included`,
-        //     desc: "Per day",
-        //   },
-        //   insurance: {
-        //     provider:
-        //       Array.isArray(apiCar.insurancePlans) &&
-        //       apiCar.insurancePlans.length > 0
-        //         ? apiCar.insurancePlans[0].provider || "Not specified"
-        //         : "Not specified",
-        //     details:
-        //       Array.isArray(apiCar.insurancePlans) &&
-        //       apiCar.insurancePlans.length > 0
-        //         ? apiCar.insurancePlans[0].coverageDetails ||
-        //           "No coverage details available"
-        //         : "No coverage details available",
-        //   },
-        //   features: Array.isArray(apiCar.features)
-        //     ? apiCar.features.map((f) => ({
-        //         icon: "check-circle",
-        //         text: f || "Unknown feature",
-        //       }))
-        //     : [],
-        //   safetyFeatures: Array.isArray(apiCar.safety) ? apiCar.safety : [],
-        //   connectivity: Array.isArray(apiCar.connectivity)
-        //     ? apiCar.connectivity
-        //     : [],
-        //   convenienceFeatures: Array.isArray(apiCar.convenienceFeatures)
-        //     ? apiCar.convenienceFeatures
-        //     : [],
-        //   peaceOfMindFeatures: Array.isArray(apiCar.peaceOfMindFeatures)
-        //     ? apiCar.peaceOfMindFeatures
-        //     : [],
-        //   ratingCategories: Array.isArray(apiCar.ratingCategories)
-        //     ? apiCar.ratingCategories
-        //     : [],
-        //   reviews: mappedReviews,
-        //   ratingCount: mappedReviews.length || Number(apiCar.review_count) || 0,
-        //   host: {
-        //     name: apiCar.hostId || "Unknown Host",
-        //     rating: Number(apiCar.host?.rating) || 0,
-        //     info: apiCar.host?.info || "No info available",
-        //     image: apiCar.host?.image || null,
-        //   },
-        //   rules: Array.isArray(apiCar.rules)
-        //     ? apiCar.rules.map((r) => ({
-        //         title: r || "Unknown rule",
-        //         desc: "No description available",
-        //       }))
-        //     : [],
-        //   price: Number(apiCar.rentalPricePerDay) || 0,
-        //   transmission: apiCar.transmission || "Not specified",
-        // };
+        console.log("Car response:", carData?.totalPrice);
 
         setCar(carData);
         console.log("fetchCar completed successfully");
@@ -241,10 +105,13 @@ export default function DetailPage() {
   console.log("Rendering CarRentalDetail with car:", car);
   return (
     <CarRentalDetail
+      endDate={endDate}
+      startDate={startDate}
       loading={loading}
       name={name}
       photos={JSON.parse(photos)}
       car={car}
+      selectedLocation={selectedLocation}
     />
   );
 }

@@ -12,6 +12,7 @@ import { Calendar } from "react-native-calendars";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { InteractionManager } from "react-native";
 import MonthsView from "../components/date/MonthsView";
+import { makeIso } from "../utils/date";
 
 const DatePickerScreen = () => {
   const insets = useSafeAreaInsets();
@@ -28,8 +29,9 @@ const DatePickerScreen = () => {
     () => Array.from({ length: 11 }, (_, i) => i + 1),
     []
   );
-  const { url, par } = useLocalSearchParams();
+  const { url, par, start, end } = useLocalSearchParams();
 
+  console.log("url,par: ", url, par, end, start);
   // Generate time slots only once
   const timeSlots = useMemo(() => {
     const times = [];
@@ -50,6 +52,13 @@ const DatePickerScreen = () => {
     });
   }, []);
 
+  useEffect(() => {
+    if (start && end) {
+      setStartDate(start);
+      setEndDate(end);
+    }
+  }, [start, end]);
+
   const formatDate = (dateString, timeString) => {
     if (!dateString) return null;
     const date = new Date(`${dateString}T00:00:00`);
@@ -61,14 +70,7 @@ const DatePickerScreen = () => {
     return timeString ? `${formattedDate}, ${timeString}` : formattedDate;
   };
 
-  console.log(
-    "sattrDATE:",
-    selectedDates,
-    startDate,
-    endDate,
-    pickupTime,
-    returnTime
-  );
+  console.log("sattrDATE:", startDate, endDate, pickupTime, returnTime);
 
   const handleReset = () => {
     setSelectedDates({});
@@ -79,15 +81,17 @@ const DatePickerScreen = () => {
   };
 
   const handleSearch = () => {
-    console.log("Searching...");
-    router.replace({
+    console.log("Searching...", startDate, pickupTime, endDate, returnTime, {
+      startDate: makeIso(startDate, pickupTime),
+      endDate: makeIso(endDate, pickupTime),
+      ...JSON.parse(par || "{}"),
+    });
+    router.push({
       pathname: url,
       params: {
-        startDate,
-        endDate,
-        pickupTime,
-        returnTime,
-        ...JSON.parse(par),
+        startDate: makeIso(startDate, pickupTime),
+        endDate: makeIso(endDate, returnTime),
+        ...JSON.parse(par || "{}"),
       },
     });
   };
@@ -131,6 +135,37 @@ const DatePickerScreen = () => {
       setPickupTime(null);
       setReturnTime(null);
     }
+  };
+
+  const getMarkedDates = (start, end) => {
+    const marked = {};
+    let current = new Date(start);
+    const last = new Date(end);
+
+    while (current <= last) {
+      const dateStr = current.toISOString().slice(0, 10);
+
+      marked[dateStr] = {
+        color: "#E0E7FF", // light purple for range
+        textColor: "#2140a7", // dark blue text
+      };
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    // Customize start and end with rounded style
+    marked[start] = {
+      startingDay: true,
+      color: "#000000", // stronger purple for start
+      textColor: "white",
+    };
+    marked[end] = {
+      endingDay: true,
+      color: "#000000", // stronger purple for end
+      textColor: "white",
+    };
+
+    return marked;
   };
 
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -204,8 +239,9 @@ const DatePickerScreen = () => {
               </View>
 
               <Calendar
+                current={startDate || endDate || todayStr}
                 markingType="period"
-                markedDates={selectedDates}
+                markedDates={getMarkedDates(startDate, endDate)}
                 onDayPress={onDayPress}
                 minDate={new Date().toISOString().split("T")[0]} // <-- disables past dates
                 theme={{

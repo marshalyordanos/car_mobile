@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   field_con: {
-    height: 60,
+    height: 50,
     paddingHorizontal: 16,
     backgroundColor: "#e7ebf0",
     borderRadius: 10,

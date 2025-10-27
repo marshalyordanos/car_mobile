@@ -1,6 +1,6 @@
 // components/inbox/ChatView.jsx
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +16,9 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSelector } from "react-redux";
 import { Header } from "../../components/Inbox/ThemeProvider";
 import { selectTheme } from "../../redux/themeSlice";
+import api from "../../redux/api";
+import { isoToTime } from "../../utils/date";
+import { selectCurrentUser } from "../../redux/authReducer";
 
 // ————————————————————————————————————————————
 // 1. FULL MOCK MESSAGES (copy-paste this)
@@ -97,19 +100,56 @@ const mockMessages = {
   ],
 };
 
-// ————————————————————————————————————————————
-// 2. MAIN COMPONENT
-// ————————————————————————————————————————————
 export default function ChatView({ onBack }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
   const theme = useSelector(selectTheme);
-  const { booking_id: chat } = useLocalSearchParams();
+  const { booking_id: chat, name, receiverId } = useLocalSearchParams();
   const [messages, setMessages] = useState(mockMessages[chat] ?? []);
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const userData = useSelector(selectCurrentUser);
 
-  // ——— Auto-scroll to bottom (on load + new message) ———
+  const [chats, setChats] = useState([]);
+  const [chatLoading, setChatLoading] = useState();
+
+  const fetchChats = async () => {
+    setChatLoading(true);
+    console.log("======= one  =============", chat);
+    try {
+      const res = await api.get(
+        "messages/booking/" + chat + "?page=1&pageSize=1000"
+      );
+      console.log("chatsssss:", res.data);
+      setChats(res.data.data);
+      setChatLoading(false);
+    } catch (err) {
+      setChatLoading(false);
+      console.log("fetchChatList err:", err);
+    }
+  };
+  useFocusEffect(
+    useCallback(() => {
+      console.log("abebe");
+      fetchChats();
+    }, [])
+  );
+
+  const markasRead = async () => {
+    try {
+      const res = await api.post("/messages/mark-as-read", {
+        bookingId: chat,
+        userId: userData?.user?.id,
+      });
+    } catch (err) {
+      console.log("markasRead err:", err);
+    }
+  };
+  useFocusEffect(
+    useCallback(() => {
+      markasRead();
+    }, [])
+  );
   const scrollToBottom = () => {
     scrollRef.current?.scrollToEnd({ animated: true });
   };
@@ -125,45 +165,36 @@ export default function ChatView({ onBack }) {
   }, [messages]);
 
   // ——— Send message ———
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
 
     const newMsg = {
       id: Date.now().toString(),
-      text: input.trim(),
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      isOutgoing: true,
+      content: input.trim(),
+      createdAt: new Date().toISOString(),
+      senderId: userData?.user?.id,
     };
 
-    setMessages((prev) => [...prev, newMsg]);
-    setInput("");
-  };
+    const payload = {
+      bookingId: chat,
+      senderId: userData?.user?.id,
+      receiverId: receiverId,
+      content: input.trim(),
+    };
 
-  // ——— Safety: if no chat ———
-  if (!chat) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "white",
-        }}
-      >
-        <View
-          style={{
-            paddingTop: insets.top,
-            flex: 1,
-            backgroundColor: "white",
-          }}
-        >
-          {" "}
-          <Text>No chat selected</Text>
-        </View>
-      </View>
-    );
-  }
+    setChats((prev) => [...prev, newMsg]);
+    setInput("");
+
+    try {
+      const res = await api.post("messages", payload);
+      console.log("sen chat::", res.data);
+      // setChats(res.data.data);
+      // setChatLoading(false);
+    } catch (err) {
+      setChatLoading(false);
+      console.log("fetchChatList err:", err);
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -178,7 +209,7 @@ export default function ChatView({ onBack }) {
       >
         {/* Header */}
         <Header
-          title={`${chat} ${chat}`}
+          title={name}
           onBack={() => {
             router.back();
           }}
@@ -197,45 +228,53 @@ export default function ChatView({ onBack }) {
             ]}
             onContentSizeChange={scrollToBottom} // ← BEST auto-scroll
           >
-            {messages.map((msg) => (
+            {chats.map((msg) => (
               <View
                 key={msg.id}
                 style={[
                   styles.messageWrapper,
-                  msg.isOutgoing ? styles.right : styles.left,
+                  msg.senderId == userData?.user?.id
+                    ? styles.right
+                    : styles.left,
                 ]}
               >
                 <View
                   style={[
                     styles.bubble,
-                    msg.isOutgoing ? styles.outgoing : styles.incoming,
+                    msg.senderId == userData?.user?.id
+                      ? styles.outgoing
+                      : styles.incoming,
                     {
-                      backgroundColor: msg.isOutgoing
-                        ? theme.messageOut
-                        : theme.messageIn,
+                      backgroundColor:
+                        msg.senderId == userData?.user?.id
+                          ? theme.messageOut
+                          : theme.messageIn,
                       borderColor: theme.border,
                     },
                   ]}
                 >
                   <Text
                     style={{
-                      color: msg.isOutgoing
-                        ? theme.messageOutText
-                        : theme.messageInText,
+                      color:
+                        msg.senderId == userData?.user?.id
+                          ? theme.messageOutText
+                          : theme.messageInText,
                       fontSize: 15,
                     }}
                   >
-                    {msg.text}
+                    {msg.content}
                   </Text>
                   <Text
                     style={{
                       fontSize: 11,
                       marginTop: 4,
-                      color: msg.isOutgoing ? "#ccc" : "#999",
-                      textAlign: msg.isOutgoing ? "right" : "left",
+                      color:
+                        msg.senderId == userData?.user?.id ? "#ccc" : "#999",
+                      textAlign:
+                        msg.senderId == userData?.user?.id ? "right" : "left",
                     }}
                   >
-                    {msg.timestamp}
+                    {isoToTime(msg.createdAt)}
                   </Text>
                 </View>
               </View>

@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
@@ -14,39 +14,108 @@ import VehicleTypeSheet from "../../components/shop/modals/VehicleTypeSheet";
 import YearRangeSheet from "../../components/shop/modals/YearRangeSheet";
 import SearchHeader from "../../components/shop/SearchHeader";
 import FilterPills from "../../components/shop/ui/FilterPills";
-import { clearCars, fetchCars } from "../../redux/carsSlice";
+import { clearCars } from "../../redux/carsSlice";
+import { isoToDisplayWithOutYear } from "../../utils/date";
+import api from "../../redux/api";
 
 const Shop = () => {
   const insets = useSafeAreaInsets();
-  const dispatch = useDispatch();
-  const {
-    items: carList,
-    status,
-    pagination,
-    canLoadMore,
-  } = useSelector((state) => state.cars);
-  const totalCars = pagination?.total || 0;
-  const activeFilters = useSelector((state) => state.filters, shallowEqual);
-  const { selectedLocation, startDate, endDate, pickupTime, returnTime } =
-    useLocalSearchParams();
-  console.log(
-    "selectedLocation:",
-    selectedLocation,
-    startDate,
-    endDate,
-    pickupTime,
-    returnTime
-  );
+  // const dispatch = useDispatch();
+  // const {
+  //   items: carList,
+  //   status,
+  //   pagination,
+  //   canLoadMore,
+  // } = useSelector((state) => state.cars);
+  const [carList, setCarList] = useState([]);
+  const [status, setStatus] = useState("");
+  console.log("carListcarList:", carList);
 
+  const [activeFilters, setActiveFilters] = useState({
+    price: {
+      min: 0,
+      max: 50000,
+    },
+    vehicleTypes: [],
+    years: {
+      min: 1952,
+      max: new Date().getFullYear(),
+    },
+    mileage: {
+      min: 0,
+      max: 1000,
+    },
+    seats: "All seats",
+    brands: [],
+    models: [],
+    transmission: "All",
+    ecoFriendly: [],
+    features: [],
+    sortBy: "Relevance",
+    closeSignal: 0,
+  });
+  const { selectedLocation, startDate, endDate } = useLocalSearchParams();
+  const router = useRouter();
+
+  const fetchCars = async () => {
+    try {
+      setStatus("loading");
+      const apiQuery = buildApiQuery(1);
+
+      console.log("--------------:oias:", apiQuery);
+
+      const response = await api.get("cars", { params: apiQuery });
+      // console.log("API success1234:", response.data);
+      setCarList(response.data?.data);
+      return response.data;
+    } catch (error) {
+      console.log("API error:", error.response?.data || error.message);
+    } finally {
+      setStatus("done");
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log(":::::::", startDate, endDate);
+
+      // if either date is missing → assign defaults
+      if (!startDate || !endDate) {
+        const now = new Date();
+
+        // start = +2 days @ 10:00 AM
+        const start = new Date(now);
+        start.setDate(start.getDate() + 2);
+        start.setHours(10, 0, 0, 0);
+
+        // end = +4 days @ 11:00 PM
+        const end = new Date(now);
+        end.setDate(end.getDate() + 4);
+        end.setHours(23, 0, 0, 0);
+
+        console.log("kslka: ", {
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+        });
+        router.setParams({
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+        });
+      }
+    }, [])
+  );
   const buildApiQuery = useCallback(
     (page = 1) => {
       const filterParts = [];
+
       if (activeFilters.price.min !== 10) {
         filterParts.push(`rentalPricePerDay_gte:${activeFilters.price.min}`);
       }
+
       if (activeFilters.price.max !== 500) {
         filterParts.push(`rentalPricePerDay_lte:${activeFilters.price.max}`);
       }
+
       if (activeFilters.vehicleTypes.length > 0) {
         filterParts.push(`carType:[${activeFilters.vehicleTypes.join(",")}]`);
       }
@@ -65,21 +134,46 @@ const Shop = () => {
         sortString = "rentalPricePerDay:desc";
       }
 
+      let start2;
+      if (startDate) {
+        start2 = startDate;
+      } else {
+        const now = new Date();
+
+        const start = new Date(now);
+        start.setDate(start.getDate() + 2);
+        start.setHours(10, 0, 0, 0);
+
+        start2 = start.toISOString();
+      }
+      let end2;
+      if (startDate) {
+        end2 = endDate;
+      } else {
+        const now = new Date();
+
+        const end = new Date(now);
+        end.setDate(end.getDate() + 4);
+        end.setHours(23, 0, 0, 0);
+        end2 = end.toISOString();
+      }
+
       return {
         filter: filterParts.length > 0 ? filterParts.join(",") : undefined,
         sort: sortString,
         page: page,
+        startDate: start2,
+        endDate: end2,
       };
     },
     [activeFilters]
   );
 
-  useEffect(() => {
-    if (status === "idle") {
-      const apiQuery = buildApiQuery(1);
-      dispatch(fetchCars(apiQuery));
-    }
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCars();
+    }, [activeFilters])
+  );
   //
   const isInitialMount = useRef(true);
   useEffect(() => {
@@ -87,23 +181,23 @@ const Shop = () => {
       isInitialMount.current = false;
       return;
     }
-    dispatch(clearCars());
+    // dispatch(clearCars());
     const apiQuery = buildApiQuery(1);
-    dispatch(fetchCars(apiQuery));
-  }, [activeFilters, dispatch, buildApiQuery]);
+    // dispatch(fetchCars(apiQuery));
+  }, [activeFilters, buildApiQuery]);
 
   const handleLoadMore = () => {
     // dispatch(fetchCars(apiQuery));
-
-    if (canLoadMore && status !== "loadingMore") {
-      const nextPage = (pagination?.page || 1) + 1;
-      const apiQuery = buildApiQuery(nextPage);
-      dispatch(fetchCars(apiQuery));
-    }
+    // if (canLoadMore && status !== "loadingMore") {
+    //   const nextPage = (pagination?.page || 1) + 1;
+    //   const apiQuery = buildApiQuery(nextPage);
+    //   dispatch(fetchCars(apiQuery));
+    // }
   };
   const onRefresh = () => {
-    dispatch(fetchCars());
+    fetchCars();
 
+    // dispatch(fetchCars());
     // dispatch(clearCars());
   };
 
@@ -170,7 +264,11 @@ const Shop = () => {
       }}
     >
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <SearchHeader selectedLocation={selectedLocation} />
+        <SearchHeader
+          startDate={startDate}
+          endDate={endDate}
+          selectedLocation={selectedLocation}
+        />
         <FilterPills onPillPress={handlePillPress} />
 
         {status === "failed" && (
@@ -183,17 +281,33 @@ const Shop = () => {
           keyExtractor={(item) => item?.id}
           ListHeaderComponent={() => (
             <View style={styles.resultsContainer}>
-              <Text style={styles.resultsTitle}>
-                {totalCars} cars available
-              </Text>
+              <Text style={styles.resultsTitle}>{0} cars available</Text>
               <Text style={styles.resultsSubtitle}>
                 These cars are located in and around Addis Ababa
               </Text>
+              {status == "loading" && (
+                <View
+                  style={{ justifyContent: "center", alignItems: "center" }}
+                >
+                  <LottieView
+                    source={require("../../assets/loading.json")}
+                    autoPlay
+                    loop
+                    style={styles.lottie}
+                  />
+                </View>
+              )}
             </View>
           )}
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
-              <CarCard car={item} onRent={() => console.log(item.name)} />
+              <CarCard
+                selectedLocation={selectedLocation}
+                startDate={startDate}
+                endDate={endDate}
+                car={item}
+                onRent={() => console.log(item.name)}
+              />
             </View>
           )}
           onEndReached={handleLoadMore}

@@ -92,8 +92,8 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
         {
           Icon: MaterialCommunityIcons,
           iconName: "history",
-          name: t("booking_history") || "Booking History",
-          link: "/Booking/Mybooking",
+          name: "Booking History",
+          link: "/booking/my-booking",
         },
         {
           Icon: MaterialCommunityIcons, // Changed from lowercase 'icon' to uppercase 'Icon'

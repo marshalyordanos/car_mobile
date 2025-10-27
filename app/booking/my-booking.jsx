@@ -30,27 +30,6 @@ const MyBooking = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
-      <StatusBar barStyle="dark-content" />
-
-      <View
-        style={{
-          paddingHorizontal: 24,
-          paddingVertical: 20,
-          borderBottomWidth: 1,
-          borderBottomColor: "#E5E7EB",
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 24,
-            fontWeight: "700",
-            color: "#000",
-          }}
-        >
-          My Bookings
-        </Text>
-      </View>
-
       <View
         style={{
           borderBottomWidth: 1,

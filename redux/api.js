@@ -2,9 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://car-back-22tv.onrender.com/",
+  // baseURL: "https://car-back-22tv.onrender.com/",
   // baseURL: "http://10.0.2.2:3000/",
-  // baseURL: "http://172.17.0.1:3000/",
+  baseURL: "http://172.20.10.6:3000/",
   headers: {
     "Content-Type": "application/json",
   },

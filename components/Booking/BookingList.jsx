@@ -26,6 +26,7 @@ import AppLoader from "../../components/AppLoader";
 import { selectCurrentUser } from "../../redux/authReducer";
 
 import { mockBookings } from "./mockBookings";
+import api from "../../redux/api";
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -40,39 +41,36 @@ const transformBookingData = (bookings, userId) => {
     console.error("Bookings is not an array:", bookings);
     return [];
   }
-  return bookings
-    .filter((booking) => booking.guestId === userId)
-    .map((booking) => {
-      const statusMap = {
-        pending: "pending",
-        confirmed: "approved",
-        active: "active",
-        cancelled_by_guest: "cancelled",
-        cancelled_by_host: "cancelled",
-        completed: "completed",
-      };
-      return {
-        id: booking.id,
-        carName: booking.car?.make?.name || "Unknown Make",
-        carModel: booking.car?.model?.name || "Unknown Model",
-        renterName: `${booking.guest?.firstName || "Unknown"} ${
-          booking.guest?.lastName || "Guest"
-        }`,
-        status:
-          statusMap[booking.status.toLowerCase()] ||
-          booking.status.toLowerCase(),
-        pickupDate: booking.startDate ? formatDate(booking.startDate) : "N/A",
-        returnDate: booking.endDate ? formatDate(booking.endDate) : "N/A",
-        pickupLocation:
-          booking.pickupLocation?.split("+*+")[2] || "Unknown Location",
-        price: booking.totalPrice || 0,
-        currency: booking.payment?.currency || "ETB",
-        isPaid: booking.payment?.status === "PENDING" ? false : true,
-        inspections: booking.inspections || [],
-        endDate: booking.endDate,
-        hostId: booking.hostId,
-      };
-    });
+  return bookings.map((booking) => {
+    const statusMap = {
+      pending: "pending",
+      confirmed: "approved",
+      active: "active",
+      cancelled_by_guest: "cancelled",
+      cancelled_by_host: "cancelled",
+      completed: "completed",
+    };
+    return {
+      id: booking.id,
+      carName: booking.car?.make?.name || "Unknown Make",
+      carModel: booking.car?.model?.name || "Unknown Model",
+      renterName: `${booking.guest?.firstName || "Unknown"} ${
+        booking.guest?.lastName || "Guest"
+      }`,
+      status:
+        statusMap[booking.status.toLowerCase()] || booking.status.toLowerCase(),
+      pickupDate: booking.startDate ? formatDate(booking.startDate) : "N/A",
+      returnDate: booking.endDate ? formatDate(booking.endDate) : "N/A",
+      pickupLocation:
+        booking.pickupLocation?.split("+*+")[2] || "Unknown Location",
+      price: booking.totalPrice || 0,
+      currency: booking.payment?.currency || "ETB",
+      isPaid: booking.payment?.status === "PENDING" ? false : true,
+      inspections: booking.inspections || [],
+      endDate: booking.endDate,
+      hostId: booking.hostId,
+    };
+  });
 };
 
 const InspectionForm = ({ bookingId, visible, onClose, onSubmit }) => {
@@ -145,10 +143,25 @@ const BookingList = ({ onOpenChat }) => {
   const user = useSelector(selectCurrentUser);
   const router = useRouter();
 
+  const fetchBooking = async () => {
+    try {
+      setIsLoading(true);
+      const res = await api.get("bookings");
+      const initialBookings = transformBookingData(res.data.data, user.id);
+
+      setBookings(initialBookings);
+      console.log("bokingresres", res.data);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      const initialBookings = transformBookingData(mockBookings, user.id);
-      setBookings(initialBookings);
+      fetchBooking();
+      // const initialBookings = transformBookingData(mockBookings, user.id);
+      // setBookings(initialBookings);
     }
   }, [user]);
 
@@ -392,7 +405,7 @@ const BookingList = ({ onOpenChat }) => {
               <X color="#6B7280" size={16} style={styles.iconMargin} />
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[
                 styles.actionButton,
                 styles.payButton,
@@ -406,7 +419,7 @@ const BookingList = ({ onOpenChat }) => {
             >
               <CreditCard color="#FFF" size={16} style={styles.iconMargin} />
               <Text style={styles.buttonTextWhite}>Pay</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </Animated.View>
       </TouchableOpacity>
@@ -415,12 +428,12 @@ const BookingList = ({ onOpenChat }) => {
 
   return (
     <>
-      {isLoading && <AppLoader />}
-      {error && (
+      {/* {isLoading && <AppLoader />} */}
+      {/* {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
-      )}
+      )} */}
       {!user && (
         <View style={styles.emptyState}>
           <Text style={styles.emptyTitle}>Please log in</Text>

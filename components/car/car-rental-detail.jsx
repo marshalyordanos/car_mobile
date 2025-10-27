@@ -21,6 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import RNModal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LottieView from "lottie-react-native";
+import { isoToDisplay } from "../../utils/date";
 
 const isWeb = Platform.OS === "web";
 
@@ -61,7 +62,15 @@ const HelpIcon = () => (
   <MaterialIcons name="help-outline" style={styles.icon} />
 );
 
-export default function CarRentalDetail({ car, name, photos, loading }) {
+export default function CarRentalDetail({
+  car,
+  name,
+  photos,
+  loading,
+  startDate,
+  endDate,
+  selectedLocation,
+}) {
   const { width } = Dimensions.get("window");
 
   // if (!car) {
@@ -104,48 +113,18 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
   const [returnLocation, setReturnLocation] = useState(
     car?.location || "Not specified"
   );
-  // const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
-  // const [tempPickupLocation, setTempPickupLocation] = useState(
-  //   car?.location && availableCities.includes(car.location)
-  //     ? car.location
-  //     : availableCities[0]
-  // );
+
   const [tempReturnLocation, setTempReturnLocation] = useState(
     car?.location && availableCities.includes(car?.location)
       ? car?.location
       : availableCities[0]
   );
   const [isInsuranceModalVisible, setIsInsuranceModalVisible] = useState(false);
-  const tripStartDateDefault = new Date();
-  const tripEndDateDefault = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const [tripStartDate, setTripStartDate] = useState(new Date());
-  const [tripEndDate, setTripEndDate] = useState(
-    new Date(Date.now() + 4 * 60 * 600 * 1000)
-  );
-  const [isDateModalVisible, setIsDateModalVisible] = useState(false);
-  const [datePickerMode, setDatePickerMode] = useState(null); // 'start', 'end', or null
-  const [dateError, setDateError] = useState("");
-  const [totalPrice, setTotalPrice] = useState("N/A");
+
   const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    const calculateTotalPrice = () => {
-      if (!car?.dailyRate || !tripStartDate || !tripEndDate) return "N/A";
-      const days = Math.ceil(
-        (tripEndDate - tripStartDate) / (1000 * 60 * 60 * 24)
-      );
-      if (days <= 0) return "N/A";
-      let total = days * car?.dailyRate;
-      if (car?.longTermDiscount && days >= 7) {
-        total *= 1 - car?.longTermDiscount / 100;
-      }
-      return total.toFixed(2);
-    };
-    setTotalPrice(calculateTotalPrice());
-  }, [tripStartDate, tripEndDate, car]);
-
   const formatPrice = (value) => {
-    if (value === "N/A" || typeof value !== "string") return "N/A";
+    if (!value) return "N/A";
     return parseFloat(value).toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -214,30 +193,6 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
   };
 
   const handleContinue = () => {
-    // if (!tripStartDate || !tripEndDate) {
-    //   setDateError("Please select valid trip dates");
-    //   return;
-    // }
-    // if (tripEndDate <= tripStartDate) {
-    //   setDateError("End date must be after start date");
-    //   return;
-    // }
-    // if (!pickupLocation || !returnLocation) {
-    //   setDateError("Please select valid pickup and return locations");
-    //   return;
-    // }
-    // // Prepare car object for serialization
-    // const serializableCar = {
-    //   id: car.id || car.vin || `temp-id-${Date.now()}`,
-    //   hostId: car.hostId || car.owner || "Unknown",
-    //   name: car.name || "Unknown Vehicle",
-    //   price: car.dailyRate || car.price || 0,
-    //   images: car?.image || ["https://via.placeholder.com/150"],
-    //   rating: car.rating || 0,
-    //   trips: car.trips || 0,
-    //   year: car.year || "Unknown",
-    // };
-    // try {
     router.push({
       pathname: "/car/Checkout",
       params: {
@@ -248,13 +203,10 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
         returnLocation: returnLocation.name,
         dropoffLat: returnLocation.lat || 0,
         dropoffLng: returnLocation.lng || 0,
-        tripStartDate: tripStartDate.toISOString(),
-        tripEndDate: tripEndDate.toISOString(),
+        tripStartDate: startDate,
+        tripEndDate: endDate,
       },
     });
-    // } catch (error) {
-    //   console.error("Navigation error:", error);
-    // }
   };
 
   const formatDate = (date) => {
@@ -354,12 +306,14 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                     {car?.make?.name + " " + car?.model?.name || "Unknown"}
                     {car?.year || ""}
                   </Text>
-                  <Text style={styles.carSubtitle}>{car.description}</Text>
+                  <Text style={styles.carSubtitle}>{car?.description}</Text>
 
                   <View style={styles.ratingContainer}>
-                    <Text style={styles.ratingScore}>{car.average_rating}</Text>
+                    <Text style={styles.ratingScore}>
+                      {car?.average_rating}
+                    </Text>
                     <StarIcon filled={true} />
-                    {/* <Text style={styles.ratingCount}>({car.trips || 0} )</Text> */}
+                    {/* <Text style={styles.ratingCount}>({car?.trips || 0} )</Text> */}
                   </View>
                 </View>
 
@@ -386,13 +340,13 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                     <View style={styles.vehicleDetailRow}>
                       <Text style={styles.vehicleDetailLabel}>Type</Text>
                       <Text style={styles.vehicleDetailValue}>
-                        {car.carType || "Not specified"}
+                        {car?.carType || "Not specified"}
                       </Text>
                     </View>
                     <View style={styles.vehicleDetailRow}>
                       <Text style={styles.vehicleDetailLabel}>Color</Text>
                       <Text style={styles.vehicleDetailValue}>
-                        {car.color || "Not specified"}
+                        {car?.color || "Not specified"}
                       </Text>
                     </View>
                     <View style={styles.vehicleDetailRow}>
@@ -400,20 +354,20 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                         License Plate
                       </Text>
                       <Text style={styles.vehicleDetailValue}>
-                        {car.licensePlate || "Not specified"}
+                        {car?.licensePlate || "Not specified"}
                       </Text>
                     </View>
                     <View style={styles.vehicleDetailRow}>
                       <Text style={styles.vehicleDetailLabel}>VIN</Text>
                       <Text style={styles.vehicleDetailValue}>
-                        {car.vin || "Not specified"}
+                        {car?.vin || "Not specified"}
                       </Text>
                     </View>
                     {/* <View style={styles.vehicleDetailRow}>
                 <Text style={styles.vehicleDetailLabel}>Daily Rate</Text>
                 <Text style={styles.vehicleDetailValue}>
-                  {car.dailyRate
-                    ? `ETB ${formatPrice(car.dailyRate.toString())}`
+                  {car?.dailyRate
+                    ? `ETB ${formatPrice(car?.dailyRate.toString())}`
                     : "Not specified"}
                 </Text>
               </View> */}
@@ -440,11 +394,14 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                   </View>
                   <TouchableOpacity
                     onPress={() => {
-                      router.push({
+                      router.replace({
                         pathname: "/DatePickerScreen",
                         params: {
                           url: "/car/" + car?.id,
-                          par: JSON.stringify({ photos: photos, name }),
+                          par: JSON.stringify({
+                            photos: JSON.stringify(photos),
+                            name,
+                          }),
                         },
                       });
                     }}
@@ -458,12 +415,20 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                         />
                         <View>
                           <Text style={styles.tripLabel}>Trip dates</Text>
-                          <Text style={styles.tripDetail}>
-                            {formatDate(tripStartDate)}
-                          </Text>
-                          <Text style={styles.tripDetail}>
-                            {formatDate(tripEndDate)}
-                          </Text>
+                          {startDate ? (
+                            <View>
+                              <Text style={styles.tripDetail}>
+                                {isoToDisplay(startDate)}
+                              </Text>
+                              <Text style={styles.tripDetail}>
+                                {isoToDisplay(endDate)}
+                              </Text>
+                            </View>
+                          ) : (
+                            <View>
+                              <Text>Selected Pickup Date and Return Date </Text>
+                            </View>
+                          )}
                         </View>
                       </View>
 
@@ -556,10 +521,10 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
             <View style={styles.policyItem}>
               <View>
                 <Text style={styles.policyTitle}>
-                  {car.payment?.title || "Not specified"}
+                  {car?.payment?.title || "Not specified"}
                 </Text>
                 <Text style={styles.policyDesc}>
-                  {car.payment?.desc || "No details available"}
+                  {car?.payment?.desc || "No details available"}
                 </Text>
               </View>
             </View>
@@ -581,10 +546,10 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                   <View style={styles.policyItem}>
                     {/* <View>
                 <Text style={styles.policyTitle}>
-                  {car.miles?.title || "Not specified"}
+                  {car?.miles?.title || "Not specified"}
                 </Text>
                 <Text style={styles.policyDesc}>
-                  {car.miles?.desc || "No details available"}
+                  {car?.miles?.desc || "No details available"}
                 </Text>
               </View> */}
                   </View>
@@ -606,7 +571,9 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                         Current Mileage
                       </Text>
                       <Text style={styles.vehicleDetailValue}>
-                        {car.mileage ? `${car.mileage} miles` : "Not specified"}
+                        {car?.mileage
+                          ? `${car?.mileage} miles`
+                          : "Not specified"}
                       </Text>
                     </View>
                   </View>
@@ -700,7 +667,7 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                     </View>
                     {car?.features?.length > 0 && (
                       <View style={styles.featuresGrid}>
-                        {car.features?.map((feature) =>
+                        {car?.features?.map((feature) =>
                           renderFeatureChip(feature.icon, feature)
                         ) || (
                           <Text style={styles.noDataText}>
@@ -717,14 +684,14 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                         style={styles.featureIcon}
                       />
                       <Text style={styles.featureText}>
-                        {car.transmission || "Not specified"}
+                        {car?.transmission || "Not specified"}
                       </Text>
                     </View>
                     <View style={styles.featureChipSingle}>
                       <MaterialIcons name="people" style={styles.featureIcon} />
                       <Text style={styles.featureText}>
-                        {car.seatingCapacity
-                          ? `${car.seatingCapacity} seats`
+                        {car?.seatingCapacity
+                          ? `${car?.seatingCapacity} seats`
                           : "Not specified"}
                       </Text>
                     </View>
@@ -740,7 +707,7 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
               <Text style={styles.sectionTitle}>Safety</Text>
             </View>
             <View style={styles.listContainer}>
-              {car.safetyFeatures?.map((feature, index) => (
+              {car?.safetyFeatures?.map((feature, index) => (
                 <Text key={index} style={styles.listItem}>
                   {feature}
                 </Text>
@@ -750,8 +717,8 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                 </Text>
               )}
               <Text style={styles.listItem}>
-                {car.ecoFriendly
-                  ? `Eco-Friendly: ${car.ecoFriendly}`
+                {car?.ecoFriendly
+                  ? `Eco-Friendly: ${car?.ecoFriendly}`
                   : "Eco-Friendly: Not specified"}
               </Text>
             </View>
@@ -766,7 +733,7 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
               <Text style={styles.sectionTitle}>Device Connectivity</Text>
             </View>
             <View style={styles.listContainer}>
-              {car.connectivity?.map((feature, index) => (
+              {car?.connectivity?.map((feature, index) => (
                 <Text key={index} style={styles.listItem}>
                   {feature}
                 </Text>
@@ -788,7 +755,7 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
             </View>
             <Text style={styles.subsectionTitle}>Convenience</Text>
             <View style={styles.featureList}>
-              {car.convenienceFeatures?.map((feature) => (
+              {car?.convenienceFeatures?.map((feature) => (
                 <View key={feature.title} style={styles.featureItem}>
                   <View style={styles.featureItemContent}>
                     <Text style={styles.featureItemTitle}>{feature.title}</Text>
@@ -805,7 +772,7 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
             </View>
             <Text style={styles.subsectionTitle}>Peace of Mind</Text>
             <View style={styles.featureList}>
-              {car.peaceOfMindFeatures?.map((feature) => (
+              {car?.peaceOfMindFeatures?.map((feature) => (
                 <View key={feature.title} style={styles.featureItem}>
                   <Text style={styles.featureItemTitle}>{feature.title}</Text>
                 </View>
@@ -820,8 +787,8 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
               <View style={styles.featureItem}>
                 <Text style={styles.featureItemTitle}>Long-Term Discount</Text>
                 <Text style={styles.featureItemDesc}>
-                  {car.longTermDiscount
-                    ? `${car.longTermDiscount}% off for extended rentals`
+                  {car?.longTermDiscount
+                    ? `${car?.longTermDiscount}% off for extended rentals`
                     : "Not available"}
                 </Text>
               </View>
@@ -842,15 +809,15 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                   </View>
                   <View style={styles.overallRating}>
                     <Text style={styles.overallRatingScore}>
-                      {car.rating || "N/A"}
+                      {car?.rating || "N/A"}
                     </Text>
                     <StarIcon filled={true} />
                     <Text style={styles.overallRatingCount}>
-                      ({car.ratingCount || 0} ratings)
+                      ({car?.ratingCount || 0} ratings)
                     </Text>
                   </View>
                   <View style={styles.ratingsBreakdown}>
-                    {car.ratingCategories?.map((category) =>
+                    {car?.ratingCategories?.map((category) =>
                       renderRatingBar(category)
                     ) || (
                       <Text style={styles.noDataText}>
@@ -859,7 +826,7 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                     )}
                   </View>
                   <Text style={styles.ratingsNote}>
-                    Based on {car.ratingCount ? car.ratingCount - 1 : 0} guest
+                    Based on {car?.ratingCount ? car?.ratingCount - 1 : 0} guest
                     ratings
                   </Text>
                   <ScrollView
@@ -867,8 +834,8 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                     showsHorizontalScrollIndicator={false}
                     style={styles.reviewsScroll}
                   >
-                    {car.reviews?.length > 0 ? (
-                      car.reviews.map((review) => renderReviewCard(review))
+                    {car?.reviews?.length > 0 ? (
+                      car?.reviews.map((review) => renderReviewCard(review))
                     ) : (
                       <Text style={styles.noDataText}>
                         No reviews available
@@ -906,17 +873,17 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                       />
                       <View style={styles.hostRating}>
                         <Text style={styles.hostRatingText}>
-                          {car.average_rating || "N/A"}
+                          {car?.average_rating || "N/A"}
                         </Text>
                         <StarIcon filled={true} />
                       </View>
                     </View>
                     <View>
                       <Text style={styles.hostName}>
-                        {car.host?.name || "Unknown"}
+                        {car?.host?.name || "Unknown"}
                       </Text>
                       <Text style={styles.hostInfo}>
-                        {car.host?.info || "No info available"}
+                        {car?.host?.info || "No info available"}
                       </Text>
                     </View>
                   </View>
@@ -935,7 +902,7 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                     <Text style={styles.sectionTitle}>Rules of the Road</Text>
                   </View>
                   <View style={styles.rulesList}>
-                    {car.rules?.map((rule) => (
+                    {car?.rules?.map((rule) => (
                       <View key={rule.title} style={styles.ruleItem}>
                         <View>
                           <Text style={styles.ruleTitle}>{rule.title}</Text>
@@ -946,8 +913,8 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
                       <Text style={styles.noDataText}>No rules available</Text>
                     )}
                     <Text style={styles.vehicleDetailValue}>
-                      {car.seatingCapacity
-                        ? `${car.seatingCapacity} seats`
+                      {car?.seatingCapacity
+                        ? `${car?.seatingCapacity} seats`
                         : "Not specified"}
                     </Text>
                   </View>
@@ -1002,10 +969,10 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
             <View>
               {!loading && (
                 <Text style={[styles.totalPrice, { fontSize: 17 }]}>
-                  {formatPrice(totalPrice)} ETB
+                  {formatPrice(car?.totalPrice)} ETB
                 </Text>
               )}
-              {(totalPrice === "N/A" || loading) && (
+              {loading && (
                 <View
                   style={{
                     width: 140,
@@ -1017,12 +984,9 @@ export default function CarRentalDetail({ car, name, photos, loading }) {
               )}
             </View>
             <TouchableOpacity
-              style={[
-                styles.continueButton,
-                totalPrice === "N/A" && styles.disabledButton,
-              ]}
+              style={[styles.continueButton, loading && styles.disabledButton]}
               onPress={handleContinue}
-              disabled={totalPrice === "N/A" || loading}
+              disabled={loading}
               accessibilityLabel="Continue to checkout"
             >
               <MaterialIcons name="arrow-forward" style={styles.buttonIcon} />

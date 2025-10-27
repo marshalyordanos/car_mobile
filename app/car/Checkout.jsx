@@ -1,8 +1,11 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { Entypo, MaterialIcons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import * as DocumentPicker from "expo-document-picker";
+
 import {
+  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
@@ -12,10 +15,18 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import api from "../../redux/api";
 import { selectCurrentUser } from "../../redux/authReducer";
+import FormField from "../../components/Auth/FormField";
+import PhoneInput from "react-native-phone-number-input";
+import { useTranslation } from "react-i18next";
+import StatusModal from "../../components/utils/StatusModal";
+import { Toast } from "toastify-react-native";
 
 export default function Checkout() {
   const {
@@ -28,51 +39,31 @@ export default function Checkout() {
     dropoffLng,
     tripStartDate,
     tripEndDate,
+    totalPrice,
+    basePrice,
+    days,
   } = useLocalSearchParams();
 
   const user = useSelector(selectCurrentUser);
-
+  //
   let parsedCar;
-  try {
-    parsedCar = JSON.parse(car);
-    parsedCar.images = parsedCar.images?.map((url) => ({ uri: url })) || [
-      { uri: "https://via.placeholder.com/96x64" },
-    ];
-    parsedCar.id = parsedCar.id || parsedCar.vin || `temp-id-${Date.now()}`; // Fallback for id
-    parsedCar.hostId = parsedCar.hostId || parsedCar.owner || "Unknown"; // Fallback for hostId
-    if (
-      !parsedCar.id ||
-      !parsedCar.name ||
-      !parsedCar.year ||
-      !parsedCar.rating ||
-      !parsedCar.trips ||
-      !parsedCar.price ||
-      !parsedCar.images ||
-      !parsedCar.hostId
-    ) {
-      throw new Error("Invalid car data after transformation");
-    }
-  } catch (error) {
-    Alert.alert("Error", "Invalid car details. Please go back and try again.", [
-      { text: "OK", onPress: () => router.back() },
-    ]);
-    return null;
-  }
+
+  parsedCar = JSON.parse(car);
+  parsedCar.images = parsedCar.photos?.map((url) => ({ uri: url })) || [
+    { uri: "https://via.placeholder.com/96x64" },
+  ];
+
+  console.log("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee:", parsedCar);
 
   const isValidDate = (date) => {
     const parsed = new Date(date);
     return !isNaN(parsed.getTime());
   };
 
-  if (!isValidDate(tripStartDate) || !isValidDate(tripEndDate)) {
-    Alert.alert("Error", "Invalid trip dates. Please go back and try again.", [
-      { text: "OK", onPress: () => router.back() },
-    ]);
-    return null;
-  }
-
   const startDate = new Date(tripStartDate);
   const endDate = new Date(tripEndDate);
+
+  const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [countryCode, setCountryCode] = useState("+251");
@@ -87,21 +78,42 @@ export default function Checkout() {
   const [enhancedRoadside, setEnhancedRoadside] = useState(false);
   const [supplementalLiability, setSupplementalLiability] = useState(false);
   const [driverOption, setDriverOption] = useState(false); // Default to false instead of JSON.parse(withDriver)
+  const [isLoadding, setLoding] = useState(false);
+  const [idFile, setIdFile] = useState(null);
+  const [driverLicenseFile, setDriverLicenseFile] = useState(null);
+  const { t, i18n } = useTranslation();
+  const [value, setValue] = useState("");
+  const [formattedValue, setFormattedValue] = useState("");
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [bookingLoading, setBokkingLaoding] = useState(false);
 
-  const protectionPrices = {
-    enhancedRoadside: 290,
-    supplementalLiability: 1872,
-  };
+  const [errorOpen, setErrorOpen] = useState(false);
 
-  const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-  const protectionCost =
-    (enhancedRoadside ? protectionPrices.enhancedRoadside * days : 0) +
-    (supplementalLiability
-      ? protectionPrices.supplementalLiability * days
-      : 0) +
-    (driverOption ? 500 * days : 0);
-  const totalPrice =
-    (isNaN(parsedCar.price) ? 0 : parsedCar.price * days) + protectionCost;
+  const [form, setForm] = useState({
+    fullname: "",
+    phone: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    self_created: true,
+  });
+
+  const [fullnameEror, setFullnameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [termError, setTermError] = useState("");
+
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  // const [errors, setError] = useState([]);
+  const [errors, setErrors] = useState({
+    phoneNumber: "",
+    email: "",
+    firstName: "",
+    lastName: "",
+    ageRange: "",
+    terms: "",
+  });
 
   const formatPrice = (value) => {
     if (!value || isNaN(value)) return "0.00";
@@ -110,6 +122,8 @@ export default function Checkout() {
       maximumFractionDigits: 2,
     });
   };
+
+  const insets = useSafeAreaInsets();
 
   const formatDate = (date) => {
     if (!isValidDate(date)) {
@@ -126,89 +140,177 @@ export default function Checkout() {
     });
   };
 
-  useEffect(() => {
-    if (user) {
-      setEmail(user.email || "");
-      setFirstName(user.firstName || "");
-      setLastName(user.lastName || "");
-      setPhoneNumber(user.phone?.replace(/^\+\d{1,3}/, "") || "");
-    }
-  }, [user]);
+  const validatePhone = (phone) => {
+    let isvalid = true;
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!phoneNumber) newErrors.phoneNumber = "Mobile number is required";
-    if (!email) newErrors.email = "Email is required";
-    else if (!/^\S+@\S+\.\S+$/.test(email))
-      newErrors.email = "Email is invalid";
-    if (!firstName) newErrors.firstName = "First name is required";
-    if (!lastName) newErrors.lastName = "Last name is required";
-    if (!ageRange) newErrors.ageRange = "Age range is required";
-    if (!terms) newErrors.terms = "Terms must be accepted";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (type == "all" || type == "phone") {
+      if (phone == "" || !phone.startsWith("+251") || phone.length != 13) {
+        isvalid = false;
+        setPhoneError("Pleas provide a valid phone number.");
+        return isvalid;
+      } else {
+        isvalid = true;
+        setPhoneError("");
+      }
+    }
+
+    return isvalid;
   };
 
-  const handleBookTrip = async () => {
-    if (!validateForm()) return;
-
-    if (!user) {
-      Alert.alert("Login Required", "Please login to book", [
-        { text: "Cancel" },
-        { text: "Login", onPress: () => router.push("/sign-in") },
-      ]);
-      return;
-    }
-
-    setLoading(true);
+  const pickFile = async (type) => {
     try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "application/pdf"],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+
+        const fileObj = {
+          uri: file.uri,
+          name: file.name,
+          type: file.mimeType || "application/octet-stream",
+        };
+
+        if (type === "id") {
+          setIdFile(fileObj);
+        } else if (type === "driverLicense") {
+          setDriverLicenseFile(fileObj);
+        }
+
+        console.log("Selected file:", fileObj); // optional, for debugging
+      }
+    } catch (err) {
+      console.log("File picking error:", err);
+    }
+  };
+  const handleBookTrip = async () => {
+    try {
+      console.log(
+        "backendBookingData:",
+        !formattedValue,
+        formattedValue.length !== 13,
+        formattedValue.startsWith("+251"),
+        formattedValue.length,
+        formattedValue
+      );
+
+      if (
+        !formattedValue ||
+        formattedValue.length !== 13 ||
+        !formattedValue.startsWith("+251")
+      ) {
+        Toast.show({
+          type: "error",
+          text1: "Please provid valid phone numebr",
+          text2: "",
+          props: {
+            style: { fontSize: 20 },
+            textStyle: { flexWrap: "wrap" },
+          },
+        });
+      }
+
+      setBokkingLaoding(true);
+
       const backendBookingData = {
         carId: parsedCar.id,
-        guestId: user?.id || "default-guest-id", // Use user.id from Redux
+        guestId: user?.user?.id,
         hostId: parsedCar.hostId,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         withDriver: driverOption,
         pickupLat: isNaN(parseFloat(pickupLat)) ? 0 : parseFloat(pickupLat),
         pickupLng: isNaN(parseFloat(pickupLng)) ? 0 : parseFloat(pickupLng),
-        pickupName: pickupLocation,
+        pickupName: "Addis Ababa" || pickupLocation,
         dropoffLat: isNaN(parseFloat(dropoffLat)) ? 0 : parseFloat(dropoffLat),
         dropoffLng: isNaN(parseFloat(dropoffLng)) ? 0 : parseFloat(dropoffLng),
-        dropoffName: returnLocation,
+        dropoffName: "Addis Ababa" || returnLocation,
       };
 
-      console.log(
-        "SENDING TO BACKEND:",
-        JSON.stringify(backendBookingData, null, 2)
-      );
-
       const response = await api.post("/bookings", backendBookingData);
-
-      console.log("Booking success:", response.data);
-
-      Alert.alert(
-        "Booking Confirmed!",
-        `Your trip is booked successfully!\nBooking ID: ${
-          response.data.id || "12345"
-        }`,
-        [
-          {
-            text: "View My Bookings",
-            onPress: () => router.push("/my-bookings"),
-          },
-          { text: "Done", onPress: () => router.push("/profile") },
-        ]
-      );
-    } catch (error) {
-      console.error("Booking error:", error.response?.data);
-      Alert.alert(
-        "Booking Failed",
-        error.response?.data?.message ||
-          "Something went wrong. Please try again."
-      );
+      setSuccessOpen(true);
+      setBokkingLaoding(false);
+    } catch (err) {
+      console.log("=====================:", err);
+      setEmailError(true);
+      setBokkingLaoding(false);
     } finally {
-      setLoading(false);
+      setBokkingLaoding(false);
+      // setSuccessOpen(false);
+      // setErrorOpen(false);
     }
+    // if (!validateForm()) return;
+
+    // if (!user) {
+    //   Alert.alert("Login Required", "Please login to book", [
+    //     { text: "Cancel" },
+    //     { text: "Login", onPress: () => router.push("/sign-in") },
+    //   ]);
+    //   return;
+    // }
+
+    // setLoading(true);
+    // try {
+    // Alert.alert(
+    //   "Booking Confirmed!",
+    //   `Your trip is booked successfully!\nBooking ID: ${"12345"}`,
+    //   [
+    //     {
+    //       text: "View My Bookings",
+    //       onPress: () => router.replace("/my-bookings"),
+    //     },
+    //     { text: <Text>kl</Text>, onPress: () => router.push("/profile") },
+    //   ]
+    // );
+    // const backendBookingData = {
+    //   carId: parsedCar.id,
+    //   guestId: user?.user?.id || "default-guest-id", // Use user.id from Redux
+    //   hostId: parsedCar.hostId,
+    //   startDate: startDate.toISOString(),
+    //   endDate: endDate.toISOString(),
+    //   withDriver: driverOption,
+    //   pickupLat: isNaN(parseFloat(pickupLat)) ? 0 : parseFloat(pickupLat),
+    //   pickupLng: isNaN(parseFloat(pickupLng)) ? 0 : parseFloat(pickupLng),
+    //   pickupName: pickupLocation,
+    //   dropoffLat: isNaN(parseFloat(dropoffLat)) ? 0 : parseFloat(dropoffLat),
+    //   dropoffLng: isNaN(parseFloat(dropoffLng)) ? 0 : parseFloat(dropoffLng),
+    //   dropoffName: returnLocation,
+    // };
+
+    // console.log(
+    //   "SENDING TO BACKEND:",
+    //   JSON.stringify(backendBookingData, null, 2)
+    // );
+
+    // const response = await api.post("/bookings", backendBookingData);
+
+    // console.log("Booking success:", response.data);
+
+    // Alert.alert(
+    //   "Booking Confirmed!",
+    //   `Your trip is booked successfully!\nBooking ID: ${
+    //     response.data.id || "12345"
+    //   }`,
+    //   [
+    //     {
+    //       text: "View My Bookings",
+    //       onPress: () => router.replace("/my-bookings"),
+    //     },
+    //     { text: "Done", onPress: () => router.push("/profile") },
+    //   ]
+    // );
+    // } catch (error) {
+    //   console.error("Booking error:", error.response?.data);
+    //   Alert.alert(
+    //     "Booking Failed",
+    //     error.response?.data?.message ||
+    //       "Something went wrong. Please try again."
+    //   );
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   const CustomCheckbox = ({ value, onValueChange, tintColors }) => (
@@ -225,18 +327,20 @@ export default function Checkout() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container]}>
       <ScrollView style={styles.content}>
         <View style={styles.section}>
           <View style={styles.vehicleContainer}>
             <View style={styles.vehicleInfo}>
               <Text style={styles.vehicleTitle}>
-                {parsedCar.name} {parsedCar.year}
+                {parsedCar?.make?.name + " " + parsedCar?.model?.name}{" "}
+                {parsedCar.year}
               </Text>
               <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>{parsedCar.rating}</Text>
-                <MaterialIcons name="star" size={16} color="#FFD700" />
-                <Text style={styles.tripsText}>({parsedCar.trips} trips)</Text>
+                <Text style={styles.ratingText}>
+                  {parsedCar.average_rating}
+                </Text>
+                <MaterialIcons name="star" size={24} color="#FFD700" />
               </View>
               <View style={styles.vehicleDetails}>
                 <View style={styles.detailRow}>
@@ -269,114 +373,111 @@ export default function Checkout() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Primary driver</Text>
-          <View style={styles.loginContainer}>
+          {/* <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.push("/sign-in")}>
               <Text style={styles.loginLink}>Log in</Text>
             </TouchableOpacity>
+          </View> */}
+          <View style={{ marginTop: 0 }}>
+            <Text style={{ fontSize: 16, paddingBottom: 5 }}>{t("phone")}</Text>
+            <PhoneInput
+              containerStyle={{
+                // borderWidth: 1,
+                backgroundColor: "#e7ebf0",
+                borderRadius: 8,
+                width: "100%",
+                height: 52, // reduced height
+              }}
+              textContainerStyle={{
+                backgroundColor: "#e7ebf0",
+                borderRadius: 8,
+
+                paddingVertical: 0,
+                paddingHorizontal: 0,
+                height: 50, // match container height
+              }}
+              flagButtonStyle={{
+                width: 60,
+                height: 60, // match height so it’s aligned
+              }}
+              defaultValue={value}
+              defaultCode="ET"
+              layout="first"
+              onChangeText={setValue}
+              onChangeFormattedText={setFormattedValue}
+              withDarkTheme
+              withShadow
+            />
           </View>
+          <Text style={{ color: "red" }}>{phoneError}</Text>
+
           <View style={styles.inputContainer}>
-            <View style={styles.phoneInput}>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={countryCode}
-                  onValueChange={setCountryCode}
-                  style={styles.picker}
-                  itemStyle={styles.pickerItem}
-                  dropdownIconColor="#000"
-                >
-                  <Picker.Item label="+251" value="+251" />
-                  <Picker.Item label="+44" value="+44" />
-                  <Picker.Item label="+1" value="+1" />
-                  <Picker.Item label="+33" value="+33" />
-                </Picker>
-              </View>
-              <TextInput
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                placeholder="Mobile number"
-                style={[
-                  styles.textInput,
-                  errors.phoneNumber && styles.inputError,
-                ]}
-                placeholderTextColor="#666"
-                keyboardType="phone-pad"
-              />
-              {errors.phoneNumber && (
-                <Text style={styles.errorText}>{errors.phoneNumber}</Text>
-              )}
-            </View>
             <Text style={styles.infoText}>
               By providing a phone number, you consent to receive automated text
               messages with trip or account updates.
             </Text>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email *</Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter email"
-                style={[styles.textInput, errors.email && styles.inputError]}
-                placeholderTextColor="#666"
-                keyboardType="email-address"
-              />
-              {errors.email && (
-                <Text style={styles.errorText}>{errors.email}</Text>
-              )}
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>First name *</Text>
-              <TextInput
-                value={firstName}
-                onChangeText={setFirstName}
-                placeholder="Enter first name"
-                style={[
-                  styles.textInput,
-                  errors.firstName && styles.inputError,
-                ]}
-                placeholderTextColor="#666"
-              />
-              <Text style={styles.subLabel}>Driver's license first name</Text>
-              {errors.firstName && (
-                <Text style={styles.errorText}>{errors.firstName}</Text>
-              )}
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Last name *</Text>
-              <TextInput
-                value={lastName}
-                onChangeText={setLastName}
-                placeholder="Enter last name"
-                style={[styles.textInput, errors.lastName && styles.inputError]}
-                placeholderTextColor="#666"
-              />
-              <Text style={styles.subLabel}>Driver's license last name</Text>
-              {errors.lastName && (
-                <Text style={styles.errorText}>{errors.lastName}</Text>
-              )}
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Select your age *</Text>
-              <Picker
-                selectedValue={ageRange}
-                onValueChange={setAgeRange}
-                style={[
-                  styles.pickerFull,
-                  errors.ageRange && styles.inputError,
-                ]}
-              >
-                <Picker.Item label="Select age range" value="" />
-                <Picker.Item label="18-24" value="18-24" />
-                <Picker.Item label="25-34" value="25-34" />
-                <Picker.Item label="35-44" value="35-44" />
-                <Picker.Item label="45-54" value="45-54" />
-                <Picker.Item label="55+" value="55+" />
-              </Picker>
-              {errors.ageRange && (
-                <Text style={styles.errorText}>{errors.ageRange}</Text>
-              )}
-            </View>
-            <View style={styles.infoBox}>
+            {!user && (
+              <>
+                <FormField
+                  title={t("fullname")}
+                  value={form.fullname}
+                  handleChangeText={(e) => {
+                    // validate(
+                    //   e,
+                    //   form.phone,
+                    //   form.email,
+                    //   form.password,
+                    //   form.confirmPassword,
+                    //   "fullname"
+                    // );
+                    setForm({ ...form, fullname: e });
+                  }}
+                  otherStyles={{ marginTop: 28 }}
+                  keyboardType="email-address"
+                  placeholder={"fullname"}
+                />
+                <Text style={{ color: "red" }}>{fullnameEror}</Text>
+
+                <View>
+                  {/* files */}
+                  <FilePickerField
+                    label="ID"
+                    file={idFile}
+                    setFile={setIdFile}
+                    pickFile={() => pickFile("id")}
+                  />
+
+                  <FilePickerField
+                    label="Driver License"
+                    file={driverLicenseFile}
+                    setFile={setDriverLicenseFile}
+                    pickFile={() => pickFile("driverLicense")}
+                  />
+                </View>
+                <FormField
+                  title={t("email")}
+                  value={form.email}
+                  handleChangeText={(e) => {
+                    // validate(
+                    //   form.fullname,
+                    //   form.phone,
+                    //   e,
+                    //   form.password,
+                    //   form.confirmPassword,
+                    //   "email"
+                    // );
+
+                    setForm({ ...form, email: e });
+                  }}
+                  otherStyles={{ marginTop: 3 }}
+                  keyboardType="email-address"
+                  placeholder={"email"}
+                />
+                <Text style={{ color: "red" }}>{emailError}</Text>
+              </>
+            )}
+            {/* <View style={styles.infoBox}>
               <MaterialIcons name="info" size={20} color="#000" />
               <Text style={styles.infoBoxText}>
                 After booking, you'll need to submit more information to avoid
@@ -386,13 +487,13 @@ export default function Checkout() {
             <Text style={styles.infoText}>
               You can add additional drivers to your trip for free after
               booking.
-            </Text>
+            </Text> */}
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Protection options*</Text>
-          <View style={styles.protectionContainer}>
+        {/* <View style={styles.section}> */}
+        {/* <Text style={styles.sectionTitle}>Protection options*</Text> */}
+        {/* <View style={styles.protectionContainer}>
             <TouchableOpacity
               style={styles.protectionOption}
               onPress={() => {
@@ -474,8 +575,10 @@ export default function Checkout() {
                 </Text>
               </View>
             </View>
-          </View>
-          <View style={styles.protectionContainer}>
+          </View> */}
+
+        {/* driver uncomment */}
+        {/* <View style={styles.protectionContainer}>
             <View style={styles.protectionOption}>
               <CustomCheckbox
                 value={driverOption}
@@ -490,32 +593,34 @@ export default function Checkout() {
                 <Text style={styles.optionPrice}>ETB 500/day</Text>
               </View>
             </View>
-          </View>
-        </View>
+          </View> */}
+        {/* </View> */}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Trip total</Text>
           <View style={styles.totalContainer}>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Subtotal ({days} days)</Text>
+              <Text style={styles.totalLabel}>
+                Before Tax ({parsedCar?.days} days)
+              </Text>
               <Text style={styles.totalValue}>
-                ETB {formatPrice(parsedCar.price * days)}
+                {formatPrice(parsedCar?.baseTotal)} ETB
               </Text>
             </View>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Protection Cost</Text>
+              <Text style={styles.totalLabel}>Tax(15%)</Text>
               <Text style={styles.totalValue}>
-                ETB {formatPrice(protectionCost)}
+                {formatPrice(parsedCar?.tax)} ETB
               </Text>
             </View>
-            <View style={styles.totalRow}>
+            {/* <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>300 total miles</Text>
               <Text style={styles.totalValueFree}>FREE</Text>
-            </View>
+            </View> */}
             <View style={[styles.totalRow, styles.totalRowBold]}>
               <Text style={styles.totalLabelBold}>Total</Text>
               <Text style={styles.totalValueBold}>
-                ETB {formatPrice(totalPrice)}
+                {formatPrice(parsedCar?.totalPrice)} ETB
               </Text>
             </View>
           </View>
@@ -535,7 +640,7 @@ export default function Checkout() {
         </View>
 
         <View style={styles.section}>
-          <View style={styles.checkboxContainer}>
+          {/* <View style={styles.checkboxContainer}>
             <CustomCheckbox
               value={promotions}
               onValueChange={setPromotions}
@@ -544,7 +649,7 @@ export default function Checkout() {
             <Text style={styles.checkboxLabel}>
               Send me promotions and announcements via email
             </Text>
-          </View>
+          </View> */}
           <View style={styles.checkboxContainer}>
             <CustomCheckbox
               value={terms}
@@ -565,33 +670,136 @@ export default function Checkout() {
         </View>
       </ScrollView>
 
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: insets.bottom }]}>
         <View style={styles.bottomBarContent}>
           <View>
             <Text style={styles.totalText}>
-              ETB {formatPrice(totalPrice)} total
+              {formatPrice(parsedCar?.totalPrice)} ETB
             </Text>
             <Text style={styles.taxesText}>Taxes and fees included</Text>
           </View>
           <TouchableOpacity
             style={[
               styles.continueButton,
-              (!terms || loading || Object.keys(errors).length > 0) &&
-                styles.disabledButton,
+              (!terms || loading) && styles.disabledButton,
+              { justifyContent: "center", alignItems: "center", minWidth: 130 },
             ]}
-            disabled={!terms || loading || Object.keys(errors).length > 0}
+            disabled={!terms || loading}
             onPress={handleBookTrip}
           >
-            <Text style={styles.continueButtonText}>
-              {loading ? "Booking..." : "Book Now"}
-            </Text>
+            {bookingLoading ? (
+              <ActivityIndicator size={"small"} color={"white"} />
+            ) : (
+              <Text style={styles.continueButtonText}>
+                {loading ? "Booking..." : "Book Now"}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+
+      <StatusModal
+        visible={errorOpen}
+        onClose={() => setErrorOpen(false)}
+        type="error"
+        icon={<MaterialIcons name="error-outline" size={44} color="#e74c3c" />}
+        title="Booking Failed"
+        message="This car is already booked for those dates."
+        primaryLabel="Close"
+        onPrimaryPress={() => setErrorOpen(false)}
+      />
+
+      <StatusModal
+        visible={successOpen}
+        onClose={() => setSuccessOpen(true)}
+        type="success"
+        icon={<MaterialIcons name="check-circle" size={44} color="#2ecc71" />}
+        title="Booking Confirmed"
+        message="Your booking has been successfully created."
+        primaryLabel="OK"
+        onPrimaryPress={() => {
+          router.replace("/booking/my-booking");
+        }}
+      />
+    </View>
   );
 }
 
+const FilePickerField = ({ label, file, setFile, pickFile }) => {
+  return (
+    <View style={{ marginBottom: 20 }}>
+      <Text style={{ fontSize: 16, marginBottom: 5 }}>{label}</Text>
+
+      {file ? (
+        <View
+          style={{
+            position: "relative",
+            borderRadius: 8,
+            overflow: "hidden",
+            backgroundColor: "#e0e0e0",
+          }}
+        >
+          {file.type.startsWith("image/") ? (
+            <Image
+              source={{ uri: file.uri }}
+              style={{ width: "100%", height: 150 }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                padding: 10,
+                backgroundColor: "black",
+              }}
+            >
+              <MaterialIcons name="insert-drive-file" size={24} color="white" />
+              <Text
+                style={{
+                  color: "white",
+                  marginLeft: 10,
+                  flexShrink: 1,
+                }}
+                numberOfLines={1}
+              >
+                {file.name}
+              </Text>
+            </View>
+          )}
+
+          {/* Cancel button */}
+          <TouchableOpacity
+            onPress={() => setFile(null)}
+            style={{
+              position: "absolute",
+              top: 5,
+              right: 5,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              borderRadius: 15,
+              padding: 3,
+            }}
+          >
+            <Entypo name="cross" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={{
+            height: 50,
+            backgroundColor: "black",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 8,
+          }}
+          onPress={pickFile}
+        >
+          <Entypo name="plus" size={37} color="white" />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -629,6 +837,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
+    gap: 8,
   },
   ratingText: {
     fontSize: 18,

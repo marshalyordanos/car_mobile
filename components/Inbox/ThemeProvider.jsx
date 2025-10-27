@@ -94,7 +94,7 @@ export const Header = ({
           <Icon name={"bell-outline"} size={24} color={theme.foreground} />
         </TouchableOpacity>
 
-        {showToggle && <ThemeToggle />}
+        {/* {showToggle && <ThemeToggle />} */}
       </View>
     </View>
   );

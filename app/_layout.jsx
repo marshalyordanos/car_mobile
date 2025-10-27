@@ -9,6 +9,7 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { confLocale } from "../localization"; // Explicitly import confLocale
 import { persistor, store } from "../redux/store";
+import ToastManager from "toastify-react-native";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,7 +41,7 @@ const RootScreen = () => {
               name="BookingDetail"
               options={{ headerShown: false }}
             />
-            <Stack.Screen name="Booking" options={{ headerShown: false }} />
+            <Stack.Screen name="booking" options={{ headerShown: false }} />
 
             <Stack.Screen name="message" options={{ headerShown: false }} />
 
@@ -61,6 +62,7 @@ const RootScreen = () => {
             />
           </Stack>
           {/* <StatusBar barStyle="dark-content" /> */}
+          <ToastManager useModal={false} />
         </PersistGate>
       </Provider>
     </GestureHandlerRootView>

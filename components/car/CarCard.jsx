@@ -10,9 +10,9 @@ import {
 } from "../../redux/favoriteSlice";
 
 const placeholderImage = require("../../assets/images/car1.jpeg");
-const CarCard = ({ car }) => {
+const CarCard = ({ car, startDate, endDate, selectedLocation }) => {
   const router = useRouter();
-  console.log("carsasd:22", car);
+  // console.log("carsasd:22", car);
 
   const dispatch = useDispatch();
   const favorites = useSelector(selectFavorites);
@@ -63,7 +63,13 @@ const CarCard = ({ car }) => {
         // console.log(`/car/${carId}`,carName)
         router.push({
           pathname: `/car/${carId}`,
-          params: { name: carName, photos: JSON.stringify(car?.photos) },
+          params: {
+            name: carName,
+            photos: JSON.stringify(car?.photos),
+            startDate,
+            endDate,
+            selectedLocation,
+          },
         });
         // router.push("/car/Checkout");
       }}
@@ -105,7 +111,7 @@ const CarCard = ({ car }) => {
         </View>
 
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>{price.toLocaleString()} ETB</Text>
+          <Text style={styles.price}>{car?.baseTotal} ETB</Text>
           <Text style={styles.priceLabel}> total</Text>
         </View>
         <Text style={styles.taxLabel}>Before taxes</Text>

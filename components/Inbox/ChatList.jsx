@@ -68,6 +68,7 @@ export default function ChatList({}) {
     try {
       const res = await api.get("messages/chats/user/" + userData?.user?.id);
       console.log("fetchChatList:", res.data);
+      setChatList(res.data.data);
     } catch (err) {
       console.log("fetchChatList err:", err);
     }
@@ -95,7 +96,7 @@ export default function ChatList({}) {
 
   return (
     <FlatList
-      data={mockChats}
+      data={chatList}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <TouchableOpacity
@@ -104,22 +105,23 @@ export default function ChatList({}) {
           }}
           style={[styles.chatItem, { borderBottomColor: theme.border }]}
         >
-          <Avatar name={item.renterName} />
+          <Avatar name={item?.withUser?.fullName} />
           <View style={styles.chatContent}>
             <View style={styles.chatHeader}>
               <Text style={styles.chatTitle} numberOfLines={1}>
-                {item.carName} {item.carModel}
+                {/* {item.carName} {item.carModel} */}
+                {item?.withUser?.fullName}
               </Text>
               <View style={styles.chatRight}>
                 <Text style={styles.chatTime}>{item.timestamp}</Text>
-                {item.unread > 0 && <Badge value={item.unread} />}
+                {item?.unreadCount > 0 && <Badge value={item.unreadCount} />}
               </View>
             </View>
             <Text style={styles.chatRenter} numberOfLines={1}>
-              {item.renterName}
+              {item?.withUser?.fullName}
             </Text>
             <Text style={styles.chatMessage} numberOfLines={1}>
-              {item.lastMessage}
+              {item.lastMessage?.content}
             </Text>
           </View>
         </TouchableOpacity>
