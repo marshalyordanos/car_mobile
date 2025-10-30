@@ -1,12 +1,15 @@
-import { Entypo, Ionicons } from "@expo/vector-icons";
+import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
+  KeyboardAvoidingView,
   Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,6 +23,7 @@ import { useSelector } from "react-redux";
 import AppLoader from "../../components/AppLoader";
 import FormField from "../../components/Auth/FormField";
 import api from "../../redux/api";
+import { Toast } from "toastify-react-native";
 
 const { height } = Dimensions.get("window");
 const minHeight = height * 0.85;
@@ -33,9 +37,11 @@ const SignUp = () => {
   const [isLoadding, setLoding] = useState(false);
   const [idFile, setIdFile] = useState(null);
   const [driverLicenseFile, setDriverLicenseFile] = useState(null);
+  const [profilePic, setProfilePic] = useState(null);
 
   const [form, setForm] = useState({
-    fullname: "",
+    firstName: "",
+    lastName: "",
     phone: "",
     email: "",
     password: "",
@@ -66,7 +72,8 @@ const SignUp = () => {
   const language = useSelector((state) => state.auth.lan);
   const [isSelected, setSelection] = useState(false);
   const validate = (
-    fullname,
+    firstName,
+    lastName,
     phone,
     email,
     password,
@@ -75,14 +82,16 @@ const SignUp = () => {
   ) => {
     const errors = [];
 
-    if (!fullname) errors.push("Please provide your full name.");
-    if (!phone || !phone.startsWith("+251") || phone.length !== 13)
+    if (!firstName) errors.push("Please provide your first name.");
+    if (!lastName) errors.push("Please provide your last name.");
+
+    if (!phone || !phone.startsWith("+251") || phone?.length !== 13)
       errors.push("Please provide a valid phone number.");
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) errors.push("The email is invalid.");
     if (!password) errors.push("Password is required.");
     if (password) {
-      if (password.length < 8)
+      if (password?.length < 8)
         errors.push("Password must be at least 8 characters long.");
       if (!/[A-Z]/.test(password))
         errors.push("Password must contain at least one uppercase letter.");
@@ -104,7 +113,9 @@ const SignUp = () => {
   const handleSignUp = async () => {
     console.log("phone: ", value, formattedValue);
     const errors = validate(
-      form.fullname,
+      form.firstName,
+      form.lastName,
+
       formattedValue,
       form.email,
       form.password,
@@ -116,7 +127,7 @@ const SignUp = () => {
     if (!idFile) errors.push("ID file is missing.");
     if (!driverLicenseFile) errors.push("Driver License file is missing.");
 
-    if (errors.length > 0) {
+    if (errors?.length > 0) {
       setError(errors); // show all errors at once
       return;
     }
@@ -127,39 +138,54 @@ const SignUp = () => {
       let cleanedNumber = form.phone.replace("+", "");
 
       const formData = new FormData();
-      const [first, last] = form.fullname.split(" ");
-      formData.append("first_name", first);
-      formData.append("last_name", last || "");
+      formData.append("firstName", form.firstName);
+      formData.append("lastName", form.lastName || "");
 
-      formData.append("phone_number", formattedValue);
+      formData.append("phone", formattedValue);
       formData.append("email", form.email);
       formData.append("password", form.password);
       formData.append("self_created", true);
-      formData.append("role", "renter");
+      formData.append("role", "GUEST");
       // formData.append("role", "renter");
 
       // formData.append("username", cleanedNumber);
 
-      formData.append("national_id", {
+      formData.append("nationalIdFile", {
         uri: idFile.uri,
         name: idFile.name,
         type: idFile.mimeType || "application/octet-stream",
       });
 
-      formData.append("driver_license", {
+      formData.append("driverLicenseFile", {
         uri: driverLicenseFile.uri,
         name: driverLicenseFile.name,
         type: driverLicenseFile.mimeType || "application/octet-stream",
       });
 
+      formData.append("profilePhotoFile", {
+        uri: profilePic.uri,
+        name: profilePic.name,
+        type: profilePic.mimeType || "application/octet-stream",
+      });
+
       console.log("req sent: ");
-      const res = await api.post("user/register/", formData, {
+      const res = await api.post("auth/register", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       setLoding(false);
+
+      Toast.show({
+        type: "error",
+        text1: "You are registered Succuessfulyr",
+        text2: "",
+        props: {
+          style: { fontSize: 20 },
+          textStyle: { flexWrap: "wrap" },
+        },
+      });
 
       router.push({ pathname: "/profile", params: { success: true } });
     } catch (error) {
@@ -174,28 +200,50 @@ const SignUp = () => {
   };
 
   const pickFile = async (type) => {
+    console.log("TYpe:", type);
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ["image/*", "application/pdf"],
-        copyToCacheDirectory: true,
-      });
+      if (type == "profilePhotoFile") {
+        const result = await DocumentPicker.getDocumentAsync({
+          type: ["image/*"],
+          copyToCacheDirectory: true,
+        });
 
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const file = result.assets[0];
+        if (!result.canceled && result.assets && result.assets?.length > 0) {
+          const file = result.assets[0];
 
-        const fileObj = {
-          uri: file.uri,
-          name: file.name,
-          type: file.mimeType || "application/octet-stream",
-        };
+          const fileObj = {
+            uri: file.uri,
+            name: file.name,
+            type: file.mimeType || "application/octet-stream",
+          };
 
-        if (type === "id") {
-          setIdFile(fileObj);
-        } else if (type === "driverLicense") {
-          setDriverLicenseFile(fileObj);
+          setProfilePic(fileObj);
+
+          console.log("Selected file:", fileObj); // optional, for debugging
         }
+      } else {
+        const result = await DocumentPicker.getDocumentAsync({
+          type: ["image/*", "application/pdf"],
+          copyToCacheDirectory: true,
+        });
 
-        console.log("Selected file:", fileObj); // optional, for debugging
+        if (!result.canceled && result.assets && result.assets?.length > 0) {
+          const file = result.assets[0];
+
+          const fileObj = {
+            uri: file.uri,
+            name: file.name,
+            type: file.mimeType || "application/octet-stream",
+          };
+
+          if (type === "id") {
+            setIdFile(fileObj);
+          } else if (type === "driverLicense") {
+            setDriverLicenseFile(fileObj);
+          }
+
+          console.log("Selected file:", fileObj); // optional, for debugging
+        }
       }
     } catch (err) {
       console.log("File picking error:", err);
@@ -204,44 +252,75 @@ const SignUp = () => {
 
   return (
     <SafeAreaView style={{ height: "100%", backgroundColor: "white" }}>
-      <ScrollView style={{ backgroundColor: "white" }}>
-        <View style={styles.login_con}>
-          {/* <View style={{ justifyContent: "center", alignItems: "center" }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={80} // adjust if needed
+      >
+        <ScrollView style={{ backgroundColor: "white" }}>
+          <View style={styles.login_con}>
+            {/* <View style={{ justifyContent: "center", alignItems: "center" }}>
           <Image
             style={styles.top_image}
             source={images.logo}
             resizeMode="contain"
           />
         </View> */}
-          <Text style={styles.login_main_text}> {t("sign_up")} </Text>
-          <Text style={{ marginTop: 10, color: "grey", fontSize: 14 }}>
-            {t("sign_up_desc")}
-          </Text>
-          {/* <KeyboardAvoidingView
+            <Text style={styles.login_main_text}> {t("sign_up")} </Text>
+            <Text style={{ marginTop: 10, color: "grey", fontSize: 14 }}>
+              {t("sign_up_desc")}
+            </Text>
+            {/* <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
           > */}
-          <FormField
-            title={t("fullname")}
-            value={form.fullname}
-            handleChangeText={(e) => {
-              validate(
-                e,
-                form.phone,
-                form.email,
-                form.password,
-                form.confirmPassword,
-                "fullname"
-              );
-              setForm({ ...form, fullname: e });
-            }}
-            otherStyles={{ marginTop: 28 }}
-            keyboardType="email-address"
-            placeholder={"fullname"}
-          />
-          <Text style={{ color: "red" }}>{fullnameEror}</Text>
+            <FormField
+              title={t("firstName")}
+              value={form.firstName}
+              handleChangeText={(e) => {
+                validate(
+                  e,
+                  form.lastName,
 
-          {/* <FormField
+                  form.phone,
+                  form.email,
+                  form.password,
+                  form.confirmPassword,
+                  "firstName"
+                );
+                setForm({ ...form, firstName: e });
+              }}
+              otherStyles={{ marginTop: 28 }}
+              // keyboardType="email-address"
+              placeholder={"First Name"}
+            />
+
+            <Text style={{ color: "red" }}>{fullnameEror}</Text>
+            <FormField
+              title={t("lastName")}
+              value={form.lastName}
+              handleChangeText={(e) => {
+                validate(
+                  form.firstName,
+
+                  e,
+                  form.phone,
+                  form.email,
+                  form.password,
+                  form.confirmPassword,
+
+                  "lastName"
+                );
+                setForm({ ...form, lastName: e });
+              }}
+              otherStyles={{ marginTop: 0 }}
+              // keyboardType="email-address"
+              placeholder={"Last Name"}
+            />
+
+            <Text style={{ color: "red" }}>{fullnameEror}</Text>
+
+            {/* <FormField
             title="Phone"
             value={form.email}
             handleChangeText={(e) => setForm({ ...form, email: e })}
@@ -250,196 +329,228 @@ const SignUp = () => {
             placeholder={"phone"}
           /> */}
 
-          <View style={{ marginTop: 0 }}>
-            <Text style={{ fontSize: 16, paddingBottom: 5 }}>{t("phone")}</Text>
-            <PhoneInput
-              containerStyle={{
-                // borderWidth: 1,
-                backgroundColor: "#e7ebf0",
-                borderRadius: 8,
-                width: "100%",
-                height: 52, // reduced height
-              }}
-              textContainerStyle={{
-                backgroundColor: "#e7ebf0",
-                borderRadius: 8,
-
-                paddingVertical: 0,
-                paddingHorizontal: 0,
-                height: 50, // match container height
-              }}
-              flagButtonStyle={{
-                width: 60,
-                height: 60, // match height so it’s aligned
-              }}
-              defaultValue={value}
-              defaultCode="ET"
-              layout="first"
-              onChangeText={setValue}
-              onChangeFormattedText={setFormattedValue}
-              withDarkTheme
-              withShadow
-            />
-          </View>
-          <Text style={{ color: "red" }}>{phoneError}</Text>
-
-          <View>
-            {/* files */}
-            <FilePickerField
-              label="ID"
-              file={idFile}
-              setFile={setIdFile}
-              pickFile={() => pickFile("id")}
-            />
-
-            <FilePickerField
-              label="Driver License"
-              file={driverLicenseFile}
-              setFile={setDriverLicenseFile}
-              pickFile={() => pickFile("driverLicense")}
-            />
-          </View>
-          <FormField
-            title={t("email")}
-            value={form.email}
-            handleChangeText={(e) => {
-              validate(
-                form.fullname,
-                form.phone,
-                e,
-                form.password,
-                form.confirmPassword,
-                "email"
-              );
-
-              setForm({ ...form, email: e });
-            }}
-            otherStyles={{ marginTop: 3 }}
-            keyboardType="email-address"
-            placeholder={"email"}
-          />
-          <Text style={{ color: "red" }}>{emailError}</Text>
-
-          <FormField
-            title={t("password")}
-            value={form.password}
-            handleChangeText={(e) => {
-              validate(
-                form.fullname,
-                form.phone,
-                form.email,
-                e,
-                form.confirmPassword,
-                "password"
-              );
-
-              setForm({ ...form, password: e });
-            }}
-            otherStyles={{ marginTop: 3 }}
-            keyboardType="email-address"
-            placeholder={"password"}
-          />
-          <Text style={{ color: "red" }}>{passwordError}</Text>
-
-          <FormField
-            title={t("confirm_password")}
-            value={form.confirmPassword}
-            handleChangeText={(e) => {
-              validate(
-                form.fullname,
-                form.phone,
-                form.email,
-                form.password,
-                e,
-                "confirmPassword"
-              );
-
-              setForm({ ...form, confirmPassword: e });
-            }}
-            otherStyles={{ marginTop: 3 }}
-            keyboardType="email-address"
-            placeholder={"Confirm Password"}
-          />
-          <Text style={{ color: "red" }}>{confirmPasswordError}</Text>
-
-          <View style={styles.checkboxContainer}>
-            <CheckBox
-              style={styles.checkbox}
-              onClick={() => {
-                setSelection(!isSelected);
-              }}
-              isChecked={isSelected}
-            />
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <Text style={styles.checkboxLabel}>
-                I accept the Terms and Conditions
+            <View style={{ marginTop: 0 }}>
+              <Text style={{ fontSize: 16, paddingBottom: 5 }}>
+                {t("phone")}
               </Text>
-              <Link
-                style={{
-                  fontSize: 18,
-                  color: "#393381",
-                  textDecorationLine: "underline",
+              <PhoneInput
+                containerStyle={{
+                  // borderWidth: 1,
+                  backgroundColor: "#e7ebf0",
+                  borderRadius: 8,
+                  width: "100%",
+                  height: 52, // reduced height
                 }}
-                href={"/terms"}
-              >
-                Read
-              </Link>
-            </View>
-          </View>
-          <Text style={{ color: "red" }}>{termError}</Text>
+                textContainerStyle={{
+                  backgroundColor: "#e7ebf0",
+                  borderRadius: 8,
 
-          <View style={{ marginTop: 10 }}></View>
-          {errors.length > 0 && (
-            <View
-              style={{
-                backgroundColor: "#fde2e2", // light red background
-                borderRadius: 8,
-                padding: 10,
-                marginBottom: 15,
-                position: "relative",
-              }}
-            >
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {errors.map((err, index) => (
-                  <Text
-                    key={index}
-                    style={{
-                      color: "#b00020", // dark red text
-                      fontSize: 13,
-                      marginBottom: 3,
-                      fontWeight: "500",
-                    }}
-                  >
-                    • {err}
-                  </Text>
-                ))}
-              </ScrollView>
-              <TouchableOpacity
-                style={{
-                  // height: 50,
-                  justifyContent: "center",
-                  // paddingHorizontal: 10,
-                  position: "absolute",
-                  right: 0,
-                  top: -10,
-                  backgroundColor: "black",
-                  borderRadius: 100,
+                  paddingVertical: 0,
+                  paddingHorizontal: 0,
+                  height: 50, // match container height
                 }}
-                onPress={() => setError([])}
-              >
-                <Ionicons name="close" size={20} color={"white"} />
-              </TouchableOpacity>
+                flagButtonStyle={{
+                  width: 60,
+                  height: 60, // match height so it’s aligned
+                }}
+                defaultValue={value}
+                defaultCode="ET"
+                layout="first"
+                onChangeText={setValue}
+                onChangeFormattedText={setFormattedValue}
+                withDarkTheme
+                withShadow
+              />
             </View>
-          )}
-          <TouchableOpacity onPress={handleSignUp} style={styles.login_button}>
-            <Text style={{ color: "white", fontSize: 20, textAlign: "center" }}>
-              {t("sign_up")}
-            </Text>
-          </TouchableOpacity>
-          {/* </KeyboardAvoidingView> */}
-        </View>
-        {isLoadding && <AppLoader />}
-      </ScrollView>
+            <Text style={{ color: "red" }}>{phoneError}</Text>
+
+            <View>
+              {/* files */}
+              <FilePickerField
+                label="ID"
+                file={idFile}
+                setFile={setIdFile}
+                pickFile={() => pickFile("id")}
+              />
+
+              <FilePickerField
+                label="Driver License"
+                file={driverLicenseFile}
+                setFile={setDriverLicenseFile}
+                pickFile={() => pickFile("driverLicense")}
+              />
+
+              <FilePickerField
+                label="Profile Picture"
+                file={profilePic}
+                setFile={setProfilePic}
+                pickFile={() => pickFile("profilePhotoFile")}
+              />
+            </View>
+            <FormField
+              title={t("email")}
+              value={form.email}
+              handleChangeText={(e) => {
+                validate(
+                  form.firstName,
+                  form.lastName,
+
+                  form.phone,
+                  e,
+                  form.password,
+                  form.confirmPassword,
+                  "email"
+                );
+
+                setForm({ ...form, email: e });
+              }}
+              otherStyles={{ marginTop: 3 }}
+              keyboardType="email-address"
+              placeholder={"email"}
+            />
+            <Text style={{ color: "red" }}>{emailError}</Text>
+
+            <FormField
+              title={t("password")}
+              value={form.password}
+              handleChangeText={(e) => {
+                validate(
+                  form.firstName,
+                  form.lastName,
+
+                  form.phone,
+                  form.email,
+                  e,
+                  form.confirmPassword,
+                  "password"
+                );
+
+                setForm({ ...form, password: e });
+              }}
+              otherStyles={{ marginTop: 3 }}
+              keyboardType="email-address"
+              placeholder={"password"}
+              autoComplete="off" // stops system password suggestions
+              textContentType="none" // stops autofill
+              autoCorrect={false} // disables suggestions
+            />
+            <Text style={{ color: "red" }}>{passwordError}</Text>
+
+            <FormField
+              title={t("confirm_password")}
+              value={form.confirmPassword}
+              handleChangeText={(e) => {
+                validate(
+                  form.firstName,
+                  form.lastName,
+
+                  form.phone,
+                  form.email,
+                  form.password,
+                  e,
+                  "confirmPassword"
+                );
+
+                setForm({ ...form, confirmPassword: e });
+              }}
+              otherStyles={{ marginTop: 3 }}
+              keyboardType="email-address"
+              placeholder={"Confirm Password"}
+              autoComplete="off" // stops system password suggestions
+              textContentType="none" // stops autofill
+              autoCorrect={false} // disables suggestions
+            />
+            <Text style={{ color: "red" }}>{confirmPasswordError}</Text>
+
+            <View style={styles.checkboxContainer}>
+              <CheckBox
+                style={styles.checkbox}
+                onClick={() => {
+                  setSelection(!isSelected);
+                }}
+                isChecked={isSelected}
+              />
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <Text style={styles.checkboxLabel}>
+                  I accept the Terms and Conditions
+                </Text>
+                <Link
+                  style={{
+                    fontSize: 18,
+                    color: "#393381",
+                    textDecorationLine: "underline",
+                  }}
+                  href={"/terms"}
+                >
+                  Read
+                </Link>
+              </View>
+            </View>
+            <Text style={{ color: "red" }}>{termError}</Text>
+
+            <View style={{ marginTop: 10 }}></View>
+            {errors?.length > 0 && (
+              <View
+                style={{
+                  backgroundColor: "#fde2e2", // light red background
+                  borderRadius: 8,
+                  padding: 10,
+                  marginBottom: 15,
+                  position: "relative",
+                }}
+              >
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {errors.map((err, index) => (
+                    <Text
+                      key={index}
+                      style={{
+                        color: "#b00020", // dark red text
+                        fontSize: 13,
+                        marginBottom: 3,
+                        fontWeight: "500",
+                      }}
+                    >
+                      • {err}
+                    </Text>
+                  ))}
+                </ScrollView>
+                <TouchableOpacity
+                  style={{
+                    // height: 50,
+                    justifyContent: "center",
+                    // paddingHorizontal: 10,
+                    position: "absolute",
+                    right: 0,
+                    top: -10,
+                    backgroundColor: "black",
+                    borderRadius: 100,
+                  }}
+                  onPress={() => setError([])}
+                >
+                  <Ionicons name="close" size={20} color={"white"} />
+                </TouchableOpacity>
+              </View>
+            )}
+            <TouchableOpacity
+              disabled={isLoadding}
+              onPress={handleSignUp}
+              style={styles.login_button}
+            >
+              {isLoadding ? (
+                <ActivityIndicator size={"small"} color={"#eee"} />
+              ) : (
+                <Text
+                  style={{ color: "white", fontSize: 20, textAlign: "center" }}
+                >
+                  {t("sign_up")}
+                </Text>
+              )}
+            </TouchableOpacity>
+            {/* </KeyboardAvoidingView> */}
+          </View>
+          {/* {isLoadding && <AppLoader />} */}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

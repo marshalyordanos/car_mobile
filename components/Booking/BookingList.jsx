@@ -11,6 +11,8 @@ import {
   Button,
   FlatList,
   Image,
+  RefreshControl,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -27,6 +29,7 @@ import { selectCurrentUser } from "../../redux/authReducer";
 
 import { mockBookings } from "./mockBookings";
 import api from "../../redux/api";
+import LottieView from "lottie-react-native";
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -43,12 +46,12 @@ const transformBookingData = (bookings, userId) => {
   }
   return bookings.map((booking) => {
     const statusMap = {
-      pending: "pending",
-      confirmed: "approved",
-      active: "active",
-      cancelled_by_guest: "cancelled",
-      cancelled_by_host: "cancelled",
-      completed: "completed",
+      PENDING: "pending",
+      CONFIRMED: "confirmed",
+      REJECTED: "rejected",
+      CANCELLED_BY_GUEST: "cancelled",
+      CANCELLED_BY_HOST: "cancelled",
+      COMPLETED: "completed",
     };
     return {
       id: booking.id,
@@ -57,8 +60,10 @@ const transformBookingData = (bookings, userId) => {
       renterName: `${booking.guest?.firstName || "Unknown"} ${
         booking.guest?.lastName || "Guest"
       }`,
-      status:
-        statusMap[booking.status.toLowerCase()] || booking.status.toLowerCase(),
+      hostName: `${booking.host?.firstName} ${booking.host?.lastName}`,
+      hostId: booking.host?.id,
+
+      status: statusMap[booking.status],
       pickupDate: booking.startDate ? formatDate(booking.startDate) : "N/A",
       returnDate: booking.endDate ? formatDate(booking.endDate) : "N/A",
       pickupLocation:
@@ -142,28 +147,39 @@ const BookingList = ({ onOpenChat }) => {
   const [currentBookingId, setCurrentBookingId] = useState(null);
   const user = useSelector(selectCurrentUser);
   const router = useRouter();
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const fetchBooking = async () => {
     try {
       setIsLoading(true);
-      const res = await api.get("bookings");
+      let params;
+      if (selectedStatus) {
+        params = { filter: `status:${selectedStatus.toLocaleUpperCase()}` };
+      } else {
+        params = {};
+      }
+
+      console.log("--------------------------------------------:", params);
+      const res = await api.get("bookings/my", { params: params });
+
       const initialBookings = transformBookingData(res.data.data, user.id);
 
       setBookings(initialBookings);
-      console.log("bokingresres", res.data);
+      // console.log("bokingresres", res.data);
       setIsLoading(false);
     } catch (error) {
+      console.log("error", error);
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user) {
-      fetchBooking();
-      // const initialBookings = transformBookingData(mockBookings, user.id);
-      // setBookings(initialBookings);
-    }
-  }, [user]);
+    // if (user) {
+    fetchBooking();
+    // const initialBookings = transformBookingData(mockBookings, user.id);
+    // setBookings(initialBookings);
+    // }sssss
+  }, [selectedStatus]);
 
   const handleCancel = (bookingId) => {
     setBookings((prevBookings) =>
@@ -263,6 +279,51 @@ const BookingList = ({ onOpenChat }) => {
     );
   };
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "pending":
+        return (
+          <View style={styles.badgePending}>
+            <Text style={styles.badgeTextPending}>Pending</Text>
+          </View>
+        );
+      case "confirmed":
+        return (
+          <View style={styles.badgeActive}>
+            <Text style={styles.badgeTextActive}>Confirmed</Text>
+          </View>
+          // <View style={styles.badgeApproved}>
+          //   <Text style={styles.badgeTextApproved}>Confirmed</Text>
+          // </View>
+        );
+      case "rejected":
+        return (
+          <View style={[styles.badgeActive, { backgroundColor: "#fecaca" }]}>
+            <Text style={[styles.badgeTextActive, { color: "#c2410c" }]}>
+              Rejected
+            </Text>
+          </View>
+        );
+      case "completed":
+        return (
+          <View style={styles.badgeActive}>
+            <Text style={styles.badgeTextActive}>Completed</Text>
+          </View>
+        );
+      case "cancelled":
+        return (
+          <View style={[styles.badgeActive, { backgroundColor: "#fecaca" }]}>
+            <Text style={[styles.badgeTextActive, { color: "#c2410c" }]}>
+              Cancelled
+            </Text>
+          </View>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   const BookingCard = ({ booking, onOpenChat, onCancel, onPay, onPress }) => {
     const scale = useSharedValue(1);
     const animatedStyle = useAnimatedStyle(() => ({
@@ -279,30 +340,8 @@ const BookingList = ({ onOpenChat }) => {
       booking.inspections.some((i) => i.type === "PICKUP" && i.approved) &&
       !booking.inspections.some((i) => i.type === "DROPOFF");
 
-    const getStatusBadge = (status) => {
-      switch (status) {
-        case "pending":
-          return (
-            <View style={styles.badgePending}>
-              <Text style={styles.badgeTextPending}>Pending</Text>
-            </View>
-          );
-        case "approved":
-          return (
-            <View style={styles.badgeApproved}>
-              <Text style={styles.badgeTextApproved}>Approved</Text>
-            </View>
-          );
-        case "active":
-          return (
-            <View style={styles.badgeActive}>
-              <Text style={styles.badgeTextActive}>Active</Text>
-            </View>
-          );
-        default:
-          return null;
-      }
-    };
+    const pickUp = booking.inspections?.find((i) => i.type === "PICKUP");
+    const dropOff = booking.inspections?.find((i) => i.type === "DROPOFF");
 
     return (
       <TouchableOpacity
@@ -318,7 +357,7 @@ const BookingList = ({ onOpenChat }) => {
               <Text style={styles.carTitle}>
                 {booking.carName} {booking.carModel}
               </Text>
-              <Text style={styles.renterName}>{booking.renterName}</Text>
+              <Text style={styles.renterName}>{booking.hostName}</Text>
             </View>
             {getStatusBadge(booking.status)}
           </View>
@@ -336,7 +375,7 @@ const BookingList = ({ onOpenChat }) => {
               </Text>
             </View>
           </View>
-          {booking.inspections?.length > 0 && (
+          {/* {booking.inspections?.length > 0 && (
             <View style={styles.detailsContainer}>
               <Text style={styles.detailText}>Inspections:</Text>
               {booking.inspections.map((inspection) => (
@@ -365,6 +404,26 @@ const BookingList = ({ onOpenChat }) => {
                 </View>
               ))}
             </View>
+          )} */}
+          {pickUp && pickUp?.approved && (
+            <View
+              style={[
+                styles.status,
+                { backgroundColor: "#bbf7d0", width: 150 },
+              ]}
+            >
+              <Text style={{ color: "#166534" }}>Car Received</Text>
+            </View>
+          )}
+          {dropOff && dropOff?.approved && (
+            <View
+              style={[
+                styles.status,
+                { backgroundColor: "#bbf7d0", width: 150 },
+              ]}
+            >
+              <Text style={{ color: "#166534" }}>Car Returned</Text>
+            </View>
           )}
           {canCreateDropOff && (
             <TouchableOpacity
@@ -380,21 +439,36 @@ const BookingList = ({ onOpenChat }) => {
             </TouchableOpacity>
           )}
           <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Total Price</Text>
+            {/* <Text style={styles.priceLabel}>Total Price</Text> */}
+            <View></View>
             <Text style={styles.priceValue}>
               {booking.currency} {booking.price}
             </Text>
           </View>
           <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={styles.messageButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                onOpenChat(booking);
-              }}
-            >
-              <MessageCircle color="#6B7280" size={20} />
-            </TouchableOpacity>
+            {!["pending", "rejected"].includes(booking?.status) && (
+              <TouchableOpacity
+                style={styles.messageButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  onOpenChat(booking);
+                }}
+              >
+                <MessageCircle color="#6B7280" size={20} />
+              </TouchableOpacity>
+            )}
+            {pickUp && !pickUp.approved && (
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: "black" }]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  onCancel(booking.id);
+                }}
+              >
+                {/* <X color="#6B7280" size={16} style={styles.iconMargin} /> */}
+                <Text style={styles.buttonTextWhite}>Accept Car</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={[styles.actionButton, styles.cancelButton]}
               onPress={(e) => {
@@ -425,15 +499,12 @@ const BookingList = ({ onOpenChat }) => {
       </TouchableOpacity>
     );
   };
+  const onRefresh = () => {
+    fetchBooking();
+  };
 
   return (
     <>
-      {/* {isLoading && <AppLoader />} */}
-      {/* {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      )} */}
       {!user && (
         <View style={styles.emptyState}>
           <Text style={styles.emptyTitle}>Please log in</Text>
@@ -441,9 +512,76 @@ const BookingList = ({ onOpenChat }) => {
           <Button title="Log In" onPress={() => router.push("/Sign-in")} />
         </View>
       )}
+
       {user && (
         <FlatList
           data={bookings}
+          ListHeaderComponent={
+            <View
+              style={{
+                // borderWidth: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <ScrollView showsHorizontalScrollIndicator={false} horizontal>
+                {[
+                  "Confirmed",
+                  "Pending",
+                  "Completed",
+                  "rejected",
+                  "Cancelled",
+                ].map((status) => {
+                  return (
+                    <TouchableOpacity
+                      key={status}
+                      onPress={() => {
+                        if (selectedStatus == status) {
+                          setSelectedStatus("");
+                        } else {
+                          setSelectedStatus(status);
+                        }
+                      }}
+                      style={{ marginHorizontal: 5, marginBottom: 25 }}
+                    >
+                      <View
+                        style={[
+                          styles.badgePending,
+                          {
+                            borderWidth: 1,
+                            borderColor: "#cbd5e1",
+                            borderRadius: 5,
+                            backgroundColor:
+                              selectedStatus == status ? "black" : "white",
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.badgeTextPending,
+                            {
+                              color:
+                                selectedStatus == status ? "white" : "balck",
+                            },
+                          ]}
+                        >
+                          {status}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+              {/* {isLoading && (
+                <LottieView
+                  source={require("../../assets/loading.json")}
+                  autoPlay
+                  loop
+                  style={styles.lottie}
+                />
+              )} */}
+            </View>
+          }
           renderItem={({ item }) => (
             <BookingCard
               booking={item}
@@ -469,6 +607,14 @@ const BookingList = ({ onOpenChat }) => {
                 Your upcoming bookings will appear here
               </Text>
             </View>
+          }
+          refreshControl={
+            <RefreshControl
+              // colors={["transparent"]} // hide android spinner
+              // tintColor="transparent" // hide iOS spinner
+              refreshing={isLoading}
+              onRefresh={onRefresh}
+            />
           }
         />
       )}
@@ -591,13 +737,14 @@ const styles = {
     paddingVertical: 4,
     borderRadius: 20,
   },
+
   badgeTextActive: {
     fontSize: 12,
     fontWeight: "600",
     color: "#166534",
   },
   detailsContainer: {
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   detailRow: {
     flexDirection: "row",
@@ -706,6 +853,21 @@ const styles = {
     fontSize: 14,
     fontWeight: "500",
     textAlign: "center",
+  },
+  lottie: {
+    width: 70,
+    height: 70,
+  },
+  status: {
+    // flex: 1,
+    marginVertical: 4,
+    flexDirection: "row",
+    // height: 44,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 7,
+    justifyContent: "center",
+    alignItems: "center",
   },
 };
 

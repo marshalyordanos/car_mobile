@@ -96,7 +96,7 @@ export default function InboxTab() {
         <View style={styles.toggleBar}></View>
         <FlatList
           data={chatList}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.bookingId}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
@@ -135,6 +135,8 @@ export default function InboxTab() {
           )}
           refreshControl={
             <RefreshControl
+              // colors={["transparent"]} // hide android spinner
+              // tintColor="transparent" // hide iOS spinner
               refreshing={chatListLoading}
               onRefresh={onRefresh}
             />

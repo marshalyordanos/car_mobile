@@ -6,21 +6,10 @@ export const fetchBrands = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/car-makes");
-      return response.data.data;
+      console.log("normalized:1 ", response.data);
+      return response.data.data; // each brand includes models
     } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
-  }
-);
-
-export const fetchModels = createAsyncThunk(
-  "filterOptions/fetchModels",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.get("/car-models");
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -28,39 +17,25 @@ export const fetchModels = createAsyncThunk(
 const filterOptionsSlice = createSlice({
   name: "filterOptions",
   initialState: {
-    brands: {
-      items: [],
+    brandsWithModels: {
+      brands: [],
       status: "idle",
-    },
-    models: {
-      items: [],
-      status: "idle",
+      error: null,
     },
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Reducers for Brands
       .addCase(fetchBrands.pending, (state) => {
-        state.brands.status = "loading";
+        state.brandsWithModels.status = "loading";
       })
       .addCase(fetchBrands.fulfilled, (state, action) => {
-        state.brands.status = "succeeded";
-        state.brands.items = action.payload;
+        state.brandsWithModels.status = "succeeded";
+        state.brandsWithModels.brands = action.payload;
       })
-      .addCase(fetchBrands.rejected, (state) => {
-        state.brands.status = "failed";
-      })
-      // Reducers for Models
-      .addCase(fetchModels.pending, (state) => {
-        state.models.status = "loading";
-      })
-      .addCase(fetchModels.fulfilled, (state, action) => {
-        state.models.status = "succeeded";
-        state.models.items = action.payload;
-      })
-      .addCase(fetchModels.rejected, (state) => {
-        state.models.status = "failed";
+      .addCase(fetchBrands.rejected, (state, action) => {
+        state.brandsWithModels.status = "failed";
+        state.brandsWithModels.error = action.payload;
       });
   },
 });

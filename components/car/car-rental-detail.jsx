@@ -394,7 +394,7 @@ export default function CarRentalDetail({
                   </View>
                   <TouchableOpacity
                     onPress={() => {
-                      router.replace({
+                      router.push({
                         pathname: "/DatePickerScreen",
                         params: {
                           url: "/car/" + car?.id,
@@ -804,7 +804,7 @@ export default function CarRentalDetail({
                       gap: 8,
                     }}
                   >
-                    <MaterialIcons name="star" style={styles.sectionIcon} />
+                    {/* <MaterialIcons name="star" style={styles.sectionIcon} /> */}
                     <Text style={styles.sectionTitle}>Ratings and Reviews</Text>
                   </View>
                   <View style={styles.overallRating}>
@@ -856,7 +856,7 @@ export default function CarRentalDetail({
                       gap: 8,
                     }}
                   >
-                    <MaterialIcons name="person" style={styles.sectionIcon} />
+                    {/* <MaterialIcons name="person" style={styles.sectionIcon} /> */}
                     <Text style={styles.sectionTitle}>Hosted By</Text>
                   </View>
                   <View style={styles.hostContainer}>
@@ -873,14 +873,14 @@ export default function CarRentalDetail({
                       />
                       <View style={styles.hostRating}>
                         <Text style={styles.hostRatingText}>
-                          {car?.average_rating || "N/A"}
+                          {car?.average_rating || "0"}
                         </Text>
                         <StarIcon filled={true} />
                       </View>
                     </View>
                     <View>
                       <Text style={styles.hostName}>
-                        {car?.host?.name || "Unknown"}
+                        {car?.host?.firstName + " " + car?.hist?.lastName}
                       </Text>
                       <Text style={styles.hostInfo}>
                         {car?.host?.info || "No info available"}
@@ -898,7 +898,7 @@ export default function CarRentalDetail({
                       gap: 8,
                     }}
                   >
-                    <MaterialIcons name="rule" style={styles.sectionIcon} />
+                    {/* <MaterialIcons name="rule" style={styles.sectionIcon} /> */}
                     <Text style={styles.sectionTitle}>Rules of the Road</Text>
                   </View>
                   <View style={styles.rulesList}>

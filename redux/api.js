@@ -4,7 +4,7 @@ import axios from "axios";
 const api = axios.create({
   // baseURL: "https://car-back-22tv.onrender.com/",
   // baseURL: "http://10.0.2.2:3000/",
-  baseURL: "http://172.20.10.6:3000/",
+  baseURL: "http://192.168.43.111:3000/",
   headers: {
     "Content-Type": "application/json",
   },
@@ -23,7 +23,7 @@ const api = axios.create({
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    console.log("API ERROR:", error.response?.data || error.message);
+    // console.log("API ERROR:", error.response?.data || error.message);
 
     // auto logout demo (optional)
     // if (error.response?.status === 401) {
@@ -47,7 +47,7 @@ api.interceptors.request.use(
           )}`
         : config.url;
 
-      console.log("Request URL:", fullUrl, JSON.stringify(d, null, 2));
+      console.log("Request URL22:", config.url, fullUrl);
       if (d) {
         console.log("==============", d?.tokens.accessToken);
         config.headers.Authorization = `Bearer ${d?.tokens?.accessToken}`;

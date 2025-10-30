@@ -1,33 +1,47 @@
-import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import RNModal from "react-native-modal";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
 import React, { memo, useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { setYearFilter } from "../../../redux/filtersSlice";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AntDesign } from "@expo/vector-icons";
 const MIN_YEAR = 1952;
 const MAX_YEAR = new Date().getFullYear();
 
-const YearRangeSheet = React.forwardRef((props, ref) => {
-  const snapPoints = ["35%"];
-  const dispatch = useDispatch();
-  const globalYears = useSelector((state) => state.filters.years);
-  const [localYearRange, setLocalYearRange] = useState([
-    globalYears.min,
-    globalYears.max,
-  ]);
-
-  useEffect(() => {
-    setLocalYearRange([globalYears.min, globalYears.max]);
-  }, [globalYears]);
-  const handleViewResults = () => {
-    dispatch(setYearFilter({ min: localYearRange[0], max: localYearRange[1] }));
-    ref.current?.close();
+export default function YearRangeSheet({
+  visible,
+  onClose,
+  icon,
+  title,
+  message,
+  primaryLabel,
+  onPrimaryPress,
+  handleViewResults,
+  handleReset,
+  type = "info",
+  min,
+  max,
+}) {
+  const colorMap = {
+    success: "#2ecc71",
+    error: "#e74c3c",
+    warning: "#f39c12",
+    info: "#3498db",
   };
+  const insets = useSafeAreaInsets();
 
-  const handleReset = () => {
-    setLocalYearRange([MIN_YEAR, MAX_YEAR]);
-    dispatch(setYearFilter({ min: MIN_YEAR, max: MAX_YEAR }));
-  };
+  const [localYearRange, setLocalYearRange] = useState([min, max]);
+
+  // const handleViewResults = () => {
+  //   dispatch(setYearFilter({ min: localYearRange[0], max: localYearRange[1] }));
+  //   // ref.current?.close();
+  // };
+
+  // const handleReset = () => {
+  //   setLocalYearRange([MIN_YEAR, MAX_YEAR]);
+  //   dispatch(setYearFilter({ min: MIN_YEAR, max: MAX_YEAR }));
+  // };
 
   const rangeText =
     localYearRange[0] === MIN_YEAR && localYearRange[1] === MAX_YEAR
@@ -35,20 +49,40 @@ const YearRangeSheet = React.forwardRef((props, ref) => {
       : `${localYearRange[0]} - ${localYearRange[1]}`;
 
   return (
-    <BottomSheetModal
-      ref={ref}
-      index={0}
-      snapPoints={snapPoints}
-      backgroundStyle={styles.modalBackground}
-      handleIndicatorStyle={{ backgroundColor: "#d1d5db" }}
+    <RNModal
+      isVisible={visible}
+      onBackdropPress={onClose}
+      backdropTransitionOutTiming={0}
+      useNativeDriver
+      style={{
+        margin: 0,
+        justifyContent: "flex-end",
+        backgroundColor: "rgba(0,0,0,0.5)",
+      }}
+      backdropOpacity={0}
+      statusBarTranslucent={true}
     >
-      <BottomSheetView style={styles.contentContainer}>
+      <View
+        style={{
+          backgroundColor: "#fff",
+          borderRadius: 16,
+          padding: 22,
+          paddingBottom: insets.bottom,
+          alignItems: "center",
+        }}
+        // style={[styles.contentContainer, { paddingBottom: insets.bottom }]}
+      >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => ref.current?.close()}>
-            <Text style={styles.headerButton}>X</Text>
+          <TouchableOpacity onPress={onClose}>
+            <AntDesign name="close" size={24} color="black" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Years</Text>
-          <TouchableOpacity onPress={handleReset}>
+          <TouchableOpacity
+            onPress={() => {
+              setLocalYearRange([1952, new Date().getFullYear()]);
+              handleReset();
+            }}
+          >
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>
@@ -87,17 +121,14 @@ const YearRangeSheet = React.forwardRef((props, ref) => {
 
         <TouchableOpacity
           style={styles.resultsButton}
-          onPress={handleViewResults}
+          onPress={() => handleViewResults(localYearRange)}
         >
           <Text style={styles.resultsButtonText}>View results</Text>
         </TouchableOpacity>
-      </BottomSheetView>
-    </BottomSheetModal>
+      </View>
+    </RNModal>
   );
-});
-
-YearRangeSheet.displayName = "YearRangeSheet";
-export default memo(YearRangeSheet);
+}
 
 const styles = StyleSheet.create({
   modalBackground: {
@@ -109,6 +140,8 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   header: {
+    width: "100%",
+
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -135,6 +168,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   resultsButton: {
+    width: "100%",
+
     backgroundColor: "#111827",
     padding: 16,
     borderRadius: 12,

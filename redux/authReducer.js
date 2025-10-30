@@ -18,7 +18,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 //     } catch (err) {
 //       return rejectWithValue(err.response.data);
 //     }
-//   }
+//   }//
 // );
 
 export const authSlice = createSlice({

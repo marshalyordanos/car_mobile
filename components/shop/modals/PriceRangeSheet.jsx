@@ -1,81 +1,99 @@
-import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import RNModal from "react-native-modal";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { setPriceFilter } from "../../../redux/filtersSlice";
+import Slider from "@react-native-community/slider";
+import { AntDesign } from "@expo/vector-icons";
 
-const PriceRangeSheet = React.forwardRef((props, ref) => {
+export default function PriceRangeSheet({
+  visible,
+  onClose,
+  icon,
+  title,
+  message,
+  primaryLabel,
+  onPrimaryPress,
+  handleViewResults,
+  handleReset,
+  type = "info",
+  min,
+  max,
+}) {
+  const colorMap = {
+    success: "#2ecc71",
+    error: "#e74c3c",
+    warning: "#f39c12",
+    info: "#3498db",
+  };
   const insets = useSafeAreaInsets();
+  console.log("9999999999999:");
+  const tempValuesRef = useRef(localPriceRange);
 
   const snapPoints = ["35%"];
   const dispatch = useDispatch();
-  const globalPrice = useSelector((state) => state.filters.price);
-  const [localPriceRange, setLocalPriceRange] = useState([
-    globalPrice.min,
-    globalPrice.max,
-  ]);
 
-  useEffect(() => {
-    setLocalPriceRange([globalPrice.min, globalPrice.max]);
-  }, [globalPrice]);
+  const [localPriceRange, setLocalPriceRange] = useState([min, max]);
 
-  const handleViewResults = () => {
-    dispatch(
-      setPriceFilter({ min: localPriceRange[0], max: localPriceRange[1] })
-    );
-    ref.current?.close();
-  };
-  const handleReset = () => {
-    const defaultPrice = { min: 10, max: 500 };
-    setLocalPriceRange([defaultPrice.min, defaultPrice.max]);
-    dispatch(setPriceFilter(defaultPrice));
-  };
   return (
-    <BottomSheetModal
-      ref={ref}
-      index={0}
-      snapPoints={snapPoints}
-      backgroundStyle={[styles.modalBackground]}
-      handleIndicatorStyle={{ backgroundColor: "#d1d5db" }}
+    <RNModal
+      isVisible={visible}
+      onBackdropPress={onClose}
+      backdropTransitionOutTiming={0}
+      useNativeDriver
+      style={{
+        margin: 0,
+        justifyContent: "flex-end",
+        backgroundColor: "rgba(0,0,0,0.5)",
+      }}
+      backdropOpacity={0}
+      statusBarTranslucent={true}
     >
-      <BottomSheetView
-        style={[styles.contentContainer, { paddingBottom: insets.bottom }]}
+      <View
+        style={{
+          backgroundColor: "#fff",
+          borderRadius: 16,
+          padding: 22,
+          paddingBottom: insets.bottom,
+          alignItems: "center",
+        }}
+        // style={[styles.contentContainer, { paddingBottom: insets.bottom }]}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => ref.current?.close()}>
-            <Text style={styles.headerButton}>X</Text>
+          <TouchableOpacity onPress={onClose}>
+            <AntDesign name="close" size={24} color="black" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Price range</Text>
-          <TouchableOpacity onPress={handleReset}>
+          <TouchableOpacity
+            onPress={() => {
+              setLocalPriceRange([0, 10000]);
+              handleReset();
+            }}
+          >
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>
 
         <Text style={styles.rangeText}>
-          ${localPriceRange[0]} - ${localPriceRange[1]}
-          {localPriceRange[1] >= 500 ? "+" : ""}/day
+          {localPriceRange[0]} ETB - {localPriceRange[1]} ETB
+          {localPriceRange[1] >= 10000 ? "+" : ""} / day
         </Text>
 
         <View style={styles.sliderContainer}>
           <MultiSlider
             values={localPriceRange}
             sliderLength={300}
-            onValuesChange={setLocalPriceRange}
-            min={10}
-            max={500}
-            step={5}
+            onValuesChange={setLocalPriceRange} // updates continuously
+            min={0}
+            max={10000}
+            step={1} // integer step for smooth sliding
             allowOverlap={false}
-            snapped
+            snapped={false} // ✨ remove this
             minMarkerOverlapDistance={40}
-            trackStyle={{
-              height: 3,
-              backgroundColor: "#e5e7eb",
-            }}
-            selectedStyle={{
-              backgroundColor: "#111827",
-            }}
+            trackStyle={{ height: 3, backgroundColor: "#e5e7eb" }}
+            selectedStyle={{ backgroundColor: "#111827" }}
             markerStyle={{
               height: 24,
               width: 24,
@@ -83,27 +101,30 @@ const PriceRangeSheet = React.forwardRef((props, ref) => {
               backgroundColor: "#111827",
               borderWidth: 2,
               borderColor: "white",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 2,
             }}
           />
+
+          {/* <Slider
+            style={{ width: "100%", height: 40 }}
+            minimumValue={0}
+            maximumValue={10000}
+            minimumTrackTintColor="#000000"
+            maximumTrackTintColor="#d3d3d3"
+            onValueChange={(x) => {
+              console.log(x);
+            }}
+          /> */}
         </View>
         <TouchableOpacity
           style={styles.resultsButton}
-          onPress={handleViewResults}
+          onPress={() => handleViewResults(localPriceRange)}
         >
           <Text style={styles.resultsButtonText}>View results</Text>
         </TouchableOpacity>
-      </BottomSheetView>
-    </BottomSheetModal>
+      </View>
+    </RNModal>
   );
-});
-
-PriceRangeSheet.displayName = "PriceRangeSheet";
-export default memo(PriceRangeSheet);
+}
 
 const styles = StyleSheet.create({
   modalBackground: {
@@ -118,10 +139,13 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   header: {
+    // flex: 1,
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 24,
+    // borderWidth: 1,
   },
   headerTitle: {
     fontSize: 20,
@@ -148,6 +172,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
+    width: "100%",
   },
   resultsButtonText: {
     color: "white",

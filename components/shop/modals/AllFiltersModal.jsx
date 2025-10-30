@@ -10,7 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import {
   resetAllFilters,
@@ -55,16 +58,22 @@ const features = Object.keys(featureIconMap).map((label) => ({ label }));
 
 const ecoFriendlyOptions = [
   { label: "Electric", iconName: "bolt", iconSet: "FontAwesome" },
-  { label: "Hybrid", iconName: "leaf", iconSet: "FontAwesome" },
 ];
 
 const MIN_YEAR = 1952;
 const MAX_YEAR = new Date().getFullYear();
 
-const AllFiltersModal = ({ isVisible, onClose, onNavigateToFilter }) => {
+const AllFiltersModal = ({
+  isVisible,
+  onClose,
+  onNavigateToFilter,
+  filters: globalFilters,
+  setFilters,
+}) => {
+  const insets = useSafeAreaInsets();
+
   const router = useRouter();
   const dispatch = useDispatch();
-  const globalFilters = useSelector((state) => state.filters);
   const [selectedTypes, setSelectedTypes] = useState(
     globalFilters.vehicleTypes
   );
@@ -89,6 +98,8 @@ const AllFiltersModal = ({ isVisible, onClose, onNavigateToFilter }) => {
   const [isSortModalVisible, setSortModalVisible] = useState(false);
   const [isTransmissionModalVisible, setTransmissionModalVisible] =
     useState(false);
+
+  const [transmission, setTransmission] = useState(globalFilters?.transmission);
   const [isDeluxe, setIsDeluxe] = useState(false);
   const [isSuperDeluxe, setIsSuperDeluxe] = useState(false);
   const [isAllStar, setIsAllStar] = useState(false);
@@ -100,7 +111,7 @@ const AllFiltersModal = ({ isVisible, onClose, onNavigateToFilter }) => {
       setYearRange([globalFilters.years.min, globalFilters.years.max]);
       setMileageRange([globalFilters.mileage.min, globalFilters.mileage.max]);
       setSelectedTypes(globalFilters.vehicleTypes);
-      setSelectedFeatures(globalFilters.features);
+      // setSelectedFeatures(globalFilters.features);
       setEcoFriendly(globalFilters.ecoFriendly);
     }
   }, [isVisible, globalFilters]);
@@ -123,179 +134,207 @@ const AllFiltersModal = ({ isVisible, onClose, onNavigateToFilter }) => {
   };
 
   const handleViewResults = () => {
-    dispatch(setPriceFilter({ min: priceRange[0], max: priceRange[1] }));
-    dispatch(setVehicleTypesFilter(selectedTypes));
-    dispatch(setYearFilter({ min: yearRange[0], max: yearRange[1] }));
-    dispatch(setFeaturesFilter(selectedFeatures));
-    dispatch(setEcoFriendlyFilter(ecoFriendly));
-    dispatch(setMileageFilter({ min: mileageRange[0], max: mileageRange[1] }));
+    setFilters({
+      ...globalFilters,
+      price: { min: priceRange[0], max: priceRange[1] },
+      vehicleTypes: selectedTypes,
+      years: { min: yearRange[0], max: yearRange[1] },
+      ecoFriendly: ecoFriendly,
+      mileage: { min: mileageRange[0], max: mileageRange[1] },
+      transmission: transmission,
+    });
+    // dispatch(setVehicleTypesFilter(selectedTypes));
+    // dispatch(setYearFilter());
+    // dispatch(setFeaturesFilter(selectedFeatures));
+    // dispatch(setEcoFriendlyFilter(ecoFriendly));
+    // dispatch(setMileageFilter({ min: mileageRange[0], max: mileageRange[1] }));
     onClose();
   };
 
   const handleReset = () => {
-    dispatch(resetAllFilters());
+    setFilters({
+      price: {
+        min: 0,
+        max: 10000,
+      },
+      vehicleTypes: [],
+      years: {
+        min: 1952,
+        max: new Date().getFullYear(),
+      },
+      mileage: {
+        min: 0,
+        max: 1000,
+      },
+      seats: "All",
+      brands: [],
+      models: [],
+      transmission: "All",
+      ecoFriendly: false,
+      features: [],
+      sortBy: "Relevance",
+      closeSignal: 0,
+    });
   };
   return (
     <Modal animationType="slide" visible={isVisible} onRequestClose={onClose}>
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={onClose}>
-              <Icon name="close" size={28} color="#111827" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Filters</Text>
-            <TouchableOpacity onPress={handleReset}>
-              <Text style={styles.headerButton}>Reset</Text>
-            </TouchableOpacity>
+      <View
+        style={[
+          styles.container,
+          { paddingTop: insets.top, paddingBottom: insets.bottom },
+        ]}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose}>
+            <Icon name="close" size={28} color="#111827" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Filters</Text>
+          <TouchableOpacity onPress={handleReset}>
+            <Text style={styles.headerButton}>Reset</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {/* Sort by Section */}
+          <FilterRow
+            label="Sort by"
+            value={globalFilters.sortBy}
+            onPress={() => setSortModalVisible(true)}
+          />
+          <View style={styles.divider} />
+          {/* Daily Price Section */}
+          <Text style={styles.sectionTitle}>Daily Price</Text>
+          <Text style={styles.rangeText}>
+            {priceRange[0]} ETB - {priceRange[1]} ETB
+            {Number(priceRange[1]) >= 10000 ? "+" : ""}/day{" "}
+          </Text>
+
+          <View style={styles.sliderContainer}>
+            <MultiSlider
+              values={priceRange}
+              sliderLength={330}
+              onValuesChange={setPriceRange}
+              min={0}
+              max={10000}
+              step={5}
+              allowOverlap={false}
+              snapped
+              minMarkerOverlapDistance={40}
+              trackStyle={{
+                height: 3,
+                backgroundColor: "#e5e7eb",
+              }}
+              selectedStyle={{
+                backgroundColor: "#111827",
+              }}
+              markerStyle={{
+                height: 24,
+                width: 24,
+                borderRadius: 12,
+                backgroundColor: "#111827",
+                borderWidth: 1,
+                borderColor: "white",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 2,
+              }}
+            />
           </View>
-
-          <ScrollView contentContainerStyle={styles.scrollContainer}>
-            {/* Sort by Section */}
-            <FilterRow
-              label="Sort by"
-              value={globalFilters.sortBy}
-              onPress={() => setSortModalVisible(true)}
-            />
-            <View style={styles.divider} />
-            {/* Daily Price Section */}
-            <Text style={styles.sectionTitle}>Daily Price</Text>
-            <Text style={styles.rangeText}>
-              {" "}
-              ${priceRange[0]} - ${priceRange[1]}
-              {priceRange[1] >= 500 ? "+" : ""}/day{" "}
-            </Text>
-
-            <View style={styles.sliderContainer}>
-              <MultiSlider
-                values={priceRange}
-                sliderLength={330}
-                onValuesChange={setPriceRange}
-                min={10}
-                max={500}
-                step={5}
-                allowOverlap={false}
-                snapped
-                minMarkerOverlapDistance={40}
-                trackStyle={{
-                  height: 3,
-                  backgroundColor: "#e5e7eb",
-                }}
-                selectedStyle={{
-                  backgroundColor: "#111827",
-                }}
-                markerStyle={{
-                  height: 24,
-                  width: 24,
-                  borderRadius: 12,
-                  backgroundColor: "#111827",
-                  borderWidth: 1,
-                  borderColor: "white",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 2,
-                }}
-              />
-            </View>
-            {/* Vehicle Type Section */}
-            <Text style={styles.sectionTitle}>Vehicle type</Text>
-            <View style={styles.gridContainer}>
-              {vehicleTypes.map((type) => (
-                <View key={type.label} style={styles.buttonWrapper}>
-                  <TypeButton
-                    label={type.label}
-                    iconName={type.iconName}
-                    iconSet="Ionicons"
-                    isSelected={selectedTypes.includes(type.value)}
-                    onPress={() =>
-                      handleToggleSelection(
-                        type.value,
-                        selectedTypes,
-                        setSelectedTypes
-                      )
-                    }
-                    iconSize={40}
-                  />
-                </View>
-              ))}
-            </View>
-            <View style={styles.divider} />
-
-            {/* Vehicle Attributes Section */}
-            <Text style={styles.sectionTitle}>Vehicle attributes</Text>
-            <FilterRow
-              label="Make & model"
-              value="All makes and models"
-              onPress={() => onNavigateToFilter("Make & model")}
-            />
-            <Text style={styles.rangeText}>{rangeText}</Text>
-
-            <View style={styles.sliderContainer}>
-              <MultiSlider
-                values={[yearRange[0], yearRange[1]]}
-                sliderLength={330}
-                onValuesChange={setYearRange}
-                min={MIN_YEAR}
-                max={MAX_YEAR}
-                step={1}
-                allowOverlap={false}
-                snapped
-                minMarkerOverlapDistance={40}
-                trackStyle={{
-                  height: 3,
-                  backgroundColor: "#e5e7eb",
-                }}
-                selectedStyle={{
-                  backgroundColor: "#111827",
-                }}
-                markerStyle={{
-                  height: 24,
-                  width: 24,
-                  borderRadius: 12,
-                  backgroundColor: "#111827",
-                  borderWidth: 1,
-                  borderColor: "white",
-                  elevation: 2,
-                }}
-              />
-            </View>
-            <FilterRow
-              label="Number of seats"
-              value="All Seats"
-              onPress={() => onNavigateToFilter("Seats")}
-            />
-            <FilterRow
-              label="Transmission"
-              value={globalFilters.transmission}
-              onPress={() => setTransmissionModalVisible(true)}
-            />
-
-            {/* Eco-friendly Section */}
-            <Text style={styles.sectionTitle}>Eco-friendly</Text>
-            <View style={styles.ecoFriendlyContainer}>
-              {ecoFriendlyOptions.map((type) => (
+          {/* Vehicle Type Section */}
+          <Text style={styles.sectionTitle}>Vehicle type</Text>
+          <View style={styles.gridContainer}>
+            {vehicleTypes.map((type) => (
+              <View key={type.label} style={styles.buttonWrapper}>
                 <TypeButton
-                  key={type.label}
                   label={type.label}
                   iconName={type.iconName}
-                  iconSet={type.iconSet}
-                  isSelected={ecoFriendly.includes(type.label)}
+                  iconSet="Ionicons"
+                  isSelected={selectedTypes.includes(type.value)}
                   onPress={() =>
                     handleToggleSelection(
-                      type.label,
-                      ecoFriendly,
-                      setEcoFriendly
+                      type.value,
+                      selectedTypes,
+                      setSelectedTypes
                     )
                   }
+                  iconSize={40}
                 />
-              ))}
-            </View>
-            <View style={styles.divider} />
+              </View>
+            ))}
+          </View>
+          <View style={styles.divider} />
 
-            {/* Features Section */}
-            <Text style={styles.sectionTitle}>Features</Text>
+          {/* Vehicle Attributes Section */}
+          <Text style={styles.sectionTitle}>Vehicle attributes</Text>
+          <FilterRow
+            label="Make & model"
+            value="All makes and models"
+            onPress={() => onNavigateToFilter("Make & model")}
+          />
+          <Text style={styles.rangeText}>{rangeText}</Text>
+
+          <View style={styles.sliderContainer}>
+            <MultiSlider
+              values={[yearRange[0], yearRange[1]]}
+              sliderLength={330}
+              onValuesChange={setYearRange}
+              min={MIN_YEAR}
+              max={MAX_YEAR}
+              step={1}
+              allowOverlap={false}
+              snapped
+              minMarkerOverlapDistance={40}
+              trackStyle={{
+                height: 3,
+                backgroundColor: "#e5e7eb",
+              }}
+              selectedStyle={{
+                backgroundColor: "#111827",
+              }}
+              markerStyle={{
+                height: 24,
+                width: 24,
+                borderRadius: 12,
+                backgroundColor: "#111827",
+                borderWidth: 1,
+                borderColor: "white",
+                elevation: 2,
+              }}
+            />
+          </View>
+          <FilterRow
+            label="Number of seats"
+            value={globalFilters.seats}
+            onPress={() => onNavigateToFilter("Seats")}
+          />
+          <FilterRow
+            label="Transmission"
+            value={transmission}
+            onPress={() => setTransmissionModalVisible(true)}
+          />
+
+          {/* Eco-friendly Section */}
+          <Text style={styles.sectionTitle}>Eco-friendly</Text>
+          <View style={styles.ecoFriendlyContainer}>
+            {ecoFriendlyOptions.map((type) => (
+              <TypeButton
+                key={type.label}
+                label={type.label}
+                iconName={type.iconName}
+                iconSet={type.iconSet}
+                isSelected={ecoFriendly}
+                onPress={() => setEcoFriendly(!ecoFriendly)}
+              />
+            ))}
+          </View>
+          <View style={styles.divider} />
+          {/* ********************************** uncomment 1***************************************** */}
+
+          {/* Features Section */}
+          {/* <Text style={styles.sectionTitle}>Features</Text>
             <View style={styles.gridContainer}>
               {displayedFeatures.map((feature) => (
                 <View key={feature.label} style={styles.buttonWrapper}>
@@ -314,8 +353,9 @@ const AllFiltersModal = ({ isVisible, onClose, onNavigateToFilter }) => {
                   />
                 </View>
               ))}
-            </View>
-            {features.length > 6 && (
+            </View> */}
+
+          {/* {features.length > 6 && (
               <TouchableOpacity
                 style={styles.showMoreButton}
                 onPress={() => setShowAllFeatures(!showAllFeatures)}
@@ -329,51 +369,57 @@ const AllFiltersModal = ({ isVisible, onClose, onNavigateToFilter }) => {
                   {showAllFeatures ? "Show less" : "Show more"}
                 </Text>
               </TouchableOpacity>
-            )}
-            <View style={styles.divider} />
+            )} */}
 
-            {/*  Mileage section */}
-            <Text style={styles.sectionTitle}>Mileage included</Text>
-            <Text style={styles.rangeText}>
-              {mileageRange[0]} - {mileageRange[1]}
-              {mileageRange[1] >= 1000 ? "+" : ""} mi/day
-            </Text>
-            <View style={styles.sliderContainer}>
-              <MultiSlider
-                values={mileageRange}
-                sliderLength={330}
-                onValuesChange={setMileageRange}
-                min={0}
-                max={1000}
-                step={25}
-                allowOverlap={false}
-                snapped
-                minMarkerOverlapDistance={40}
-                trackStyle={{
-                  height: 3,
-                  backgroundColor: "#e5e7eb",
-                }}
-                selectedStyle={{
-                  backgroundColor: "#111827",
-                }}
-                markerStyle={{
-                  height: 24,
-                  width: 24,
-                  borderRadius: 12,
-                  backgroundColor: "#111827",
-                  borderWidth: 1,
-                  borderColor: "white",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 2,
-                }}
-              />
-            </View>
-            <View style={styles.divider} />
+          {/* <View style={styles.divider} /> */}
 
-            {/* Pickup Options Section */}
+          {/* ********************************** uncomment 1***************************************** */}
+
+          {/*  Mileage section */}
+          <Text style={styles.sectionTitle}>Mileage included</Text>
+          <Text style={styles.rangeText}>
+            {mileageRange[0]} - {mileageRange[1]}
+            {mileageRange[1] >= 1000 ? "+" : ""} mi/day
+          </Text>
+
+          <View style={styles.sliderContainer}>
+            <MultiSlider
+              values={mileageRange}
+              sliderLength={330}
+              onValuesChange={setMileageRange}
+              min={0}
+              max={1000}
+              step={25}
+              allowOverlap={false}
+              snapped
+              minMarkerOverlapDistance={40}
+              trackStyle={{
+                height: 3,
+                backgroundColor: "#e5e7eb",
+              }}
+              selectedStyle={{
+                backgroundColor: "#111827",
+              }}
+              markerStyle={{
+                height: 24,
+                width: 24,
+                borderRadius: 12,
+                backgroundColor: "#111827",
+                borderWidth: 1,
+                borderColor: "white",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 2,
+              }}
+            />
+          </View>
+
+          {/* <View style={styles.divider} /> */}
+
+          {/* ********************************** uncomment 2***************************************** */}
+          {/* Pickup Options Section
             <Text style={styles.sectionTitle}>Pickup options</Text>
 
             <Text style={styles.pickupTitle}>Host brings the car to me</Text>
@@ -389,10 +435,10 @@ const AllFiltersModal = ({ isVisible, onClose, onNavigateToFilter }) => {
               <Text style={[styles.input, !address && styles.placeholderText]}>
                 {address || "Enter address"}
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
-            {/* Elevate Your Experience Section */}
-            <Text style={styles.sectionTitle}>Elevate your experience</Text>
+          {/* Elevate Your Experience Section */}
+          {/* <Text style={styles.sectionTitle}>Elevate your experience</Text>
             <FilterToggle
               label="Deluxe Class"
               description="Exclusive cars for guests ages 25+"
@@ -416,25 +462,27 @@ const AllFiltersModal = ({ isVisible, onClose, onNavigateToFilter }) => {
               label="Collections"
               value="Select"
               onPress={() => console.log("Open Collections")}
-            />
-          </ScrollView>
+            /> */}
+          {/* ********************************** uncomment 2***************************************** */}
+        </ScrollView>
 
-          {/* Footer */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={styles.resultsButton}
-              onPress={handleViewResults}
-            >
-              <Text style={styles.resultsButtonText}>View results</Text>
-            </TouchableOpacity>
-          </View>
+        {/* Footer */}
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.resultsButton}
+            onPress={handleViewResults}
+          >
+            <Text style={styles.resultsButtonText}>View results </Text>
+          </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
       <SortByModal
         isVisible={isSortModalVisible}
         onClose={() => setSortModalVisible(false)}
       />
       <TransmissionModal
+        transmission={transmission}
+        setTransmission={setTransmission}
         isVisible={isTransmissionModalVisible}
         onClose={() => setTransmissionModalVisible(false)}
       />

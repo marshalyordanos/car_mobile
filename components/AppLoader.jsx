@@ -6,7 +6,7 @@ const AppLoader = () => {
     <View style={[StyleSheet.absoluteFillObject, styles.con]}>
       <ActivityIndicator
         size="large"
-        color="#393381"
+        color="#ffffff"
         style={styles.loadingMore}
       />
     </View>

@@ -17,36 +17,41 @@ const filterOptions = [
   "Years",
   "Seats",
   "Electric",
-  "Deliver to me",
+  // "Deliver to me",
   "All filters",
 ];
 
-const FilterPills = ({ onPillPress }) => {
-  const filters = useSelector((state) => state.filters, shallowEqual);
+const FilterPills = ({ onPillPress, filters }) => {
+  // const filters = useSelector((state) => state.filters, shallowEqual);
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (filters.price.min !== 10 || filters.price.max !== 500) count++;
+    if (filters.price.min !== 0 || filters.price.max !== 10000) count++;
     if (filters.vehicleTypes.length > 0) count++;
     if (
       filters.years.min !== 1952 ||
       filters.years.max !== new Date().getFullYear()
     )
       count++;
-    if (filters.seats !== "All seats") count++;
-    if (filters.brands.length > 0) count++;
+    if (filters.seats !== "All") count++;
+    // if (filters.brands.length > 0) count++;
     if (filters.models.length > 0) count++;
+    if (filters?.ecoFriendly) count++;
+    if (filters?.transmission !== "All") count++;
+    if (filters.mileage.min !== 0 || filters.mileage.max !== 1000) count++;
+
     return count;
   }, [filters]);
 
   const getPriceLabel = () => {
     const { min, max } = filters.price;
-    if (min === 10 && max === 500) {
+    console.log(" min, max: ", min, max);
+    if (min === 0 && max === 10000) {
       return "Price";
     }
-    return `$${min} - $${max}${max >= 500 ? "+" : ""}`;
+    return `${min} - ${max}${max >= 10000 ? "+" : ""}`;
   };
   const isPriceActive = () => {
-    return filters.price.min !== 10 || filters.price.max !== 500;
+    return filters.price.min !== 0 || filters.price.max !== 10000;
   };
 
   const getVehicleTypeLabel = () => {
@@ -84,7 +89,7 @@ const FilterPills = ({ onPillPress }) => {
   const getMakeModelLabel = () => {
     const brandCount = filters.brands.length;
     const modelCount = filters.models.length;
-    const totalCount = brandCount + modelCount;
+    const totalCount = modelCount;
     if (totalCount === 0) {
       return "Make & model";
     }
@@ -97,7 +102,7 @@ const FilterPills = ({ onPillPress }) => {
 
   const getSeatsLabel = () => {
     const selected = filters.seats;
-    if (selected === "All seats") {
+    if (selected === "All") {
       return "Seats";
     }
     const seatNumber = parseInt(selected);
@@ -105,7 +110,10 @@ const FilterPills = ({ onPillPress }) => {
   };
 
   const isSeatsActive = () => {
-    return filters.seats !== "All seats";
+    return filters.seats !== "All";
+  };
+  const isElectricActive = () => {
+    return filters.ecoFriendly;
   };
 
   const renderItem = ({ item }) => {
@@ -132,6 +140,10 @@ const FilterPills = ({ onPillPress }) => {
       case "Seats":
         label = getSeatsLabel();
         isActive = isSeatsActive();
+        break;
+      case "Electric":
+        label = "Electric";
+        isActive = isElectricActive();
         break;
       // we will add more cases here for the other filters
     }
@@ -172,7 +184,7 @@ const FilterPills = ({ onPillPress }) => {
               <Text style={styles.badgeText}>{activeFilterCount}</Text>
             </View>
           )
-        ) : (
+        ) : item == "Electric" ? null : (
           <Icon
             name="chevron-down-outline"
             size={16}

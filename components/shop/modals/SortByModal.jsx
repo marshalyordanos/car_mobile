@@ -12,10 +12,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSortByFilter } from "../../../redux/filtersSlice";
 
 const sortOptions = [
-  { label: "Relevance", value: "Relevance" },
+  // { label: "Relevance", value: "Relevance" },
   { label: "Price: low to high", value: "price_asc" },
   { label: "Price: high to low", value: "price_desc" },
-  { label: "Distance away", value: "distance_asc" },
+  // { label: "Distance away", value: "distance_asc" },
 ];
 
 const SortByModal = ({ isVisible, onClose }) => {
@@ -39,36 +39,34 @@ const SortByModal = ({ isVisible, onClose }) => {
         activeOpacity={1}
         onPress={onClose}
       >
-        <SafeAreaView>
-          <View
-            onStartShouldSetResponder={() => true}
-            style={styles.modalContent}
-          >
-            <Text style={styles.headerTitle}>Sort by</Text>
+        <View
+          onStartShouldSetResponder={() => true}
+          style={styles.modalContent}
+        >
+          <Text style={styles.headerTitle}>Sort by</Text>
 
-            <FlatList
-              data={sortOptions}
-              keyExtractor={(item) => item.value}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.optionRow}
-                  onPress={() => handleSelectOption(item)}
-                >
-                  <Icon
-                    name={
-                      currentSortBy === item.value
-                        ? "radio-button-on"
-                        : "radio-button-off"
-                    }
-                    size={24}
-                    color={currentSortBy === item.value ? "#393381" : "#111827"}
-                  />
-                  <Text style={styles.optionText}>{item.label}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-        </SafeAreaView>
+          <FlatList
+            data={sortOptions}
+            keyExtractor={(item) => item.value}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.optionRow}
+                onPress={() => handleSelectOption(item)}
+              >
+                <Icon
+                  name={
+                    currentSortBy === item.value
+                      ? "radio-button-on"
+                      : "radio-button-off"
+                  }
+                  size={24}
+                  color={currentSortBy === item.value ? "#393381" : "#111827"}
+                />
+                <Text style={styles.optionText}>{item.label}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
       </TouchableOpacity>
     </Modal>
   );
@@ -85,7 +83,8 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalContent: {
-    width: 250,
+    width: "100%",
+    // width: 250,
     backgroundColor: "white",
     borderRadius: 16,
     padding: 16,

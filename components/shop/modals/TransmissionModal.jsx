@@ -13,18 +13,18 @@ import { setTransmissionFilter } from "../../../redux/filtersSlice";
 
 const transmissionOptions = [
   { label: "All transmissions", value: "All" },
-  { label: "Manual", value: "Manual" },
-  { label: "Automatic", value: "Automatic" },
+  { label: "Manual", value: "MANUAL" },
+  { label: "Automatic", value: "AUTOMATIC" },
 ];
 
-const TransmissionModal = ({ isVisible, onClose }) => {
-  const dispatch = useDispatch();
-  const currentTransmission = useSelector(
-    (state) => state.filters.transmission
-  );
-
+const TransmissionModal = ({
+  isVisible,
+  onClose,
+  transmission: currentTransmission,
+  setTransmission,
+}) => {
   const handleSelectOption = (option) => {
-    dispatch(setTransmissionFilter(option.value));
+    setTransmission(option.value);
     onClose();
   };
 
@@ -40,38 +40,36 @@ const TransmissionModal = ({ isVisible, onClose }) => {
         activeOpacity={1}
         onPress={onClose}
       >
-        <SafeAreaView>
-          <View
-            onStartShouldSetResponder={() => true}
-            style={styles.modalContent}
-          >
-            <Text style={styles.headerTitle}>Transmission</Text>
+        <View
+          onStartShouldSetResponder={() => true}
+          style={styles.modalContent}
+        >
+          <Text style={styles.headerTitle}>Transmission</Text>
 
-            <FlatList
-              data={transmissionOptions}
-              keyExtractor={(item) => item.value}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.optionRow}
-                  onPress={() => handleSelectOption(item)}
-                >
-                  <Icon
-                    name={
-                      currentTransmission === item.value
-                        ? "radio-button-on"
-                        : "radio-button-off"
-                    }
-                    size={24}
-                    color={
-                      currentTransmission === item.value ? "#393381" : "#111827"
-                    }
-                  />
-                  <Text style={styles.optionText}>{item.label}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-        </SafeAreaView>
+          <FlatList
+            data={transmissionOptions}
+            keyExtractor={(item) => item.value}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.optionRow}
+                onPress={() => handleSelectOption(item)}
+              >
+                <Icon
+                  name={
+                    currentTransmission === item.value
+                      ? "radio-button-on"
+                      : "radio-button-off"
+                  }
+                  size={24}
+                  color={
+                    currentTransmission === item.value ? "#393381" : "#111827"
+                  }
+                />
+                <Text style={styles.optionText}>{item.label}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
       </TouchableOpacity>
     </Modal>
   );

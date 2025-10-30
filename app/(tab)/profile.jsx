@@ -16,8 +16,11 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -50,26 +53,33 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.mainContainer}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {!showLogin || user ? (
-            <ProfileHome
-              t={t}
-              setLoading={setLoading}
-              lan={language}
-              user={user}
-              setShowLogin={setShowLogin}
-            />
-          ) : (
-            <Login
-              t={t}
-              lan={language}
-              setLoading={setLoading}
-              status={query?.success}
-              setShowLogin={setShowLogin}
-            />
-          )}
-        </ScrollView>
-        {isLoading && <AppLoader />}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={80} // adjust if needed
+        >
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {!showLogin || user ? (
+              <ProfileHome
+                t={t}
+                setLoading={setLoading}
+                lan={language}
+                user={user}
+                setShowLogin={setShowLogin}
+              />
+            ) : (
+              <Login
+                t={t}
+                lan={language}
+                isLoading={isLoading}
+                setLoading={setLoading}
+                status={query?.success}
+                setShowLogin={setShowLogin}
+              />
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
+        {/* {isLoading && <AppLoader />} */}
       </View>
     </SafeAreaView>
   );
@@ -90,17 +100,17 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
           link: "/profile-detail",
         },
         {
-          Icon: MaterialCommunityIcons,
-          iconName: "history",
+          Icon: AntDesign,
+          iconName: "car",
           name: "Booking History",
           link: "/booking/my-booking",
         },
-        {
-          Icon: MaterialCommunityIcons, // Changed from lowercase 'icon' to uppercase 'Icon'
-          iconName: "history",
-          name: t("purchase_history"),
-          link: "/purchase-history",
-        },
+        // {
+        //   Icon: MaterialCommunityIcons, // Changed from lowercase 'icon' to uppercase 'Icon'
+        //   iconName: "history",
+        //   name: t("purchase_history"),
+        //   link: "/purchase-history",
+        // },
       ],
     },
     {
@@ -175,7 +185,15 @@ const ProfileHome = ({ user, t, setShowLogin, setLoading, lan }) => {
         <View style={styles.userCard}>
           <View style={styles.userInfo}>
             <View style={styles.avatarContainer}>
-              <FontAwesome6 name="user-tie" size={40} color="white" />
+              {user?.user?.profilePhoto ? (
+                <Image
+                  source={{ uri: user?.user?.profilePhoto }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              ) : (
+                <FontAwesome6 name="user-tie" size={40} color="white" />
+              )}
             </View>
             <View style={styles.userDetails}>
               <Text style={styles.userName}>
@@ -290,7 +308,7 @@ const MenuButton = ({ Icon, iconName, name, link }) => (
   </Link>
 );
 
-const Login = ({ status, setLoading, setShowLogin, lan, t }) => {
+const Login = ({ status, setLoading, isLoading, setShowLogin, lan, t }) => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({
     email: "",
@@ -413,8 +431,16 @@ const Login = ({ status, setLoading, setShowLogin, lan, t }) => {
         </View>
       )}
 
-      <TouchableOpacity onPress={handleSignIn} style={styles.signInButton}>
-        <Text style={styles.signInButtonText}>{t("sign_in")}</Text>
+      <TouchableOpacity
+        disabled={isLoading}
+        onPress={handleSignIn}
+        style={styles.signInButton}
+      >
+        {isLoading ? (
+          <ActivityIndicator size={"small"} color={"#eee"} />
+        ) : (
+          <Text style={styles.signInButtonText}>{t("sign_in")}</Text>
+        )}
       </TouchableOpacity>
 
       <Link style={styles.forgotPassword} href="/forget">
@@ -474,6 +500,11 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     justifyContent: "center",
     alignItems: "center",
+  },
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
   },
   userDetails: {
     flex: 1,

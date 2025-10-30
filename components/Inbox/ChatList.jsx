@@ -97,11 +97,12 @@ export default function ChatList({}) {
   return (
     <FlatList
       data={chatList}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item, i) => `${item.bookingId}-${i}`}
       renderItem={({ item }) => (
         <TouchableOpacity
           onPress={() => {
-            router.push({ pathname: `/message/${item.id}` });
+            console.log("hahaha", item.id, item.bookingId);
+            router.push({ pathname: `/message/${item.bookingId}` });
           }}
           style={[styles.chatItem, { borderBottomColor: theme.border }]}
         >

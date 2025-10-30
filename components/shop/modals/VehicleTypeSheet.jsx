@@ -1,28 +1,47 @@
-import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import React, { memo } from "react";
+import RNModal from "react-native-modal";
+import React, { memo, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { setVehicleTypesFilter } from "../../../redux/filtersSlice";
 import TypeButton from "../shared/ui/TypeButton";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AntDesign } from "@expo/vector-icons";
 
 export const vehicleTypes = [
   { label: "Sedan", value: "SEDAN", iconName: "car-sport-outline" },
   { label: "SUV", value: "SUV", iconName: "car-outline" },
-  { label: "Van", value: "bus-outline" },
-  { label: "Truck", value: "trail-sign-outline" },
-  { label: "Coupe", value: "car-sport" },
-  { label: "Convertible", value: "car-outline" },
-  { label: "Hatchback", value: "car-outline" },
-  { label: "Wagon", value: "car-outline" },
-  { label: "Luxury", value: "diamond-outline" },
-  { label: "Sports", value: "rocket-outline" },
-  { label: "Other", value: "help-circle-outline" },
+  { label: "Van", value: "VAN" },
+  { label: "Truck", value: "TRUCK" },
+  { label: "Coupe", value: "COUPE" },
+  { label: "Convertible", value: "CONVERTIBLE" },
+  { label: "Hatchback", value: "HATCHBACK" },
+  { label: "Wagon", value: "WAGON" },
+  { label: "Luxury", value: "LUXURY" },
+  { label: "Sports", value: "SPORTS" },
+  { label: "Other", value: "OTHER" },
 ];
 
-const VehicleTypeSheet = React.forwardRef((props, ref) => {
-  const snapPoints = ["75%"];
-  const dispatch = useDispatch();
-  const selectedTypes = useSelector((state) => state.filters.vehicleTypes);
+export default function VehicleRangeSheet({
+  visible,
+  onClose,
+  icon,
+  title,
+  message,
+  primaryLabel,
+  onPrimaryPress,
+  handleViewResults,
+  handleReset,
+  type = "info",
+  types = [],
+}) {
+  const colorMap = {
+    success: "#2ecc71",
+    error: "#e74c3c",
+    warning: "#f39c12",
+    info: "#3498db",
+  };
+  const insets = useSafeAreaInsets();
+  const [selectedTypes, setSelectedTypes] = useState(types);
 
   const handleSelectType = (typeValue) => {
     let newSelection;
@@ -31,28 +50,44 @@ const VehicleTypeSheet = React.forwardRef((props, ref) => {
     } else {
       newSelection = [...selectedTypes, typeValue];
     }
-    dispatch(setVehicleTypesFilter(newSelection));
-  };
-
-  const handleReset = () => {
-    dispatch(setVehicleTypesFilter([]));
+    setSelectedTypes(newSelection);
   };
 
   return (
-    <BottomSheetModal
-      ref={ref}
-      index={0}
-      snapPoints={snapPoints}
-      backgroundStyle={styles.modalBackground}
-      handleIndicatorStyle={{ backgroundColor: "#d1d5db" }}
+    <RNModal
+      isVisible={visible}
+      onBackdropPress={onClose}
+      backdropTransitionOutTiming={0}
+      useNativeDriver
+      style={{
+        margin: 0,
+        justifyContent: "flex-end",
+        backgroundColor: "rgba(0,0,0,0.5)",
+      }}
+      backdropOpacity={0}
+      statusBarTranslucent={true}
     >
-      <BottomSheetView style={styles.contentContainer}>
+      <View
+        style={{
+          backgroundColor: "#fff",
+          borderRadius: 16,
+          padding: 22,
+          paddingBottom: insets.bottom,
+          alignItems: "center",
+        }}
+        // style={[styles.contentContainer, { paddingBottom: insets.bottom }]}
+      >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => ref.current?.close()}>
-            <Text style={styles.headerButton}>X</Text>
+          <TouchableOpacity onPress={onClose}>
+            <AntDesign name="close" size={24} color="black" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Vehicle type</Text>
-          <TouchableOpacity onPress={handleReset}>
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedTypes([]);
+              handleReset();
+            }}
+          >
             <Text style={styles.headerButton}>Reset</Text>
           </TouchableOpacity>
         </View>
@@ -72,22 +107,20 @@ const VehicleTypeSheet = React.forwardRef((props, ref) => {
         </View>
         <TouchableOpacity
           style={styles.resultsButton}
-          onPress={() => ref.current?.close()}
+          onPress={() => handleViewResults(selectedTypes)}
         >
           <Text style={styles.resultsButtonText}>View results</Text>
         </TouchableOpacity>
-      </BottomSheetView>
-    </BottomSheetModal>
+      </View>
+    </RNModal>
   );
-});
-
-VehicleTypeSheet.displayName = "VehicleTypeSheet";
-export default memo(VehicleTypeSheet);
+}
 
 const styles = StyleSheet.create({
   modalBackground: { backgroundColor: "white", borderRadius: 24 },
   contentContainer: { flex: 1, padding: 24 },
   header: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -101,6 +134,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 16,
+    width: "100%",
   },
   resultsButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
 

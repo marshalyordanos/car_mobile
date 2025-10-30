@@ -22,30 +22,30 @@ const Favorites = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      // console.log(fevorites?.length);
-      // if (fevorites && fevorites?.length == 0) {
-      fetchFavorites();
-      // }
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // console.log(fevorites?.length);
+  //     // if (fevorites && fevorites?.length == 0) {
+  //     fetchFavorites();
+  //     // }
+  //   }, [])
+  // );
 
-  const fetchFavorites = async () => {
-    try {
-      setLoading(false); // start loading
-      const res = await api.get("users/wish-list");
+  // const fetchFavorites = async () => {
+  //   try {
+  //     setLoading(false); // start loading
+  //     const res = await api.get("users/wish-list");
 
-      console.log("favorites: ", res.data);
-      dispatch(setFavorites(res.data.data?.wishlist)); // adjust based on your API response
-      setLoading(false); // start loading
-    } catch (error) {
-      console.error("error:", error);
-      setLoading(true); // start loading
-    } finally {
-      setLoading(false); // stop loadings
-    }
-  };
+  //     console.log("favorites: ", res.data);
+  //     dispatch(setFavorites(res.data.data?.wishlist)); // adjust based on your API response
+  //     setLoading(false); // start loading
+  //   } catch (error) {
+  //     console.error("error:", error);
+  //     setLoading(true); // start loading
+  //   } finally {
+  //     setLoading(false); // stop loadings
+  //   }
+  // };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

@@ -13,6 +13,8 @@ import SeatsSheet from "../../components/shop/modals/SeatsSheet";
 import VehicleTypeSheet from "../../components/shop/modals/VehicleTypeSheet";
 import YearRangeSheet from "../../components/shop/modals/YearRangeSheet";
 import SearchHeader from "../../components/shop/SearchHeader";
+import EcoFriendlySheet from "../../components/shop/modals/EcoFriendlyModal";
+
 import FilterPills from "../../components/shop/ui/FilterPills";
 import { clearCars } from "../../redux/carsSlice";
 import { isoToDisplayWithOutYear } from "../../utils/date";
@@ -20,21 +22,15 @@ import api from "../../redux/api";
 
 const Shop = () => {
   const insets = useSafeAreaInsets();
-  // const dispatch = useDispatch();
-  // const {
-  //   items: carList,
-  //   status,
-  //   pagination,
-  //   canLoadMore,
-  // } = useSelector((state) => state.cars);
   const [carList, setCarList] = useState([]);
+  const [carData, setCarData] = useState(null);
+
   const [status, setStatus] = useState("");
-  console.log("carListcarList:", carList);
 
   const [activeFilters, setActiveFilters] = useState({
     price: {
       min: 0,
-      max: 50000,
+      max: 10000,
     },
     vehicleTypes: [],
     years: {
@@ -45,15 +41,16 @@ const Shop = () => {
       min: 0,
       max: 1000,
     },
-    seats: "All seats",
+    seats: "All",
     brands: [],
     models: [],
     transmission: "All",
-    ecoFriendly: [],
+    ecoFriendly: false,
     features: [],
     sortBy: "Relevance",
     closeSignal: 0,
   });
+  console.log("fffffffffffffffff:", activeFilters.models);
   const { selectedLocation, startDate, endDate } = useLocalSearchParams();
   const router = useRouter();
 
@@ -67,7 +64,7 @@ const Shop = () => {
       const response = await api.get("cars", { params: apiQuery });
       // console.log("API success1234:", response.data);
       setCarList(response.data?.data);
-      return response.data;
+      setCarData(response.data);
     } catch (error) {
       console.log("API error:", error.response?.data || error.message);
     } finally {
@@ -108,24 +105,50 @@ const Shop = () => {
     (page = 1) => {
       const filterParts = [];
 
-      if (activeFilters.price.min !== 10) {
+      console.log("activeFilters.price.", activeFilters.price);
+
+      if (activeFilters.price.min !== 0) {
         filterParts.push(`rentalPricePerDay_gte:${activeFilters.price.min}`);
       }
 
-      if (activeFilters.price.max !== 500) {
+      if (activeFilters.price.max !== 10000) {
         filterParts.push(`rentalPricePerDay_lte:${activeFilters.price.max}`);
       }
 
-      if (activeFilters.vehicleTypes.length > 0) {
-        filterParts.push(`carType:[${activeFilters.vehicleTypes.join(",")}]`);
+      if (activeFilters.seats !== "All") {
+        filterParts.push(`seatingCapacity_gte:${activeFilters.seats}`);
       }
-      if (activeFilters.brands.length > 0) {
-        filterParts.push(`makeId:[${activeFilters.brands.join(",")}]`);
-      }
-      if (activeFilters.models.length > 0) {
-        filterParts.push(`modelId:[${activeFilters.models.join(",")}]`);
+      if (activeFilters.years.min !== 1952) {
+        filterParts.push(`year_gte:${activeFilters.years.min}`);
       }
 
+      if (activeFilters.mileage.max !== 1000) {
+        filterParts.push(`mileage_lte:${activeFilters.mileage.max}`);
+      }
+
+      if (activeFilters.mileage.min !== 0) {
+        filterParts.push(`mileage_gte:${activeFilters.mileage.min}`);
+      }
+
+      if (activeFilters.years.max !== new Date().getFullYear()) {
+        filterParts.push(`year_lte:${activeFilters.years.max}`);
+      }
+      if (activeFilters.vehicleTypes.length > 0) {
+        filterParts.push(`carType:[${activeFilters.vehicleTypes.join("|")}]`);
+      }
+      // if (activeFilters.brands.length > 0) {
+      //   filterParts.push(`makeId:[${activeFilters.brands.join(",")}]`);
+      // }
+      if (activeFilters.models.length > 0) {
+        filterParts.push(`modelId:[${activeFilters.models.join("|")}]`);
+      }
+
+      if (activeFilters.ecoFriendly) {
+        filterParts.push(`ecoFriendly:[ELECTRIC|HYBRID]`);
+      }
+      if (activeFilters.transmission !== "All") {
+        filterParts.push(`transmission:${activeFilters.transmission}`);
+      }
       // other filters
       let sortString;
       if (activeFilters.sortBy === "price_asc") {
@@ -169,11 +192,12 @@ const Shop = () => {
     [activeFilters]
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchCars();
-    }, [activeFilters])
-  );
+  // useFocusEffect(
+  // useCallback(() => {
+  useEffect(() => {
+    fetchCars();
+  }, [activeFilters]);
+  // );
   //
   const isInitialMount = useRef(true);
   useEffect(() => {
@@ -204,28 +228,36 @@ const Shop = () => {
   // const { t, i18n } = useTranslation();
   const [isMakeModalVisible, setMakeModalVisible] = useState(false);
   const [isAllFiltersVisible, setAllFiltersVisible] = useState(false);
-  const priceSheetRef = useRef(null);
-  const vehicleTypeSheetRef = useRef(null);
-  const yearSheetRef = useRef(null);
-  const seatsSheetRef = useRef(null);
+  const [priceModal, setPriceModal] = useState(false);
+  const [vehicleTypeModal, SetVehicleTypeModal] = useState(false);
+  const [yearModal, setYearModal] = useState(false);
+  const [seatsModal, setSeatsModal] = useState(false);
+
+  // const seatsSheetRef = useRef(null);
   const deliverySheetRef = useRef(null);
 
   const handlePillPress = (item) => {
     console.log("Pill pressed:", item);
     if (item === "Price") {
-      priceSheetRef.current?.present();
+      setPriceModal(true);
     } else if (item === "Vehicle type") {
-      vehicleTypeSheetRef.current?.present();
+      SetVehicleTypeModal(true);
     } else if (item === "Years") {
-      yearSheetRef.current?.present();
+      setYearModal(true);
     } else if (item === "Seats") {
-      seatsSheetRef.current?.present();
+      setSeatsModal(true);
     } else if (item === "Deliver to me") {
       deliverySheetRef.current?.present();
     } else if (item === "Make & model") {
       setMakeModalVisible(true);
     } else if (item === "All filters") {
       setAllFiltersVisible(true);
+    } else if (item === "Electric") {
+      if (activeFilters.ecoFriendly) {
+        setActiveFilters({ ...activeFilters, ecoFriendly: false });
+      } else {
+        setActiveFilters({ ...activeFilters, ecoFriendly: true });
+      }
     } else {
       console.log(item, "pressed");
     }
@@ -237,7 +269,7 @@ const Shop = () => {
       if (filterName === "Make & model") {
         setMakeModalVisible(true);
       } else if (filterName === "Seats") {
-        seatsSheetRef.current?.present();
+        setSeatsModal(true);
       }
     }, 250);
   };
@@ -256,6 +288,62 @@ const Shop = () => {
     );
   };
 
+  const resetprice = () => {
+    setActiveFilters({ ...activeFilters, price: { min: 0, max: 10000 } });
+    setPriceModal(false);
+  };
+  const priceResult = (prices) => {
+    setActiveFilters({
+      ...activeFilters,
+      price: { min: prices[0], max: prices[1] },
+    });
+    setPriceModal(false);
+  };
+
+  const resetVehicleType = () => {
+    setActiveFilters({ ...activeFilters, vehicleTypes: [] });
+    SetVehicleTypeModal(false);
+  };
+  const vehicleTypeResult = (data) => {
+    setActiveFilters({
+      ...activeFilters,
+      vehicleTypes: data,
+    });
+    SetVehicleTypeModal(false);
+  };
+
+  const resetYears = () => {
+    setActiveFilters({
+      ...activeFilters,
+      years: { min: 1952, max: new Date().getFullYear() },
+    });
+    setYearModal(false);
+  };
+  const yearsResult = (years) => {
+    console.log("=======:", years);
+    setActiveFilters({
+      ...activeFilters,
+      years: { min: years[0], max: years[1] },
+    });
+    setYearModal(false);
+  };
+
+  const resetSeats = () => {
+    setActiveFilters({
+      ...activeFilters,
+      seats: "All",
+    });
+    setSeatsModal(false);
+  };
+  const seatsResult = (seat) => {
+    // console.log(typeof seat);
+    setActiveFilters({
+      ...activeFilters,
+      seats: seat,
+    });
+    setSeatsModal(false);
+  };
+
   return (
     <View
       style={{
@@ -269,7 +357,7 @@ const Shop = () => {
           endDate={endDate}
           selectedLocation={selectedLocation}
         />
-        <FilterPills onPillPress={handlePillPress} />
+        <FilterPills filters={activeFilters} onPillPress={handlePillPress} />
 
         {status === "failed" && (
           <Text style={styles.errorText}>
@@ -281,7 +369,9 @@ const Shop = () => {
           keyExtractor={(item) => item?.id}
           ListHeaderComponent={() => (
             <View style={styles.resultsContainer}>
-              <Text style={styles.resultsTitle}>{0} cars available</Text>
+              <Text style={styles.resultsTitle}>
+                {carData?.pagination?.total} cars available
+              </Text>
               <Text style={styles.resultsSubtitle}>
                 These cars are located in and around Addis Ababa
               </Text>
@@ -322,16 +412,53 @@ const Shop = () => {
           showsVerticalScrollIndicator={false}
         />
 
-        <PriceRangeSheet ref={priceSheetRef} />
-        <VehicleTypeSheet ref={vehicleTypeSheetRef} />
-        <YearRangeSheet ref={yearSheetRef} />
-        <SeatsSheet ref={seatsSheetRef} />
+        <PriceRangeSheet
+          visible={priceModal}
+          min={activeFilters.price.min}
+          max={activeFilters.price.max}
+          onClose={() => setPriceModal(false)}
+          handleReset={resetprice}
+          handleViewResults={priceResult}
+        />
+        <VehicleTypeSheet
+          visible={vehicleTypeModal}
+          types={activeFilters.vehicleTypes}
+          onClose={() => SetVehicleTypeModal(false)}
+          handleReset={resetVehicleType}
+          handleViewResults={vehicleTypeResult}
+        />
+        <YearRangeSheet
+          visible={yearModal}
+          onClose={() => setYearModal(false)}
+          handleReset={resetYears}
+          handleViewResults={yearsResult}
+          min={activeFilters.years.min}
+          max={activeFilters.years.max}
+        />
+        <SeatsSheet
+          visible={seatsModal}
+          onClose={() => setSeatsModal(false)}
+          handleReset={resetSeats}
+          handleViewResults={seatsResult}
+          seats={activeFilters.seats}
+        />
+        <EcoFriendlySheet
+          visible={seatsModal}
+          onClose={() => setSeatsModal(false)}
+          handleReset={resetSeats}
+          handleViewResults={seatsResult}
+          seats={activeFilters.seats}
+        />
         <DeliverySheet ref={deliverySheetRef} />
         <MakeModelModal
+          filter={activeFilters}
+          setFilter={setActiveFilters}
           isVisible={isMakeModalVisible}
           onClose={() => setMakeModalVisible(false)}
         />
         <AllFiltersModal
+          filters={activeFilters}
+          setFilters={setActiveFilters}
           isVisible={isAllFiltersVisible}
           onClose={() => setAllFiltersVisible(false)}
           onNavigateToFilter={handleNavigationFromAllFilters}

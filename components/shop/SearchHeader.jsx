@@ -51,7 +51,11 @@ const SearchHeader = ({ selectedLocation, startDate, endDate }) => {
             onPress={() => setModalVisible(true)}
           >
             <Text style={styles.searchText}>{location}</Text>
-            <Text style={styles.subText}>Add dates • Age: 25</Text>
+            <Text
+              style={[styles.inputText, { fontSize: 13 }]}
+            >{`${isoToDisplayWithOutYear(
+              startDate
+            )} - ${isoToDisplayWithOutYear(endDate)}`}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -70,6 +74,7 @@ const SearchHeader = ({ selectedLocation, startDate, endDate }) => {
           <Text style={styles.modalTitle}>Where</Text>
           <TouchableOpacity
             onPress={() => {
+              setModalVisible(false);
               router.push(`/location-search`);
             }}
           >
@@ -78,7 +83,9 @@ const SearchHeader = ({ selectedLocation, startDate, endDate }) => {
 
           <Text style={styles.modalTitle}>When</Text>
           <TouchableOpacity
-            onPress={() =>
+            onPress={() => {
+              setModalVisible(false);
+
               router.push({
                 pathname: "/DatePickerScreen",
                 params: {
@@ -86,8 +93,8 @@ const SearchHeader = ({ selectedLocation, startDate, endDate }) => {
                   start: isoToDate(startDate),
                   end: isoToDate(endDate),
                 },
-              })
-            }
+              });
+            }}
           >
             <View style={styles.input}>
               <Text style={styles.inputText}>{`${isoToDisplayWithOutYear(

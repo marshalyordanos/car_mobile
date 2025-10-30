@@ -164,9 +164,9 @@ export default function ChatView({ chat, onBack }) {
           ]}
           onContentSizeChange={scrollToBottom} // ← BEST auto-scroll
         >
-          {messages.map((msg) => (
+          {messages.map((msg, i) => (
             <View
-              key={msg.id}
+              key={`${msg.id}-${i}`}
               style={[
                 styles.messageWrapper,
                 msg.isOutgoing ? styles.right : styles.left,

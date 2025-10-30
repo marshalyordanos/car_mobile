@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -23,6 +23,7 @@ import {
   setcancellationPolicies,
 } from "../../redux/authReducer";
 import api from "../../redux/api";
+import { setFavorites } from "../../redux/favoriteSlice";
 const cars = [
   { id: 1, name: "Model S", price: 79999, brand: "Tesla", image: images.car1 },
   { id: 2, name: "Civic", price: 22000, brand: "Honda", image: images.car2 },
@@ -50,6 +51,25 @@ const Home = () => {
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+
+  const fetchFavorites = async () => {
+    try {
+      const res = await api.get("users/wish-list");
+
+      console.log("favorites: ", res.data);
+      dispatch(setFavorites(res.data.data?.wishlist)); // adjust based on your API response
+    } catch (error) {
+      console.error("error:", error);
+    } finally {
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchFavorites();
+      // }
+    }, [])
+  );
 
   const fetchCancllectionPolicy = async () => {
     try {

@@ -150,7 +150,7 @@ const en = {
   profile: "Profile",
   detail: "Detail",
   track_order: "Track Order",
-  check_item: "Check Item",
+  check_item: "Check Booking",
   order_confirmation: "Order Confirmation",
   contact_us: "Contact Us",
   logout: "Log out",
@@ -163,6 +163,9 @@ const en = {
   sign_up_desc:
     "Sign in using your email or phone number to access your account.",
   fullname: "FullName",
+  firstName: "First Name",
+  lastName: "Last Name",
+
   phone: "Phone",
   email: "Email",
   confirm_password: "Confirm Password",
@@ -281,8 +284,10 @@ i18n.use(initReactI18next).init({
 async function confLocale() {
   console.log("confLocale ||||");
   try {
-    if (typeof window === 'undefined') {
-      console.warn("Running in Node.js, skipping AsyncStorage and using default locale 'en'");
+    if (typeof window === "undefined") {
+      console.warn(
+        "Running in Node.js, skipping AsyncStorage and using default locale 'en'"
+      );
       return;
     }
     const locale = await AsyncStorage.getItem("locale");

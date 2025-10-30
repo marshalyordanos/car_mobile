@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router"; // 🆕 ADD THIS
 import { useState } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   Text,
@@ -10,13 +9,26 @@ import {
 } from "react-native";
 import BookingHistory from "../../components/Booking/BookingHistory";
 import BookingList from "../../components/Booking/BookingList";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 const MyBooking = () => {
+  const insets = useSafeAreaInsets();
+
   const [activeTab, setActiveTab] = useState("active");
   const router = useRouter();
 
   const handleOpenChat = (booking) => {
-    console.log("Open chat:", booking);
+    console.log("Open chat:", booking.id);
+    router.push({
+      pathname: `/message/${booking.id}`,
+      params: {
+        name: booking?.hostName,
+        receiverId: booking?.hostId,
+      },
+    });
   };
 
   const handleBookingPress = (booking) => {
@@ -29,8 +41,20 @@ const MyBooking = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
+    <View style={{ flex: 1, backgroundColor: "#FFF" }}>
       <View
+        style={{
+          flex: 1,
+          backgroundColor: "#FFF",
+          marginBottom: insets.bottom,
+        }}
+      >
+        <BookingList
+          onOpenChat={handleOpenChat}
+          onBookingPress={handleBookingPress}
+        />
+      </View>
+      {/* <View
         style={{
           borderBottomWidth: 1,
           borderBottomColor: "#E5E7EB",
@@ -106,8 +130,8 @@ const MyBooking = () => {
             onOpenChat={handleOpenChat}
           />
         )}
-      </View>
-    </SafeAreaView>
+      </View> */}
+    </View>
   );
 };
 

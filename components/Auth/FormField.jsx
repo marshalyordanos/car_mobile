@@ -43,6 +43,9 @@ const FormField = ({
             !isPasswordVisible
           }
           {...props}
+          autoComplete="off" // stops system password suggestions
+          textContentType="none" // stops autofill
+          autoCorrect={false} // disables suggestions
         />
         {(title === "Password" ||
           title === "Confirm Password" ||
@@ -85,7 +88,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
+    // flex: 1,
     borderWidth: 1,
   },
   textInput: {
