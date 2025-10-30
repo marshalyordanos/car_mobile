@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import RNModal from "react-native-modal";
 
 export default function StatusModal({
@@ -13,6 +13,7 @@ export default function StatusModal({
   secondaryLabel,
   onSecondaryPress,
   type = "info",
+  loading = false, // ✅ new prop
 }) {
   const colorMap = {
     success: "#2ecc71",
@@ -24,12 +25,10 @@ export default function StatusModal({
   return (
     <RNModal
       isVisible={visible}
-      // onBackdropPress={onClose}
       backdropTransitionOutTiming={0}
       useNativeDriver
       style={{
         margin: 0,
-        // justifyContent: "flex-start",
         backgroundColor: "rgba(0,0,0,0.5)",
       }}
       backdropOpacity={0}
@@ -41,7 +40,6 @@ export default function StatusModal({
           borderRadius: 16,
           padding: 22,
           marginHorizontal: 20,
-
           alignItems: "center",
         }}
       >
@@ -76,12 +74,13 @@ export default function StatusModal({
         <View style={{ flexDirection: "row", gap: 12 }}>
           {secondaryLabel ? (
             <TouchableOpacity
-              onPress={onSecondaryPress}
+              onPress={!loading ? onSecondaryPress : null} // disable during loading
               style={{
                 paddingVertical: 10,
                 paddingHorizontal: 20,
                 borderRadius: 10,
                 backgroundColor: "#eee",
+                opacity: loading ? 0.6 : 1,
               }}
             >
               <Text>{secondaryLabel}</Text>
@@ -90,17 +89,25 @@ export default function StatusModal({
 
           {primaryLabel ? (
             <TouchableOpacity
-              onPress={onPrimaryPress}
+              onPress={!loading ? onPrimaryPress : null} // disable during loading
               style={{
                 paddingVertical: 10,
                 paddingHorizontal: 20,
                 borderRadius: 10,
                 backgroundColor: colorMap[type],
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: loading ? 0.8 : 1,
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>
-                {primaryLabel}
-              </Text>
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  {primaryLabel}
+                </Text>
+              )}
             </TouchableOpacity>
           ) : null}
         </View>

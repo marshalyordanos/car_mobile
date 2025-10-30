@@ -30,12 +30,23 @@ import { selectCurrentUser } from "../../redux/authReducer";
 import { mockBookings } from "./mockBookings";
 import api from "../../redux/api";
 import LottieView from "lottie-react-native";
+import StatusModal from "../utils/StatusModal";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Toast } from "toastify-react-native";
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
+  });
+};
+
+const formatPrice = (value) => {
+  if (!value || isNaN(value)) return "0.00";
+  return parseFloat(value).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 };
 
@@ -148,6 +159,13 @@ const BookingList = ({ onOpenChat }) => {
   const user = useSelector(selectCurrentUser);
   const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedInnspection, setSelectedInspection] = useState(null);
+
+  const [accpetCarModal, setaccpetCarModal] = useState(false);
+  const [returnCarModal, setreturnCarModal] = useState(false);
+  const [accpetCarModalLoading, setaccpetCarModalLoading] = useState(false);
+  const [returnCarModalLoading, setreturnCarModalLoading] = useState(false);
+  const [isDropOfCreate, setIsDropOffCreate] = useState(null);
 
   const fetchBooking = async () => {
     try {
@@ -333,10 +351,8 @@ const BookingList = ({ onOpenChat }) => {
     const handlePressIn = () => (scale.value = withSpring(0.98));
     const handlePressOut = () => (scale.value = withSpring(1));
 
-    const isDropOffDate = new Date() >= new Date(booking.endDate);
+    // const isDropOffDate = new Date() >= new Date(booking.endDate);
     const canCreateDropOff =
-      isDropOffDate &&
-      booking.status === "active" &&
       booking.inspections.some((i) => i.type === "PICKUP" && i.approved) &&
       !booking.inspections.some((i) => i.type === "DROPOFF");
 
@@ -425,7 +441,22 @@ const BookingList = ({ onOpenChat }) => {
               <Text style={{ color: "#166534" }}>Car Returned</Text>
             </View>
           )}
-          {canCreateDropOff && (
+
+          {dropOff &&
+            dropOff?.submittedById == user?.user?.id &&
+            !dropOff?.approved && (
+              <View
+                style={[
+                  styles.status,
+                  { backgroundColor: "#f0e3a6", justifyContent: "flex-start" },
+                ]}
+              >
+                <Text style={{ color: "#654916", textAlign: "left" }}>
+                  Waiting for host to confirm return
+                </Text>
+              </View>
+            )}
+          {/* {canCreateDropOff && (
             <TouchableOpacity
               style={[styles.actionButton, styles.payButton]}
               onPress={() => {
@@ -437,12 +468,12 @@ const BookingList = ({ onOpenChat }) => {
                 Create Drop-Off Inspection
               </Text>
             </TouchableOpacity>
-          )}
+          )} */}
           <View style={styles.priceRow}>
             {/* <Text style={styles.priceLabel}>Total Price</Text> */}
             <View></View>
-            <Text style={styles.priceValue}>
-              {booking.currency} {booking.price}
+            <Text style={[styles.priceValue, { marginTop: 15 }]}>
+              {formatPrice(booking.price)} {booking.currency}
             </Text>
           </View>
           <View style={styles.actionButtons}>
@@ -462,13 +493,42 @@ const BookingList = ({ onOpenChat }) => {
                 style={[styles.actionButton, { backgroundColor: "black" }]}
                 onPress={(e) => {
                   e.stopPropagation();
-                  onCancel(booking.id);
+                  // onCancel(booking.id);
+                  setaccpetCarModal(true);
+                  setSelectedInspection(pickUp);
+                  console.log(
+                    "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[:",
+                    pickUp
+                  );
                 }}
               >
                 {/* <X color="#6B7280" size={16} style={styles.iconMargin} /> */}
                 <Text style={styles.buttonTextWhite}>Accept Car</Text>
               </TouchableOpacity>
             )}
+
+            {(canCreateDropOff ||
+              (dropOff &&
+                !dropOff?.approved &&
+                dropOff?.submittedById !== user?.user?.id)) && (
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: "black" }]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  if (canCreateDropOff) {
+                    setIsDropOffCreate(booking);
+                  } else {
+                    setSelectedInspection(dropOff);
+                  }
+                  // onCancel(booking.id);
+                  setreturnCarModal(true);
+                }}
+              >
+                {/* <X color="#6B7280" size={16} style={styles.iconMargin} /> */}
+                <Text style={styles.buttonTextWhite}>Return Car</Text>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity
               style={[styles.actionButton, styles.cancelButton]}
               onPress={(e) => {
@@ -618,12 +678,119 @@ const BookingList = ({ onOpenChat }) => {
           }
         />
       )}
-      <InspectionForm
+
+      <StatusModal
+        visible={accpetCarModal}
+        onClose={() => {
+          setaccpetCarModal(false);
+          setSelectedInspection(null);
+        }}
+        type="info"
+        icon={<MaterialIcons name="error-outline" size={44} color="#338fd5" />}
+        title="Are you accepted the car"
+        message=" "
+        primaryLabel="Yes"
+        secondaryLabel={"Close"}
+        onSecondaryPress={() => {
+          setaccpetCarModal(false);
+          setSelectedInspection(null);
+        }}
+        onPrimaryPress={async () => {
+          try {
+            setaccpetCarModalLoading(true);
+
+            const res = await api.patch(
+              "bookings/inspection/approve/" + selectedInnspection.id
+            );
+
+            fetchBooking();
+            setaccpetCarModal(false);
+            setaccpetCarModalLoading(false);
+            setSelectedInspection(null);
+          } catch (error) {
+            setaccpetCarModal(false);
+            Toast.show({
+              type: "error",
+              text1: error?.response?.data?.message || "Something want wrong!",
+              text2: "",
+              props: {
+                style: { fontSize: 20 },
+                textStyle: { flexWrap: "wrap" },
+              },
+            });
+            setaccpetCarModalLoading(false);
+            setSelectedInspection(null);
+          }
+        }}
+        loading={accpetCarModalLoading}
+      />
+      <StatusModal
+        visible={returnCarModal}
+        onClose={() => {
+          setreturnCarModal(false);
+          setSelectedInspection(null);
+          setIsDropOffCreate(null);
+        }}
+        type="info"
+        icon={<MaterialIcons name="error-outline" size={44} color="#338fd5" />}
+        title="Are you returning the car"
+        message=" "
+        primaryLabel="Yes"
+        secondaryLabel={"Close"}
+        onSecondaryPress={() => {
+          setreturnCarModal(false);
+          setSelectedInspection(null);
+          setIsDropOffCreate(null);
+        }}
+        onPrimaryPress={async () => {
+          try {
+            setreturnCarModalLoading(true);
+            console.log("wwwwwwwwwwwwwwwww: ", error, isDropOfCreate);
+
+            if (isDropOfCreate) {
+              const res = await api.post("bookings/inspection", {
+                bookingId: isDropOfCreate.id,
+                type: "DROPOFF",
+                fuelLevel: 0,
+                mileage: 0,
+              });
+            } else {
+              const res = await api.patch(
+                "bookings/inspection/approve/" + selectedInnspection.id
+              );
+            }
+
+            fetchBooking();
+            setreturnCarModalLoading(false);
+            setreturnCarModal(false);
+            setSelectedInspection(null);
+            setIsDropOffCreate(null);
+          } catch (error) {
+            console.log("wwwwwwwwwwwwwwwww: ", error, isDropOfCreate);
+            setaccpetCarModal(false);
+            Toast.show({
+              type: "error",
+              text1: error?.response?.data?.message || "Something want wrong!",
+              text2: "",
+              props: {
+                style: { fontSize: 20 },
+                textStyle: { flexWrap: "wrap" },
+              },
+            });
+            setreturnCarModalLoading(false);
+            setSelectedInspection(null);
+            setIsDropOffCreate(null);
+            setreturnCarModal(false);
+          }
+        }}
+        loading={returnCarModalLoading}
+      />
+      {/* <InspectionForm
         bookingId={currentBookingId}
         visible={inspectionVisible}
         onClose={() => setInspectionVisible(false)}
         onSubmit={handleCreateDropOffInspection}
-      />
+      /> */}
     </>
   );
 };
