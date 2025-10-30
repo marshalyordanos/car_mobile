@@ -4,7 +4,7 @@ const SearchInput = ({ onPress }) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image source={icons.search} style={styles.icon} resizeMode="contain" />
-      <Text style={styles.placeholderText}>City, airport, address...</Text>
+      <Text style={styles.placeholderText}>Search by pickup</Text>
     </TouchableOpacity>
   );
 };

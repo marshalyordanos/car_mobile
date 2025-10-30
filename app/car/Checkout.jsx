@@ -210,6 +210,7 @@ export default function Checkout() {
             textStyle: { flexWrap: "wrap" },
           },
         });
+        return;
       }
 
       setBokkingLaoding(true);

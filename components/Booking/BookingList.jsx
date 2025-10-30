@@ -572,14 +572,14 @@ const BookingList = ({ onOpenChat }) => {
                   );
                 })}
               </ScrollView>
-              {/* {isLoading && (
+              {isLoading && (
                 <LottieView
                   source={require("../../assets/loading.json")}
                   autoPlay
                   loop
                   style={styles.lottie}
                 />
-              )} */}
+              )}
             </View>
           }
           renderItem={({ item }) => (

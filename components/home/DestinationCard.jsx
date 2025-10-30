@@ -1,8 +1,15 @@
+import { useRouter } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const DestinationCard = ({ destination }) => {
+  const router = useRouter();
+
   const handleDestinationPress = () => {
-    console.log("Navigating to destination:", destination.name);
+    console.log("Navigating to destination:");
+    router.replace({
+      pathname: "/(tab)/shop",
+      params: { selectedLocation: destination.name },
+    });
   };
 
   return (

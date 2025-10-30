@@ -12,18 +12,18 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const locations = [
-  {
-    type: "ITEM",
-    label: "Current location",
-    subtitle: "Enable location services",
-    icon: "navigate",
-  },
-  {
-    type: "ITEM",
-    label: "Anywhere",
-    subtitle: "Browse all cars",
-    icon: "globe-outline",
-  },
+  // {
+  //   type: "ITEM",
+  //   label: "Current location",
+  //   subtitle: "Enable location services",
+  //   icon: "navigate",
+  // },
+  // {
+  //   type: "ITEM",
+  //   label: "Anywhere",
+  //   subtitle: "Browse all cars",
+  //   icon: "globe-outline",
+  // },
   // { type: "HEADER", label: "Airports" },
   // {
   //   type: "ITEM",
@@ -53,18 +53,18 @@ const LocationSearchScreen = () => {
   const router = useRouter();
   const [searchText, setSearchText] = useState("");
   const [locationSuggestions, setLocationSuggestions] = useState([
-    {
-      type: "ITEM",
-      label: "Current location",
-      subtitle: "Enable location services",
-      icon: "navigate",
-    },
-    {
-      type: "ITEM",
-      label: "Anywhere",
-      subtitle: "Browse all cars",
-      icon: "globe-outline",
-    },
+    // {
+    //   type: "ITEM",
+    //   label: "Current location",
+    //   subtitle: "Enable location services",
+    //   icon: "navigate",
+    // },
+    // {
+    //   type: "ITEM",
+    //   label: "Anywhere",
+    //   subtitle: "Browse all cars",
+    //   icon: "globe-outline",
+    // },
     // { type: "HEADER", label: "Airports" },
     // {
     //   type: "ITEM",

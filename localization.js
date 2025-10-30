@@ -257,7 +257,7 @@ const en = {
   home_airportSubtitle:
     "Easy pickup offered by hosts at hundreds of airports across the country.",
   home_airportButton: "Search for cars at airports",
-  home_browseByDestination: "Browse by destination",
+  home_browseByDestination: "Browse by Pickup",
   home_loading: "Loading...",
 };
 
