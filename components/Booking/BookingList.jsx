@@ -590,7 +590,7 @@ const BookingList = ({ onOpenChat }) => {
               onPay={handlePay}
               onPress={(booking) =>
                 router.push({
-                  pathname: "/BookingDetail",
+                  pathname: "/booking/booking-detail",
                   params: { id: booking.id },
                 })
               }

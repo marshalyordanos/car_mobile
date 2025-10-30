@@ -41,6 +41,35 @@ const AppLayout = () => {
         }}
       />
 
+      <Stack.Screen
+        name="booking-detail"
+        options={{
+          title: "",
+          headerBackTitle: "",
+          headerShadowVisible: false,
+          headerStyle: {
+            backgroundColor: "white",
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 5,
+                // borderWidth: 1,
+                flex: 1,
+              }}
+              onPress={router.back}
+            >
+              <Ionicons name="arrow-back" size={24} color={Colors.dark} />
+              <></>
+              <Text style={{ fontSize: 20 }}>Bookings detail</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
       {/* <Stack.Screen name="index" options={{headerShown:false}}  /> */}
     </Stack>
   );
