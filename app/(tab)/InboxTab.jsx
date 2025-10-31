@@ -1,5 +1,5 @@
 // app/tab/InboxTab.jsx
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -11,14 +11,21 @@ import {
 
 import { useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
-import ChatList from "../../components/Inbox/ChatList";
+import { useDispatch, useSelector } from "react-redux";
 import { Header, Avatar, Badge } from "../../components/Inbox/ThemeProvider";
 import { selectTheme } from "../../redux/themeSlice";
 import { TouchableOpacity } from "react-native";
 import { selectCurrentUser } from "../../redux/authReducer";
+import {
+  appendChatList,
+  reOrderChatList,
+  selectChatList,
+  setChatList,
+} from "../../redux/chatSlice";
+
 import api from "../../redux/api";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import SocketService from "../../socket";
 
 export default function InboxTab() {
   const [view, setView] = useState("chats"); // 'chats' | 'notifications'
@@ -27,19 +34,30 @@ export default function InboxTab() {
   const router = useRouter();
   const userData = useSelector(selectCurrentUser);
 
-  const [chatList, setChatList] = useState([]);
-  const [chatListLoading, setChatListLoading] = useState();
+  const chatList = useSelector(selectChatList);
+  const [chatListLoading, setChatListLoading] = useState(false);
+  const [chatListLoading2, setChatListLoading2] = useState(false);
+
+  const { connected } = useSelector((state) => state.socket);
+  const [messages, setMessages] = useState([]);
+
+  const dispatch = useDispatch();
 
   const fetchChatList = async () => {
     setChatListLoading(true);
+    setChatListLoading2(true);
+
     console.log("======= one  =============");
     try {
       const res = await api.get("messages/chats/user/" + userData?.user?.id);
-      console.log("fetchChatList:", res.data);
-      setChatList(res.data.data);
+      // console.log("fetchChatList:", res.data);
+      dispatch(setChatList(res.data.data));
       setChatListLoading(false);
+      setChatListLoading2(false);
     } catch (err) {
       setChatListLoading(false);
+      setChatListLoading2(false);
+
       console.log("fetchChatList err:", err);
     }
   };
@@ -53,6 +71,42 @@ export default function InboxTab() {
     fetchChatList();
   };
   // ---------- MAIN INBOX ----------
+  useFocusEffect(
+    useCallback(() => {
+      if (!connected) return;
+
+      // SocketService.joinBooking(bookingId);
+
+      // SocketService.on("new_message", (msg) => {
+      //   console.log(
+      //     "====================11111111111111111111111111111111111111111111111111:",
+      //     JSON.stringify(msg, null, 2)
+      //   );
+      //   if (msg.bookingId === bookingId) {
+      //     setMessages((prev) => [...prev, msg]);
+      //   }
+      // });
+
+      SocketService.on("update_chat_list", (preview) => {
+        {
+          console.log(
+            "====================11111111111111111111111111111111111111111111111111:",
+            JSON.stringify(preview, null, 2)
+          );
+          dispatch(reOrderChatList(preview));
+          console.log("🕓 Chat list updated:", typeof preview);
+          let x;
+        }
+      });
+
+      return () => {
+        console.log("marshalllllllllllllllllll");
+        // SocketService.off("new_message");
+        SocketService.off("update_chat_list");
+      };
+    }, [connected])
+  );
+
   return (
     <View
       style={{
@@ -96,7 +150,7 @@ export default function InboxTab() {
         <View style={styles.toggleBar}></View>
         <FlatList
           data={chatList}
-          keyExtractor={(item) => item.bookingId}
+          keyExtractor={(item, i) => item.bookingId + i.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
@@ -104,6 +158,9 @@ export default function InboxTab() {
                   pathname: `/message/${item.bookingId}`,
                   params: {
                     name: item?.withUser?.fullName,
+                    id: item?.withUser?.id,
+                    profilePhoto: item?.withUser?.profilePhoto,
+
                     receiverId: item?.withUser?.id,
                   },
                 });
@@ -133,14 +190,15 @@ export default function InboxTab() {
               </View>
             </TouchableOpacity>
           )}
-          refreshControl={
-            <RefreshControl
-              // colors={["transparent"]} // hide android spinner
-              // tintColor="transparent" // hide iOS spinner
-              refreshing={chatListLoading}
-              onRefresh={onRefresh}
-            />
-          }
+          // refreshControl={
+          //   <RefreshControl
+          //     colors={["transparent"]} // hide android spinner
+          //     tintColor="transparent" // hide iOS spinner
+
+          //     refreshing={chatListLoading2}
+          //     onRefresh={onRefresh}
+          //   />
+          // }
           // onRefresh={}
         />
         {/* //  : <NotificationList />} */}

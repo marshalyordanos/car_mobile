@@ -75,7 +75,13 @@ const SearchHeader = ({ selectedLocation, startDate, endDate }) => {
           <TouchableOpacity
             onPress={() => {
               setModalVisible(false);
-              router.push(`/location-search`);
+              router.push({
+                pathname: `/location-search`,
+                params: {
+                  start: isoToDate(startDate),
+                  end: isoToDate(endDate),
+                },
+              });
             }}
           >
             <Text style={styles.input}>{location}</Text>
@@ -92,6 +98,7 @@ const SearchHeader = ({ selectedLocation, startDate, endDate }) => {
                   url: "/shop",
                   start: isoToDate(startDate),
                   end: isoToDate(endDate),
+                  selectedLocation: selectedLocation,
                 },
               });
             }}

@@ -7,8 +7,10 @@ import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import api from "@/redux/api";
 import { setcancellationPolicies } from "@/redux/authReducer";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
+import { connectSocket } from "../../redux/socketSlice";
+import { selectCurrentUser } from "../../redux/authReducer";
 
 const TabIcon = ({ iconName, color, name, focused }) => (
   <View style={styles.tabContainer}>
@@ -24,6 +26,14 @@ const TabIcon = ({ iconName, color, name, focused }) => (
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const userData = useSelector(selectCurrentUser);
+
+  console.log("useData socket:", userData);
+
+  useEffect(() => {
+    dispatch(connectSocket(userData?.user?.id));
+  }, []);
 
   return (
     <BottomSheetModalProvider>

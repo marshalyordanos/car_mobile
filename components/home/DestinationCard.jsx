@@ -6,9 +6,13 @@ const DestinationCard = ({ destination }) => {
 
   const handleDestinationPress = () => {
     console.log("Navigating to destination:");
-    router.replace({
+    router.push({
       pathname: "/(tab)/shop",
-      params: { selectedLocation: destination.name },
+      params: {
+        selectedLocation: destination.name,
+        startDate: null,
+        endDate: null,
+      },
     });
   };
 

@@ -10,7 +10,8 @@ import favoritesReducer from "./favoritesSlice";
 import filterOptionsReducer from "./filterOptionsSlice";
 import filtersReducer from "./filtersSlice";
 import themeReducer from "./themeSlice.js";
-
+import socketReducer from "./socketSlice";
+import chatReducer from "./chatSlice";
 const storage = {
   getItem: async (key) => {
     if (typeof window === "undefined") {
@@ -46,6 +47,8 @@ const rootReducer = combineReducers({
   filterOptions: filterOptionsReducer,
   favorite: favoriteReducer,
   booking: bookingReducer,
+  socket: socketReducer,
+  chat: chatReducer,
 });
 
 const persistConfig = {

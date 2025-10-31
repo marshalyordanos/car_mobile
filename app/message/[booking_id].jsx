@@ -2,6 +2,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,12 +14,16 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Header } from "../../components/Inbox/ThemeProvider";
 import { selectTheme } from "../../redux/themeSlice";
 import api from "../../redux/api";
 import { isoToTime } from "../../utils/date";
 import { selectCurrentUser } from "../../redux/authReducer";
+import { reOrderChatList } from "../../redux/chatSlice";
+import SocketService from "../../socket";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
+import { Feather } from "lucide-react-native";
 
 // ————————————————————————————————————————————
 // 1. FULL MOCK MESSAGES (copy-paste this)
@@ -104,7 +109,13 @@ export default function ChatView({ onBack }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
   const theme = useSelector(selectTheme);
-  const { booking_id: chat, name, receiverId } = useLocalSearchParams();
+  const {
+    booking_id: chat,
+    profilePhoto,
+    id,
+    name,
+    receiverId,
+  } = useLocalSearchParams();
   const [messages, setMessages] = useState(mockMessages[chat] ?? []);
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -112,9 +123,14 @@ export default function ChatView({ onBack }) {
 
   const [chats, setChats] = useState([]);
   const [chatLoading, setChatLoading] = useState();
+  const [chatLoading2, setChatLoading2] = useState();
+  const dispatch = useDispatch();
+  const { connected } = useSelector((state) => state.socket);
 
   const fetchChats = async () => {
     setChatLoading(true);
+    setChatLoading2(true);
+
     console.log("======= one  =============", chat);
     try {
       const res = await api.get(
@@ -123,9 +139,11 @@ export default function ChatView({ onBack }) {
       console.log("chatsssss:", res.data);
       setChats(res.data.data);
       setChatLoading(false);
+      setChatLoading2(false);
     } catch (err) {
       setChatLoading(false);
       console.log("fetchChatList err:", err);
+      setChatLoading2(false);
     }
   };
   useFocusEffect(
@@ -186,6 +204,22 @@ export default function ChatView({ onBack }) {
     setInput("");
 
     try {
+      const chatPreview = {
+        bookingId: chat,
+        lastMessage: {
+          id: `${new Date()}`,
+          content: input.trim(),
+          createdAt: new Date().toISOString(),
+        },
+        withUser: {
+          id: id,
+          fullName: name,
+          profilePhoto: profilePhoto,
+        },
+        unreadCount: 0, // client can recalc if necessary
+      };
+      dispatch(reOrderChatList(chatPreview));
+
       const res = await api.post("messages", payload);
       console.log("sen chat::", res.data);
       // setChats(res.data.data);
@@ -195,6 +229,30 @@ export default function ChatView({ onBack }) {
       console.log("fetchChatList err:", err);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!connected) return;
+
+      SocketService.joinBooking(chat);
+
+      SocketService.on("new_message", (msg) => {
+        console.log(
+          "====================11111111111111111111111111111111111111111111111111:",
+          JSON.stringify(msg, null, 2)
+        );
+        if (msg.bookingId === chat) {
+          setChats((prev) => [...prev, msg]);
+        }
+      });
+
+      return () => {
+        console.log("marshalllllllllllllllllll");
+        SocketService.off("new_message");
+        // SocketService.off("update_chat_list");
+      };
+    }, [connected])
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -208,12 +266,24 @@ export default function ChatView({ onBack }) {
         }}
       >
         {/* Header */}
+
         <Header
-          title={name}
+          // title={name}
           onBack={() => {
             router.back();
           }}
-        />
+        >
+          {chatLoading ? (
+            <>
+              <ActivityIndicator size={"small"} />
+              <Text>Updating ...</Text>
+            </>
+          ) : (
+            <View style={{ justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ fontSize: 17 }}>{name}</Text>
+            </View>
+          )}
+        </Header>
 
         {/* Messages */}
         <KeyboardAvoidingView
@@ -264,18 +334,34 @@ export default function ChatView({ onBack }) {
                   >
                     {msg.content}
                   </Text>
-                  <Text
+                  <View
                     style={{
-                      fontSize: 11,
-                      marginTop: 4,
-                      color:
-                        msg.senderId == userData?.user?.id ? "#ccc" : "#999",
-                      textAlign:
-                        msg.senderId == userData?.user?.id ? "right" : "left",
+                      flexDirection: "row",
+                      gap: 4,
+                      alignItems: "center",
                     }}
                   >
-                    {isoToTime(msg.createdAt)}
-                  </Text>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        marginTop: 4,
+                        color:
+                          msg.senderId == userData?.user?.id ? "#ccc" : "#999",
+                        textAlign:
+                          msg.senderId == userData?.user?.id ? "right" : "left",
+                      }}
+                    >
+                      {isoToTime(msg.createdAt)}
+                    </Text>
+                    <Ionicons
+                      name="sync"
+                      size={15}
+                      color={
+                        msg.senderId == userData?.user?.id ? "white" : "black"
+                      }
+                    />
+                    <AntDesign name="check" size={14} color="black" />{" "}
+                  </View>
                 </View>
               </View>
             ))}

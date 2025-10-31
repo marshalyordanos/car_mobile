@@ -44,28 +44,33 @@ const CarLayout = () => {
       {/* <Stack.Screen name="car-rental-detail" options={{ headerShown: false }} /> */}
       <Stack.Screen
         name="Checkout"
-        // options={{
-        //   title: "",
-        //   headerBackTitle: "",
-        //   headerShadowVisible: false,
-        //   headerStyle: {
-        //     backgroundColor: "white",
-        //   },
-        //   headerLeft: () => (
-        //     <TouchableOpacity
-        //       style={{
-        //         display: "flex",
-        //         flexDirection: "row",
-        //         alignItems: "center",
-        //         gap: 5,
-        //       }}
-        //       onPress={router.back}
-        //     >
-        //       <Ionicons name="arrow-back" size={35} color={Colors.dark} />
-        //       <Text>Back</Text>
-        //     </TouchableOpacity>
-        //   ),
-        // }}
+        options={{
+          title: "",
+          headerBackTitle: "",
+          headerShadowVisible: false,
+          headerStyle: {
+            backgroundColor: "white",
+            borderWidth: 1,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                // borderWidth: 1,
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+              onPress={router.back}
+            >
+              <Ionicons name="arrow-back" size={24} color={Colors.dark} />
+              <Text style={{ fontSize: 18, fontWeight: 600 }}>Checkout</Text>
+              <Text></Text>
+            </TouchableOpacity>
+          ),
+        }}
       />
     </Stack>
   );

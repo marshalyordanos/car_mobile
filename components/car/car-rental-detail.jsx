@@ -1,4 +1,4 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { router } from "expo-router";
@@ -15,13 +15,19 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectCancellationPolicies } from "../../redux/authReducer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RNModal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LottieView from "lottie-react-native";
 import { isoToDisplay } from "../../utils/date";
+import {
+  addFavorite,
+  removeFavorite,
+  selectFavorites,
+} from "../../redux/favoriteSlice";
+import api from "../../redux/api";
 
 const isWeb = Platform.OS === "web";
 
@@ -80,6 +86,10 @@ export default function CarRentalDetail({
   //   );
   // }
   const cancelletionPolicy = useSelector(selectCancellationPolicies);
+  const favorites = useSelector(selectFavorites);
+
+  const isFavorited = favorites?.some((f) => f.id === car?.id);
+  const dispatch = useDispatch();
 
   // Move availableCities to avoid TDZ error
   const availableCities = [
@@ -107,9 +117,7 @@ export default function CarRentalDetail({
   };
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [pickupLocation, setPickupLocation] = useState(
-    car?.location || "Not specified"
-  );
+  const [pickupLocation, setPickupLocation] = useState("");
   const [returnLocation, setReturnLocation] = useState(
     car?.location || "Not specified"
   );
@@ -197,7 +205,7 @@ export default function CarRentalDetail({
       pathname: "/car/Checkout",
       params: {
         car: JSON.stringify(car),
-        pickupLocation: pickupLocation.name,
+        pickupLocation: car?.location,
         pickupLat: pickupLocation.lat || 0,
         pickupLng: pickupLocation.lng || 0,
         returnLocation: returnLocation.name,
@@ -221,6 +229,34 @@ export default function CarRentalDetail({
     });
   };
 
+  const toggleFavorite = () => {
+    console.log("return: ", car.id, isFavorited);
+    if (!car?.id) return;
+    if (isFavorited) {
+      removeFromFavorite();
+    } else {
+      addToFavorite();
+    }
+  };
+  const addToFavorite = async () => {
+    try {
+      dispatch(addFavorite(car));
+
+      const res = await api.post("users/wish-list", { carId: car?.id });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const removeFromFavorite = async () => {
+    try {
+      dispatch(removeFavorite(car?.id));
+
+      const res = await api.delete("users/wish-list/" + car?.id);
+      console.log("000000000000000000000000000000000000000000:", res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <ErrorBoundary>
       <View style={[styles.container, { flex: 1, backgroundColor: "white" }]}>
@@ -243,11 +279,18 @@ export default function CarRentalDetail({
               </TouchableOpacity>
               <Text style={styles.headerTitle}>{name}</Text>
               <View style={styles.headerActions}>
-                <TouchableOpacity style={styles.headerAction}>
+                {/* <TouchableOpacity style={styles.headerAction}>
                   <ShareIcon />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.headerAction}>
-                  <HeartIcon />
+                </TouchableOpacity> */}
+                <TouchableOpacity
+                  onPress={toggleFavorite}
+                  style={styles.headerAction}
+                >
+                  <Ionicons
+                    name={isFavorited ? "heart" : "heart-outline"}
+                    size={23}
+                    color={isFavorited ? "#111827" : "balck"}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -437,6 +480,7 @@ export default function CarRentalDetail({
                   </TouchableOpacity>
 
                   <TouchableOpacity
+                    disabled
                     onPress={() => router.push(`/location-search`)}
                     accessibilityLabel="Edit pickup and return city"
                   >
@@ -447,19 +491,12 @@ export default function CarRentalDetail({
                           style={styles.tripIcon}
                         />
                         <View>
-                          <Text style={styles.tripLabel}>
-                            Pickup & return city
-                          </Text>
-                          <Text style={styles.tripDetail}>
-                            {pickupLocation}
-                            {pickupLocation === car?.location
-                              ? ""
-                              : `/ ${returnLocation}`}
-                          </Text>
+                          <Text style={styles.tripLabel}>Pickup City</Text>
+                          <Text style={styles.tripDetail}>{car?.location}</Text>
                         </View>
                       </View>
 
-                      <EditIcon />
+                      {/* <EditIcon /> */}
                     </View>
                   </TouchableOpacity>
                 </View>

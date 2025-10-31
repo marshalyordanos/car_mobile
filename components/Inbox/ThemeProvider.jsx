@@ -84,9 +84,11 @@ export const Header = ({
           <Icon name="arrow-left" size={24} color={theme.foreground} />
         </TouchableOpacity>
       )}
-      <Text style={[styles.headerTitle, { color: theme.foreground }]}>
-        {title}
-      </Text>
+      {title && (
+        <Text style={[styles.headerTitle, { color: theme.foreground }]}>
+          {title}
+        </Text>
+      )}
       {children && <View style={styles.headerChildren}>{children}</View>}
 
       <View style={{ flexDirection: "row", alignItems: "center" }}>

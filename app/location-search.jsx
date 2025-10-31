@@ -1,5 +1,5 @@
 import { Ionicons as Icon } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -89,6 +89,7 @@ const LocationSearchScreen = () => {
     // { type: "HEADER", label: "Hotels" },
     // { type: "ITEM", label: "Sheraton Addis", icon: "bed-outline" },
   ]);
+  const { start, end } = useLocalSearchParams();
 
   const handleCancel = () => {
     router.back();
@@ -98,7 +99,11 @@ const LocationSearchScreen = () => {
     // router.replace("/(tab)/shop");
     router.replace({
       pathname: "/(tab)/shop",
-      params: { selectedLocation: selected },
+      params: {
+        selectedLocation: selected,
+        startDate: start ? start : null,
+        endDate: end ? end : null,
+      },
     });
   };
 
@@ -155,7 +160,7 @@ const LocationSearchScreen = () => {
             <Icon name="search-outline" size={20} color="#75787cff" />
             <TextInput
               style={styles.input}
-              placeholder="City, airport, address, or train station"
+              placeholder="City"
               placeholderTextColor="#75787cff"
               value={searchText}
               onChangeText={setSearchText}

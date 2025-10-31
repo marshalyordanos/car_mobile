@@ -224,7 +224,7 @@ export default function Checkout() {
         withDriver: driverOption,
         pickupLat: isNaN(parseFloat(pickupLat)) ? 0 : parseFloat(pickupLat),
         pickupLng: isNaN(parseFloat(pickupLng)) ? 0 : parseFloat(pickupLng),
-        pickupName: "Addis Ababa" || pickupLocation,
+        pickupName: pickupLocation,
         dropoffLat: isNaN(parseFloat(dropoffLat)) ? 0 : parseFloat(dropoffLat),
         dropoffLng: isNaN(parseFloat(dropoffLng)) ? 0 : parseFloat(dropoffLng),
         dropoffName: "Addis Ababa" || returnLocation,
@@ -354,12 +354,7 @@ export default function Checkout() {
                 </View>
                 <View style={styles.detailRow}>
                   <MaterialIcons name="location-pin" size={16} color="#000" />
-                  <Text style={styles.detailText}>
-                    {pickupLocation}
-                    {pickupLocation === returnLocation
-                      ? ""
-                      : ` / ${returnLocation}`}
-                  </Text>
+                  <Text style={styles.detailText}>{pickupLocation}</Text>
                 </View>
               </View>
             </View>

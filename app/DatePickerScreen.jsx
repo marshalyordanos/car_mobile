@@ -29,7 +29,7 @@ const DatePickerScreen = () => {
     () => Array.from({ length: 11 }, (_, i) => i + 1),
     []
   );
-  const { url, par, start, end } = useLocalSearchParams();
+  const { url, par, start, end, selectedLocation } = useLocalSearchParams();
 
   console.log("url,par: ", url, par, end, start);
   // Generate time slots only once
@@ -89,6 +89,7 @@ const DatePickerScreen = () => {
     router.push({
       pathname: url,
       params: {
+        selectedLocation: selectedLocation,
         startDate: makeIso(startDate, pickupTime),
         endDate: makeIso(endDate, returnTime),
         ...JSON.parse(par || "{}"),

@@ -99,7 +99,7 @@ const Shop = () => {
           endDate: end.toISOString(),
         });
       }
-    }, [])
+    }, [startDate, endDate])
   );
   const buildApiQuery = useCallback(
     (page = 1) => {
@@ -155,6 +155,10 @@ const Shop = () => {
         sortString = "rentalPricePerDay:asc";
       } else if (activeFilters.sortBy === "price_desc") {
         sortString = "rentalPricePerDay:desc";
+      }
+
+      if (selectedLocation) {
+        filterParts.push(`location:${selectedLocation}`);
       }
 
       let start2;
