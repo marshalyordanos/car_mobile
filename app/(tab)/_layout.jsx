@@ -11,8 +11,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { connectSocket } from "../../redux/socketSlice";
 import { selectCurrentUser } from "../../redux/authReducer";
+import { selectNotificationCount } from "../../redux/chatSlice";
 
-const TabIcon = ({ iconName, color, name, focused }) => (
+const TabIcon = ({ iconName, color, name, focused, hasCount, count }) => (
   <View style={styles.tabContainer}>
     <Icon
       name={focused ? iconName : `${iconName}-outline`}
@@ -20,6 +21,23 @@ const TabIcon = ({ iconName, color, name, focused }) => (
       color={color}
     />
     <Text style={[{ color }, styles.tabLabel]}>{name}</Text>
+    {hasCount && count != 0 && (
+      <View
+        style={{
+          width: 17,
+          height: 17,
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: 100,
+          backgroundColor: "black",
+          position: "absolute",
+          top: 0,
+          right: 0,
+        }}
+      >
+        <Text style={{ color: "white", fontSize: 11 }}>{count}</Text>
+      </View>
+    )}
   </View>
 );
 
@@ -28,6 +46,7 @@ export default function TabLayout() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const userData = useSelector(selectCurrentUser);
+  const notidicationCount = useSelector(selectNotificationCount);
 
   console.log("useData socket:", userData);
 
@@ -134,6 +153,8 @@ export default function TabLayout() {
                 color={color}
                 name={t("inbox")}
                 focused={focused}
+                count={notidicationCount}
+                hasCount={true}
               />
             ),
           }}
@@ -148,6 +169,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 2,
     minWidth: 55,
+    position: "relative",
     // borderWidth: 1,
   },
   tabLabel: {

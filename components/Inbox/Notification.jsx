@@ -9,55 +9,20 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSelector } from "react-redux";
-
+import { isoToDisplay } from "../../utils/date.js";
 // ————————————————————————————————————————————
 // 1. FULL MOCK NOTIFICATIONS
 // ————————————————————————————————————————————
-const mockNotifications = [
-  {
-    id: "1",
-    type: "success",
-    title: "Booking Request Approved",
-    message: "Your booking for Tesla Model 3 has been approved.",
-    timestamp: "5m ago",
-    read: false,
-  },
-  {
-    id: "2",
-    type: "reminder",
-    title: "Return Date Approaching",
-    message: "BMW X5 is due for return tomorrow at 10:00 AM.",
-    timestamp: "1h ago",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "info",
-    title: "Pickup Location",
-    message:
-      "You can pick up your Mercedes C-Class from 123 Main St, Downtown.",
-    timestamp: "2h ago",
-    read: true,
-  },
-  {
-    id: "4",
-    type: "warning",
-    title: "Payment Required",
-    message: "Please complete payment to confirm your Audi A4 booking.",
-    timestamp: "3h ago",
-    read: false,
-  },
-];
 
 // ————————————————————————————————————————————
 // 2. ICON MAPPING
 // ————————————————————————————————————————————
 const getIcon = (type) => {
   const map = {
-    success: "check-circle",
-    reminder: "clock-outline",
-    info: "information-outline",
-    warning: "alert-circle",
+    BOOKING: "check-circle",
+    DISPUTE: "clock-outline",
+    SYSTEM: "information-outline",
+    PAYMENT: "alert-circle",
   };
   return map[type] ?? "bell";
 };
@@ -65,11 +30,11 @@ const getIcon = (type) => {
 // ————————————————————————————————————————————
 // 3. MAIN COMPONENT
 // ————————————————————————————————————————————
-export default function NotificationList() {
+export default function NotificationList({ data }) {
   const theme = useSelector(selectTheme);
 
   // ——— Empty State ———
-  if (mockNotifications.length === 0) {
+  if (data?.length === 0) {
     return (
       <View style={styles.empty}>
         <Icon name="bell-outline" size={64} color="#ccc" />
@@ -86,13 +51,13 @@ export default function NotificationList() {
           // borderWidth: 2,
         }
       }
-      data={mockNotifications}
+      data={data}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <TouchableOpacity
           style={[
             styles.item,
-            !item.read && styles.unread,
+            !item.isRead && styles.unread,
             { borderBottomColor: theme.border },
           ]}
         >
@@ -101,14 +66,14 @@ export default function NotificationList() {
             style={[
               styles.icon,
               {
-                backgroundColor: item.read ? theme.muted : theme.unreadBg,
+                backgroundColor: item.isRead ? theme.muted : theme.unreadBg,
               },
             ]}
           >
             <Icon
               name={getIcon(item.type)}
               size={20}
-              color={item.read ? theme.iconRead : theme.iconUnread}
+              color={item.isRead ? theme.iconRead : theme.iconUnread}
             />
           </View>
 
@@ -118,7 +83,7 @@ export default function NotificationList() {
               <Text style={[styles.title, { color: theme.foreground }]}>
                 {item.title}
               </Text>
-              <Text style={styles.time}>{item.timestamp}</Text>
+              <Text style={styles.time}>{isoToDisplay(item?.createdAt)}</Text>
             </View>
             <Text style={[styles.message, { color: theme.mutedForeground }]}>
               {item.message}

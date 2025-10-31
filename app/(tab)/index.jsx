@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import DestinationCard from "../../components/home/DestinationCard";
 import SearchInput from "../../components/home/SearchInput";
 import icons from "../../constants/icons";
@@ -20,10 +20,12 @@ import images from "../../constants/images";
 import {
   changeLanguageHandler,
   login,
+  selectCurrentUser,
   setcancellationPolicies,
 } from "../../redux/authReducer";
 import api from "../../redux/api";
 import { setFavorites } from "../../redux/favoriteSlice";
+import { setNotificationCount } from "../../redux/chatSlice";
 const cars = [
   { id: 1, name: "Model S", price: 79999, brand: "Tesla", image: images.car1 },
   { id: 2, name: "Civic", price: 22000, brand: "Honda", image: images.car2 },
@@ -51,6 +53,7 @@ const Home = () => {
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const userData = useSelector(selectCurrentUser);
 
   const fetchFavorites = async () => {
     try {
@@ -83,6 +86,22 @@ const Home = () => {
 
   useEffect(() => {
     fetchCancllectionPolicy();
+  }, []);
+
+  const fetchNotificationCount = async () => {
+    try {
+      const res = await api.get(
+        "messages/notifications/unread-count/" + userData?.user?.id
+      );
+      console.log("fetchNotificationCount:", res.data);
+      dispatch(setNotificationCount(res.data?.data?.count));
+    } catch (error) {
+      console.log("cancellation-policies:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotificationCount();
   }, []);
 
   const handleSearchPress = () => {

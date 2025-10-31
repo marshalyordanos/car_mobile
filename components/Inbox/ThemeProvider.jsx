@@ -66,6 +66,7 @@ export const Header = ({
   showToggle = true,
   children,
   onNotification,
+  count,
 }) => {
   const theme = useSelector(selectTheme);
 
@@ -94,6 +95,23 @@ export const Header = ({
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TouchableOpacity onPress={onNotification} style={styles.toggleBtn}>
           <Icon name={"bell-outline"} size={24} color={theme.foreground} />
+          {count > 0 && (
+            <View
+              style={{
+                width: 17,
+                height: 17,
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 100,
+                backgroundColor: "black",
+                position: "absolute",
+                top: 0,
+                right: 0,
+              }}
+            >
+              <Text style={{ color: "white", fontSize: 11 }}>{count}</Text>
+            </View>
+          )}
         </TouchableOpacity>
 
         {/* {showToggle && <ThemeToggle />} */}
@@ -127,6 +145,7 @@ const styles = StyleSheet.create({
   },
   toggleBtn: {
     padding: 8,
+    position: "relative",
   },
   header: {
     flexDirection: "row",

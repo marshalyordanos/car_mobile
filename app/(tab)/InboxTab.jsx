@@ -20,6 +20,7 @@ import {
   appendChatList,
   reOrderChatList,
   selectChatList,
+  selectNotificationCount,
   setChatList,
 } from "../../redux/chatSlice";
 
@@ -39,7 +40,7 @@ export default function InboxTab() {
   const [chatListLoading2, setChatListLoading2] = useState(false);
 
   const { connected } = useSelector((state) => state.socket);
-  const [messages, setMessages] = useState([]);
+  const notidicationCount = useSelector(selectNotificationCount);
 
   const dispatch = useDispatch();
 
@@ -130,6 +131,7 @@ export default function InboxTab() {
               pathname: `/message/notification`,
             });
           }}
+          count={notidicationCount}
         >
           {chatListLoading ? (
             <>
